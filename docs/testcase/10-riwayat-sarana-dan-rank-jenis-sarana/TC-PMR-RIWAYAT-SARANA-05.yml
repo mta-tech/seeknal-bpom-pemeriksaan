@@ -1,0 +1,19 @@
+name: TC_PMR_RIWAYAT_SARANA_05
+scenario_id: TC-PMR-RIWAYAT-SARANA-05
+verification_date: '2026-08-14'
+description: 'TC-PMR-RIWAYAT-SARANA-05 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan riwayat pemeriksaan sarana produksi ''nida food'' pada rentang tahun yang tersedia.'
+  assert_contains:
+  - 'BALAI BESAR POM DI SEMARANG'
+  assert_any_of:
+  -
+    - '2'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT * FROM mv_pemeriksaan WHERE LOWER(nama_sarana) LIKE ''%nida food%'' AND lower(sarana) LIKE ''%produksi%'';
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 2 baris; baris teratas ''BALAI BESAR POM DI SEMARANG'' dengan nilai 219.129.
+    
+    CATATAN URUTAN: SQL ini mengembalikan banyak baris tanpa ORDER BY. sehingga urutan barisnya TIDAK dijamin. Yang diperiksa adalah CACAH BARIS (2), bukan nilai pada baris tertentu. Bila jawaban perlu diurutkan, sebutkan kolom pengurutnya secara eksplisit.'

@@ -1,0 +1,16 @@
+name: TC_PMR_TAHUN_2022
+scenario_id: TC-PMR-TAHUN-2022
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu tahun; menguji pemilihan kolom tanggal kanonik.'
+turns:
+- prompt: 'berapa pemeriksaan pada tahun 2022?'
+  assert_contains:
+  - '2022'
+  assert_any_of:
+  -
+    - '46.293'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE tanggal_mulai >= ''2022-01-01'' AND tanggal_mulai < ''2023-01-01'';
+    
+    HASIL DB 14Agu2026 = 46.293. TANGGAL KANONIK: `tanggal_mulai` di `mv_pemeriksaan` — kolom tanggal default untuk pertanyaan periode. Kolom tanggal lain di tabel ini menjawab pertanyaan berbeda dan angkanya tidak sama. BATAS RENTANG: pakai perbandingan >= dan < , bukan EXTRACT(YEAR ...) di WHERE — tabel ini tanpa indeks, EXTRACT memaksa pemindaian penuh.'

@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_DISTRIBUSI_14
+scenario_id: TC-PMR-SARANA-DISTRIBUSI-14
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-DISTRIBUSI-14 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan realisasi inspeksi sarana distribusi periode pemeriksaan tahun 2025'
+  assert_contains:
+  - 'BALAI BESAR POM DI BANDA ACEH'
+  assert_any_of:
+  -
+    - '89'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    WITH latest_target_year AS ( SELECT MAX(tb.tahun) AS tahun_terbaru FROM target_balai tb ), laporan_dikirim AS ( SELECT mp.nama_upt, mp.komoditi, EXTRACT(YEAR FROM mp.tanggal_selesai) AS tahun, COUNT(*) AS jumlah_laporan FROM mv_pemeriksaan mp WHERE mp.tanggal_selesai IS NOT NULL AND EXTRACT(YEAR FROM mp.tanggal_selesai) = EXTRACT(YEAR FROM CURRENT_DATE) and lower(mp.sarana) = ''distribusi'' GROUP BY mp.nama_upt, mp.komoditi, EXTRACT(YEAR FROM mp.tanggal_selesai) ) SELECT ld.nama_upt, ld.komoditi, ld.tahun AS tahun_laporan, tb.tahun AS tahun_target, ld.jumlah_laporan, tb.target_sarana_distribusi, ROUND( (ld.jumlah_laporan::decimal / NULLIF(tb.target_sarana_distribusi, 0)) * 100, 2 ) AS capaian_persen FROM laporan_dikirim ld CROSS JOIN latest_target_year lty LEFT JOIN target_balai tb ON LOWER(TRIM(tb.nama_balai)) = LOWER(TRIM(ld.nama_upt)) AND LOWER(TRIM(tb.komoditi)) = LOWER(TRIM(ld.komoditi)) AND tb.tahun = lty.tahun_terbaru ORDER BY ld.nama_upt, ld.komoditi;
+    
+    DATA YANG DITANYA: target_balai + mp + mv_pemeriksaan + current_date + laporan_dikirim + latest_target_year. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 410 baris; baris teratas ''BALAI BESAR POM DI BANDA ACEH'' dengan nilai 89.'

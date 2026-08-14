@@ -1,0 +1,19 @@
+name: TC_PMR_RIWAYAT_SARANA_02
+scenario_id: TC-PMR-RIWAYAT-SARANA-02
+verification_date: '2026-08-14'
+description: 'TC-PMR-RIWAYAT-SARANA-02 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'bagaimana riwayat pemeriksaan sarana apotek kimia farma dalam periode tahun 2025?'
+  assert_contains:
+  - 'BALAI BESAR POM DI JAKARTA'
+  assert_any_of:
+  -
+    - '38'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT * FROM mv_pemeriksaan WHERE LOWER(nama_sarana) LIKE ''%apotek kimia farma%'' AND EXTRACT(YEAR FROM tanggal_mulai) = 2025;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + tanggal_mulai. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 38 baris; baris teratas ''BALAI BESAR POM DI JAKARTA'' dengan nilai 238.769.
+    
+    CATATAN URUTAN: SQL ini mengembalikan banyak baris tanpa ORDER BY. sehingga urutan barisnya TIDAK dijamin. Yang diperiksa adalah CACAH BARIS (38), bukan nilai pada baris tertentu. Bila jawaban perlu diurutkan, sebutkan kolom pengurutnya secara eksplisit.'

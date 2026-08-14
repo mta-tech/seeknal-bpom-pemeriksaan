@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_PRODUKSI_02
+scenario_id: TC-PMR-SARANA-PRODUKSI-02
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-PRODUKSI-02 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'upt mana saja yang paling banyak melaporkan hasil pemeriksaan sarana produksi yang tmk?'
+  assert_contains:
+  - 'BALAI BESAR POM DI SURABAYA'
+  assert_any_of:
+  -
+    - '1.435'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_upt, count(*) FROM mv_pemeriksaan WHERE kesimpulan = ''TMK'' AND lower(sarana) like ''produksi'' GROUP BY nama_upt ORDER BY COUNT(*) DESC LIMIT 5;
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 5 baris; baris teratas ''BALAI BESAR POM DI SURABAYA'' dengan nilai 1.435.'

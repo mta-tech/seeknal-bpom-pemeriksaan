@@ -1,0 +1,17 @@
+name: TC_PMR_TEMUAN_PRODUK_12
+scenario_id: TC-PMR-TEMUAN-PRODUK-12
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-12 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Berikan temuan inspeksi CPOB berdasarkan tingkat pemenuhan CPOB'
+  assert_contains:
+  - 'Kurang'
+  assert_any_of:
+  -
+    - 'Kurang'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mp.tingkat_pemenuhan_cpob, mpt.tp_kategori, mpt.product_name, mpt.tp_harga_total from mv_pemeriksaan mp join mv_pemeriksaan_temuan mpt on mp.id = mpt.id_pemeriksaan where mp.tingkat_pemenuhan_cpob is not null;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 5 baris; baris teratas ''Kurang''.'

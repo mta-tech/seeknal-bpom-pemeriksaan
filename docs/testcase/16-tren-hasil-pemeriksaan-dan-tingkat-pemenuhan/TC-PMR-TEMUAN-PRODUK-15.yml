@@ -1,0 +1,17 @@
+name: TC_PMR_TEMUAN_PRODUK_15
+scenario_id: TC-PMR-TEMUAN-PRODUK-15
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-15 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan negara-negara dengan temuan impor pada tahun 2025 negara dengan input text selain indonesia'
+  assert_contains:
+  - 'Jepang'
+  assert_any_of:
+  -
+    - 'Jepang'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mpt.tp_negara, sum(mpt.tp_harga_total) from mv_pemeriksaan_temuan mpt join mv_pemeriksaan mp on mpt.id_pemeriksaan = mp.id where lower(mpt.tp_negara) != ''indonesia'' and mpt.tp_harga_total is not null and extract(year from mp.tanggal_selesai) = 2025 group by 1 order by 2 desc;
+    
+    DATA YANG DITANYA: mv_pemeriksaan_temuan + mv_pemeriksaan + mp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 347 baris; baris teratas ''Jepang''.'

@@ -1,0 +1,16 @@
+name: TC_PMR_TUJUAN_RUTIN_1
+scenario_id: TC-PMR-TUJUAN-RUTIN-1
+verification_date: '2026-08-14'
+description: 'TC-PMR-TUJUAN-RUTIN-1 — Dimensi tujuan pemeriksaan tidak pernah diajarkan v1 meski dipakai sistem lama.'
+turns:
+- prompt: 'berapa pemeriksaan rutin yang dilakukan?'
+  assert_contains:
+  - 'rutin'
+  assert_any_of:
+  -
+    - '200.660'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE tujuan_pemeriksaan=''PEMERIKSAAN RUTIN'' = 200.660.;
+    
+    KOLOM: `tujuan_pemeriksaan` menyimpan ALASAN sebuah pemeriksaan dilakukan — dimensi yang berbeda dari `jenis_sarana` (diperiksa di mana) dan `komoditi` (memeriksa apa). Kolomnya punya 36 nilai berbeda, ditulis huruf besar semua. KENAPA MUDAH SALAH: context v1 TIDAK menyebut kolom ini sama sekali — nol penyebutan di context, skill, maupun SEEKNAL_ASK — padahal SQL sistem lama memakainya. Kemampuan yang hilang saat migrasi, bukan kemampuan yang belum pernah ada.'

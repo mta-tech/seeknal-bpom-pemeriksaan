@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_PRODUKSI_07
+scenario_id: TC-PMR-SARANA-PRODUKSI-07
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-PRODUKSI-07 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Berdasarkan hasil pemeriksaan selama 2 tahun terakhir, untuk sarana produksi dengan jenis pangan AMDK di seluruh Indonesia 10 temuan yang terbanyak adalah kategori apa?'
+  assert_contains:
+  - 'TIE (Tanpa Izin Edar)'
+  assert_any_of:
+  -
+    - '2'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    WITH pemeriksaan_amdk AS ( SELECT mp.id FROM mv_pemeriksaan mp JOIN mv_pemeriksaan_jenis_pangan mpjp ON mp.id = mpjp.id_pemeriksaan WHERE LOWER(mp.sarana) LIKE ''%produksi%'' AND LOWER(mpjp.jenis_pangan_name) LIKE ''%air minum dalam kemasan%'' AND EXTRACT(YEAR FROM mp.tanggal_mulai) >= EXTRACT(YEAR FROM CURRENT_DATE) - 1 ) SELECT mpkt.tp_kategori, COUNT(*) AS jumlah_temuan FROM mv_pemeriksaan_kategori_temuan mpkt JOIN pemeriksaan_amdk pam ON pam.id = mpkt.id_pemeriksaan GROUP BY mpkt.tp_kategori ORDER BY jumlah_temuan DESC LIMIT 10;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_jenis_pangan + mp + current_date + mv_pemeriksaan_kategori_temuan + pemeriksaan_amdk. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 1 baris; baris teratas ''TIE (Tanpa Izin Edar)'' dengan nilai 2.'

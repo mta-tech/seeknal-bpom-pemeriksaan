@@ -1,0 +1,17 @@
+name: TC_PMR_TEMUAN_PRODUK_08
+scenario_id: TC-PMR-TEMUAN-PRODUK-08
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-08 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan total temuan produk dan total nilai temuan pada kategori bahan berbahaya.'
+  assert_contains:
+  - 'Mengandung bahan berbahaya/bahan dilarang (berdasarkan SE)'
+  assert_any_of:
+  -
+    - 'Mengandung bahan berbahaya/bahan dilarang (berdasarkan SE)'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT tp_kategori, SUM(tp_jml_temuan) AS total_temuan_produk, SUM(tp_harga_total) AS total_nilai_temuan FROM mv_pemeriksaan_temuan WHERE LOWER(tp_kategori) LIKE ''%bahan berbahaya%'' GROUP BY 1;
+    
+    DATA YANG DITANYA: mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 10 baris; baris teratas ''Mengandung bahan berbahaya/bahan dilarang (berdasarkan SE)''.'

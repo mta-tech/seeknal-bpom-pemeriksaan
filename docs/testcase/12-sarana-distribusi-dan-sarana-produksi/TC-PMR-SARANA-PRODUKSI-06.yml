@@ -1,0 +1,16 @@
+name: TC_PMR_SARANA_PRODUKSI_06
+scenario_id: TC-PMR-SARANA-PRODUKSI-06
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-PRODUKSI-06 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Ada berapa sarana produksi AMDK dengan hasil pemeriksaan TMK di wilayah kerja Balai POM di Bogor pada tahun 2024'
+  assert_contains: []
+  assert_any_of:
+  -
+    - '1'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(DISTINCT mp.id) AS jumlah_sarana_tmk FROM mv_pemeriksaan mp JOIN mv_pemeriksaan_jenis_pangan mpjp ON mp.id = mpjp.id_pemeriksaan WHERE EXTRACT(YEAR FROM mp.tanggal_mulai) = 2024 AND LOWER(mp.nama_upt) LIKE ''%bogor%'' AND LOWER(mp.sarana) LIKE ''%produksi%'' AND LOWER(mpjp.jenis_pangan_name) LIKE ''%air minum dalam kemasan%'' AND UPPER(mp.kesimpulan) = ''TMK'';
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_jenis_pangan + mp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: satu angka = 1.'

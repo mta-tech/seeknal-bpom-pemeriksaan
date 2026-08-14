@@ -1,0 +1,17 @@
+name: TC_PMR_TEMUAN_PRODUK_03
+scenario_id: TC-PMR-TEMUAN-PRODUK-03
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-03 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan negara-negara dengan temuan impor pada tahun 2025?'
+  assert_contains:
+  - 'BUSANA INDAH'
+  assert_any_of:
+  -
+    - 'BUSANA INDAH'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_sarana, tanggal_mulai, mpt.product_name, mpt.tp_negara, mpt.tp_kategori FROM public.mv_pemeriksaan mp JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE lower(mpt.tp_negara) NOT LIKE ''%indonesia%'';
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 99938 baris; baris teratas ''BUSANA INDAH''.'

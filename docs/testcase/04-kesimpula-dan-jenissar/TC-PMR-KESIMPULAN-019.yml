@@ -1,0 +1,16 @@
+name: TC_PMR_KESIMPULAN_019
+scenario_id: TC-PMR-KESIMPULAN-019
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `kesimpulan`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan kesimpulan MK?'
+  assert_contains:
+  - 'MK'
+  assert_any_of:
+  -
+    - '176.820'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE kesimpulan = ''MK'';
+    
+    HASIL DB 14Agu2026 = 176.820. KOLOM: `kesimpulan` di `mv_pemeriksaan`. NILAI FILTER: ''MK'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

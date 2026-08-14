@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_DISTRIBUSI_02
+scenario_id: TC-PMR-SARANA-DISTRIBUSI-02
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-DISTRIBUSI-02 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan sarana peredaran yang memiliki riwayat hasil tmk terbanyak di upt dengan nama balai pom di jakarta".'
+  assert_contains:
+  - 'SETIA KAWAN'
+  assert_any_of:
+  -
+    - '3'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_sarana , count(*) FROM mv_pemeriksaan vpb WHERE lower(nama_upt) LIKE ''%jakarta%'' AND EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND kesimpulan LIKE ''TMK'' AND lower(sarana) LIKE ''distribusi'' GROUP BY 1 ORDER BY 2 DESC;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + tanggal_mulai. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 233 baris; baris teratas ''SETIA KAWAN'' dengan nilai 3.'

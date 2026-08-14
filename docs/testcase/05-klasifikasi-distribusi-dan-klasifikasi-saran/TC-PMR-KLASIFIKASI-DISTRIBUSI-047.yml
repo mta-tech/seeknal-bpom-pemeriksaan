@@ -1,0 +1,16 @@
+name: TC_PMR_KLASIFIKASI_DISTRIBUSI_047
+scenario_id: TC-PMR-KLASIFIKASI-DISTRIBUSI-047
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `klasifikasi_distribusi`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan klasifikasi distribusi BADAN USAHA/USAHA PERORANGAN PEMILIK NOTIFIKASI KOSMETIK?'
+  assert_contains:
+  - 'BADAN USAHA/USAHA PERORANGAN PEMILIK NOT'
+  assert_any_of:
+  -
+    - '1.704'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE klasifikasi_distribusi = ''BADAN USAHA/USAHA PERORANGAN PEMILIK NOTIFIKASI KOSMETIK'';
+    
+    HASIL DB 14Agu2026 = 1.704. KOLOM: `klasifikasi_distribusi` di `mv_pemeriksaan`. NILAI FILTER: ''BADAN USAHA/USAHA PERORANGAN PEMILIK NOTIFIKASI KOSMETIK'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

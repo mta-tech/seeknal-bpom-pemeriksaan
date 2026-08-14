@@ -1,0 +1,17 @@
+name: TC_PMR_TEMUAN_PRODUK_14
+scenario_id: TC-PMR-TEMUAN-PRODUK-14
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-14 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Jumlah temuan produk dan nilai temuannya dikategorikan berdasarkan Bahan Berbahaya, TIE, Kedaluarsa, dll'
+  assert_contains:
+  - 'KOSMETIK'
+  assert_any_of:
+  -
+    - '27'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select komoditi, mpt.tp_kategori, count(*), sum(mpt.tp_harga_total) from mv_pemeriksaan mp join mv_pemeriksaan_temuan mpt on mp.id = mpt.id_pemeriksaan where mp.klasifikasi_distribusi is not null group by 1, 2;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 99 baris; baris teratas ''KOSMETIK'' dengan nilai 27.'

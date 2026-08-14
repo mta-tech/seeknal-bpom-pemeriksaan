@@ -1,0 +1,18 @@
+name: TC_PMR_TEMUAN_PRODUK_05
+scenario_id: TC-PMR-TEMUAN-PRODUK-05
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-05 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan rekapitulasi produktivitas penguji (jumlah parameter per orang) dari tanggal 1 januari 2025 hingga 31 desember 2025.'
+  assert_contains:
+  - 'Taufik, SKM., M.Si'
+  assert_any_of:
+  -
+    - '259'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mpp.petugas, count(*) FROM public.mv_pemeriksaan_petugas mpp WHERE EXTRACT(YEAR FROM mpp.tgl_surat) = 2025 GROUP BY 1 ORDER BY 2 DESC;
+    
+    DATA YANG DITANYA: mv_pemeriksaan_petugas + mpp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 1777 baris; baris teratas ''Taufik, SKM.
+    , M.Si'' dengan nilai 259.'

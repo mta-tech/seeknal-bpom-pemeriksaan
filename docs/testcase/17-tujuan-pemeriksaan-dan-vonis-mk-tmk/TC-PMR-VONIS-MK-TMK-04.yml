@@ -1,0 +1,17 @@
+name: TC_PMR_VONIS_MK_TMK_04
+scenario_id: TC-PMR-VONIS-MK-TMK-04
+verification_date: '2026-08-14'
+description: 'TC-PMR-VONIS-MK-TMK-04 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'upt mana saja yang paling banyak melaporkan hasil pemeriksaan sarana yang tmk?'
+  assert_contains:
+  - 'BALAI BESAR POM DI BANDUNG'
+  assert_any_of:
+  -
+    - '3.323'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_upt, COUNT(*) as jumlah_pemeriksaan FROM mv_pemeriksaan WHERE kesimpulan = ''TMK'' GROUP BY nama_upt ORDER BY count(*) desc limit 5;
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 5 baris; baris teratas ''BALAI BESAR POM DI BANDUNG'' dengan nilai 3.323.'

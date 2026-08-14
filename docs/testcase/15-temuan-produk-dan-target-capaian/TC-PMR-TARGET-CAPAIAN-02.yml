@@ -1,0 +1,17 @@
+name: TC_PMR_TARGET_CAPAIAN_02
+scenario_id: TC-PMR-TARGET-CAPAIAN-02
+verification_date: '2026-08-14'
+description: 'TC-PMR-TARGET-CAPAIAN-02 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan data realisasi inspeksi pada tahun 2025 yang dilaksanakan oleh pusat maupun UPT secara mandiri'
+  assert_contains:
+  - 'BALAI BESAR POM DI BANDA ACEH'
+  assert_any_of:
+  -
+    - '284'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mp.nama_upt, sarana, mp.komoditi, count(*) from mv_pemeriksaan mp where extract(year from mp.tanggal_mulai) = 2025 group by 1, 2, 3 order by 1, 3, 3;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 719 baris; baris teratas ''BALAI BESAR POM DI BANDA ACEH'' dengan nilai 284.'

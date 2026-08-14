@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_DISTRIBUSI_09
+scenario_id: TC-PMR-SARANA-DISTRIBUSI-09
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-DISTRIBUSI-09 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan temuan produk berdasarkan kategori sarana distribusi yang ada di sipt?'
+  assert_contains:
+  - 'BAHAN BERBAHAYA'
+  assert_any_of:
+  -
+    - '23'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.komoditi, mpt.tp_kategori, count(*) FROM public.mv_pemeriksaan mp LEFT OUTER JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE lower(sarana) LIKE ''%distribusi%'' AND lower(kesimpulan) = ''tmk'' AND status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') GROUP BY 1, 2;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 132 baris; baris teratas ''BAHAN BERBAHAYA'' dengan nilai 23.'

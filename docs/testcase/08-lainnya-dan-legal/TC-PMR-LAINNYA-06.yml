@@ -1,0 +1,17 @@
+name: TC_PMR_LAINNYA_06
+scenario_id: TC-PMR-LAINNYA-06
+verification_date: '2026-08-14'
+description: 'TC-PMR-LAINNYA-06 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan persentase ketepatan waktu pelaporan SIPT oleh Balai POM di Bandung'
+  assert_contains:
+  - 'Tepat Waktu'
+  assert_any_of:
+  -
+    - '11.326'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    WITH data_sipt AS ( SELECT mp.nama_upt, mp.day_mulai_selesai, CASE WHEN mp.day_mulai_selesai < 30 THEN ''Tepat Waktu'' ELSE ''Terlambat'' END AS kategori_waktu FROM mv_pemeriksaan mp WHERE LOWER(mp.nama_upt) LIKE ''%bandung%'' AND mp.day_mulai_selesai IS NOT NULL ) SELECT kategori_waktu, COUNT(*) AS jumlah_laporan, ROUND((COUNT(*)::decimal / NULLIF(SUM(COUNT(*)) OVER (), 0)) * 100, 2) AS persentase FROM data_sipt GROUP BY kategori_waktu ORDER BY persentase DESC;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + data_sipt. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 2 baris; baris teratas ''Tepat Waktu'' dengan nilai 11.326.'

@@ -1,0 +1,17 @@
+name: TC_PMR_KESIMPULA_819_2025
+scenario_id: TC-PMR-KESIMPULA-819-2025
+verification_date: '2026-08-14'
+description: 'Silang `kesimpulan` dengan periode; menguji kelengkapan filter dari pertanyaan majemuk.'
+turns:
+- prompt: 'berapa pemeriksaan dengan kesimpulan MK pada tahun 2025?'
+  assert_contains:
+  - 'MK'
+  - '2025'
+  assert_any_of:
+  -
+    - '21.917'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE kesimpulan = ''MK'' AND tanggal_mulai >= ''2025-01-01'' AND tanggal_mulai < ''2026-01-01'';
+    
+    HASIL DB 14Agu2026 = 21.917. KOLOM: `kesimpulan` di `mv_pemeriksaan`. NILAI FILTER ''MK'' diambil apa adanya dari data. DUA KOMPONEN: nilai kode dan periode — komponen yang halamannya tidak dibuka akan hilang dari filter secara senyap.'

@@ -1,0 +1,16 @@
+name: TC_PMR_RANK_LEGAL_01
+scenario_id: TC-PMR-RANK-LEGAL-01
+verification_date: '2026-08-14'
+description: 'Peringkat nilai `legal`; menguji pengeluaran penanda kosong dari peringkat.'
+turns:
+- prompt: 'legal apa yang paling banyak pada pemeriksaan?'
+  assert_contains:
+  - 'TOKO'
+  assert_any_of:
+  -
+    - '48.275'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT legal, COUNT(*) AS jumlah FROM mv_pemeriksaan WHERE legal IS NOT NULL AND btrim(legal) <> '''' GROUP BY 1 ORDER BY 2 DESC LIMIT 5;
+    
+    HASIL DB 14Agu2026: teratas ''TOKO'' dengan 48.275. KOLOM: `legal` di `mv_pemeriksaan`. Baris dengan nilai kosong dikeluarkan lewat `btrim(legal) <> ''''` — penanda kosong bukan kategori dan tidak boleh ikut diperingkat. Sebutkan porsi yang dikeluarkan bila besar.'

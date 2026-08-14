@@ -1,0 +1,17 @@
+name: TC_PMR_RIWAYAT_SARANA_03
+scenario_id: TC-PMR-RIWAYAT-SARANA-03
+verification_date: '2026-08-14'
+description: 'TC-PMR-RIWAYAT-SARANA-03 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'merekap jumlah dan nama sarana distribusi dan pelayanan yang belum pernah diperiksa dalam kurun waktu 1 tahun terakhir'
+  assert_contains:
+  - 'INDAH FARMA  '
+  assert_any_of:
+  -
+    - 'INDAH FARMA  '
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_sarana, sarana FROM mv_pemeriksaan WHERE lower(sarana) IN (''distribusi'', ''pelayanan'') AND nama_sarana NOT IN ( SELECT DISTINCT nama_sarana FROM mv_pemeriksaan WHERE tanggal_mulai = tanggal_mulai - interval ''1 year'' );
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. TAPI hasilnya 146,493 baris tanpa agregasi — jalan, bukan jawaban. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 214166 baris; baris teratas ''INDAH FARMA ''.'

@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_DISTRIBUSI_08
+scenario_id: TC-PMR-SARANA-DISTRIBUSI-08
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-DISTRIBUSI-08 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan sarana peredaran yang memiliki riwayat hasil tmk terbanyak di upt dengan nama balai pom di jakarta.'
+  assert_contains:
+  - 'AAPIA'
+  assert_any_of:
+  -
+    - '1'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.nama_sarana, mp.kesimpulan, count(*) FROM public.mv_pemeriksaan mp WHERE status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') AND kesimpulan = ''TMK'' AND lower(mp.sarana) LIKE ''%distribusi%'' AND lower(nama_upt) LIKE ''%pom di jakarta%'' GROUP BY 1, 2;
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 979 baris; baris teratas ''AAPIA'' dengan nilai 1.'

@@ -1,0 +1,17 @@
+name: TC_PMR_TREN_HASIL_PEMERIKSAAN_04
+scenario_id: TC-PMR-TREN-HASIL-PEMERIKSAAN-04
+verification_date: '2026-08-14'
+description: 'TC-PMR-TREN-HASIL-PEMERIKSAAN-04 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'bagaimana tren data hasil pengawasan sarana produksi kosmetik (profil hasil pengawasan) di upt balai pom di palembang dalam periode tahun 2024?'
+  assert_contains:
+  - 'BALAI BESAR POM DI PALEMBANG'
+  assert_any_of:
+  -
+    - 'BALAI BESAR POM DI PALEMBANG'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.nama_upt, tanggal_mulai, nama_sarana, jenis_sarana, mpt.product_name, mpt.tp_kategori FROM public.mv_pemeriksaan mp JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE lower(nama_upt) LIKE ''%palembang%'' AND EXTRACT(YEAR FROM mp.tanggal_mulai) = 2024 AND mp.status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') ORDER BY 1, 2, 3, 4;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mp. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 1313 baris; baris teratas ''BALAI BESAR POM DI PALEMBANG''.'

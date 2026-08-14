@@ -1,0 +1,17 @@
+name: TC_PMR_TREN_HASIL_PEMERIKSAAN_03
+scenario_id: TC-PMR-TREN-HASIL-PEMERIKSAAN-03
+verification_date: '2026-08-14'
+description: 'TC-PMR-TREN-HASIL-PEMERIKSAAN-03 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'bagaimana tren data hasil pengawasan sarana obat tradisional; suplemen kesehatan; obat kuasi yang tidak memenuhi ketentuan berdasarkan kategori temuan (tmk tie/cpotb/cpotb habis/tidak memiliki cpotb)'
+  assert_contains:
+  - 'DISTRIBUSI'
+  assert_any_of:
+  -
+    - '59'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT EXTRACT(MONTH FROM tanggal_mulai) AS bulan, mp.sarana, mp.komoditi, mpt.tp_kategori, count(*) FROM public.mv_pemeriksaan mp LEFT OUTER JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND (lower(komoditi) LIKE ''%obat%'' OR lower(komoditi) LIKE ''%obat tradisional%'' OR lower(komoditi) LIKE ''%suplemen kesehatan%'') GROUP BY 1, 2, 3, 4;
+    
+    DATA YANG DITANYA: tanggal_mulai + mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 281 baris; baris teratas ''DISTRIBUSI'' dengan nilai 59.'

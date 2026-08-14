@@ -1,0 +1,17 @@
+name: TC_PMR_PETUGAS_01
+scenario_id: TC-PMR-PETUGAS-01
+verification_date: '2026-08-14'
+description: 'TC-PMR-PETUGAS-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'count pemeriksaan untuk tiap inspektur beserta tujuan dan nama balainya untuk tahun 2025'
+  assert_contains:
+  - 'BADAN POM'
+  assert_any_of:
+  -
+    - '2'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mpp.daftar_balai_pemeriksa, mpp.petugas, mpp.tujuan, count(*) from mv_pemeriksaan_petugas mpp where extract(year from mpp.tgl_surat) = 2025 group by 1, 2, 3 order by 1, 2, 3;
+    
+    DATA YANG DITANYA: mv_pemeriksaan_petugas + mpp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 5112 baris; baris teratas ''BADAN POM'' dengan nilai 2.'

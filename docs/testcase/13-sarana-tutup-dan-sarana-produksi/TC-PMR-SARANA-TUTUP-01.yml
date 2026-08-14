@@ -1,0 +1,16 @@
+name: TC_PMR_SARANA_TUTUP_01
+scenario_id: TC-PMR-SARANA-TUTUP-01
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-TUTUP-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'berapa total sarana yang tutup dan/atau tidak berproduksi saat diperiksa di tahun 2025 di wilayah kerja jakarta utara?'
+  assert_contains: []
+  assert_any_of:
+  -
+    - '4'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT count(*) FROM mv_pemeriksaan WHERE kesimpulan = ''TTP'' AND lower(sarana) like ''produksi'' AND EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND lower(kabupaten_kota) LIKE ''%jakarta utara%'';
+    
+    DATA YANG DITANYA: mv_pemeriksaan + tanggal_mulai. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: satu angka = 4.'

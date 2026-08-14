@@ -1,0 +1,17 @@
+name: TC_PMR_TMK_BERULANG_02
+scenario_id: TC-PMR-TMK-BERULANG-02
+verification_date: '2026-08-14'
+description: 'TC-PMR-TMK-BERULANG-02 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan aspek temuan yang berulang dari tahun ke tahun pada sarana dengan nama siloam.'
+  assert_contains:
+  - 'SILOAM'
+  assert_any_of:
+  -
+    - '28'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.nama_sarana, mp.sarana, mpt.tp_kategori, EXTRACT(YEAR FROM tanggal_mulai) AS tahun, count(*) FROM public.mv_pemeriksaan mp JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE lower(nama_sarana) LIKE ''%siloam%'' GROUP BY 1, 2, 3, 4;
+    
+    DATA YANG DITANYA: tanggal_mulai + mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 2 baris; baris teratas ''SILOAM'' dengan nilai 28.'

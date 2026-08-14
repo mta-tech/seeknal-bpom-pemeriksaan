@@ -1,0 +1,17 @@
+name: TC_PMR_KOM_KOSMETIK_2025
+scenario_id: TC-PMR-KOM-KOSMETIK-2025
+verification_date: '2026-08-14'
+description: 'Silang komoditi dengan periode; menguji apakah kedua komponen pertanyaan masuk ke filter.'
+turns:
+- prompt: 'berapa pemeriksaan komoditi KOSMETIK pada tahun 2025?'
+  assert_contains:
+  - 'KOSMETIK'
+  - '2025'
+  assert_any_of:
+  -
+    - '6.048'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE komoditi = ''KOSMETIK'' AND tanggal_mulai >= ''2025-01-01'' AND tanggal_mulai < ''2026-01-01'';
+    
+    HASIL DB 14Agu2026 = 6.048. DUA FILTER SEKALIGUS: komoditi dan periode. Keduanya harus muncul di SQL final; komponen yang halamannya tidak dibuka akan hilang dari filter secara senyap. NILAI KOMODITI: ''KOSMETIK'' — ejaan domain ini, tidak berlaku di domain lain.'

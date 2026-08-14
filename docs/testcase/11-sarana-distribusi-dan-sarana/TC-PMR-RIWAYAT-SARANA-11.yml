@@ -1,0 +1,17 @@
+name: TC_PMR_RIWAYAT_SARANA_11
+scenario_id: TC-PMR-RIWAYAT-SARANA-11
+verification_date: '2026-08-14'
+description: 'TC-PMR-RIWAYAT-SARANA-11 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Sarana Importir apa saja yang pernah diperiksa?'
+  assert_contains:
+  - 'ABAD DUA SATU MAKMUR'
+  assert_any_of:
+  -
+    - 'ABAD DUA SATU MAKMUR'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select distinct(nama_sarana), klasifikasi_distribusi from mv_pemeriksaan mp where lower(mp.klasifikasi_distribusi) like ''%importir%'';
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 1289 baris; baris teratas ''ABAD DUA SATU MAKMUR''.'

@@ -1,0 +1,15 @@
+name: TC_PMR_TUJUAN_LOOKALIKE_1
+scenario_id: TC-PMR-TUJUAN-LOOKALIKE-1
+verification_date: '2026-08-14'
+description: 'TC-PMR-TUJUAN-LOOKALIKE-1 — Kolom mirip di tabel bergrain berbeda; v1 mengajarkan yang salah dan tidak mengajarkan yang benar.'
+turns:
+- prompt: 'tampilkan jumlah pemeriksaan per tujuan'
+  assert_contains: []
+  assert_any_of:
+  -
+    - '200.660'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    -- BENAR: dari tabel fakta SELECT tujuan_pemeriksaan, COUNT(*) AS jumlah FROM mv_pemeriksaan WHERE tujuan_pemeriksaan IS NOT NULL GROUP BY 1 ORDER BY 2 DESC; -- SALAH: dari tabel petugas, menghitung PENUGASAN SELECT tujuan, COUNT(*) FROM mv_pemeriksaan_petugas GROUP BY 1 ORDER BY 2 DESC; -- bukti grain tabel petugas SELECT COUNT(*) AS baris, COUNT(DISTINCT id_pemeriksaan) AS pemeriksaan_unik FROM mv_pemeriksaan_petugas; SQL BENAR: GROUP BY tujuan_pemeriksaan pada `mv_pemeriksaan` — nilai terbanyak ''PEMERIKSAAN RUTIN'' = 200.660. SQL SALAH: GROUP BY tujuan pada `mv_pemeriksaan_petugas`. Tabel itu memuat 582.021 baris untuk 257.522 pemeriksaan unik — sekitar dua baris per pemeriksaan, karena satu pemeriksaan dikerjakan beberapa petugas. Hasilnya menghitung PENUGASAN, bukan pemeriksaan, dan melebihkan sekitar dua kali lipat tanpa terlihat aneh. EMPAT;
+    
+    KOLOM BERNAMA MIRIP: `mv_pemeriksaan.tujuan_pemeriksaan` (benar), `mv_pemeriksaan_agg.tujuan_pemeriksaan` (kubus, perlu aturan periode_type), `mv_pemeriksaan_petugas.tujuan` (penugasan), `mv_kriteria_pemeriksaan.tujuan` (checklist). KENAPA MUDAH SALAH: v1 tidak mengajarkan kolom yang benar TETAPI sudah mengajarkan yang salah — halaman petugas memuat contoh GROUP BY tujuan. Jadi satu-satunya rute yang tersedia adalah rute yang keliru.'

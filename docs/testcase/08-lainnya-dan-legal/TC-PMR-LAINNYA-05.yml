@@ -1,0 +1,17 @@
+name: TC_PMR_LAINNYA_05
+scenario_id: TC-PMR-LAINNYA-05
+verification_date: '2026-08-14'
+description: 'TC-PMR-LAINNYA-05 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan hasil tingkat kekritisan berdasarkan klasifikasi dan tujuan pemeriksaan'
+  assert_contains:
+  - 'Bahan Baku Obat'
+  assert_any_of:
+  -
+    - '1'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mkp.klasifikasi, mkp.tujuan, mkp.tx_criteria, count(*) from mv_kriteria_pemeriksaan mkp group by 1, 2, 3 order by 1, 2, 3;
+    
+    DATA YANG DITANYA: mv_kriteria_pemeriksaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 53 baris; baris teratas ''Bahan Baku Obat'' dengan nilai 1.'

@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_PRODUKSI_08
+scenario_id: TC-PMR-SARANA-PRODUKSI-08
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-PRODUKSI-08 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Dari seluruh UPT, sarana produksi MD dengan jenis pangan apa yang paling banyak TMK di tahun 2025?'
+  assert_contains:
+  - 'Air Minum Dalam Kemasan'
+  assert_any_of:
+  -
+    - '353'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mpjp.jenis_pangan_name, count(*) from mv_pemeriksaan_jenis_pangan mpjp join mv_pemeriksaan mp on mpjp.id_pemeriksaan = mp.id where lower(mp.jenis_sarana) like ''%pangan md%'' and lower(mp.sarana) = ''produksi'' and lower(mp.kesimpulan) = ''tmk'' and extract(year from mp.tanggal_selesai) = 2025 group by 1 order by 2 desc limit 10;
+    
+    DATA YANG DITANYA: mv_pemeriksaan_jenis_pangan + mv_pemeriksaan + mp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 10 baris; baris teratas ''Air Minum Dalam Kemasan'' dengan nilai 353.'

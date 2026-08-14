@@ -1,0 +1,17 @@
+name: TC_PMR_X_42263
+scenario_id: TC-PMR-X-42263
+verification_date: '2026-08-14'
+description: 'Silang dua kolom berkode; menguji resolusi dua konsep sekaligus.'
+turns:
+- prompt: 'berapa pemeriksaan KOSMETIK dengan kesimpulan TMK?'
+  assert_contains:
+  - 'KOSMETIK'
+  - 'TMK'
+  assert_any_of:
+  -
+    - '11.735'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE komoditi = ''KOSMETIK'' AND kesimpulan = ''TMK'';
+    
+    HASIL DB 14Agu2026 = 11.735. DUA KOLOM BERKODE: `komoditi` = ''KOSMETIK'' dan `kesimpulan` = ''TMK''. Keduanya nilai persis dari data. Bila kolom vonis termasuk di sini, ingat bahwa gradasi dicocokkan dengan pola awalan bila pertanyaannya menyebut keluarga, bukan satu tingkat tertentu.'

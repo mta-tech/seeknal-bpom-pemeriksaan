@@ -1,0 +1,16 @@
+name: TC_PMR_DRAFT_1
+scenario_id: TC-PMR-DRAFT-1
+verification_date: '2026-08-14'
+description: 'TC-PMR-DRAFT-1 — Tanggal kosong adalah keadaan alur kerja; filter periode membuang draft secara senyap.'
+turns:
+- prompt: 'berapa total berkas pemeriksaan yang masuk ke sistem?'
+  assert_contains: []
+  assert_any_of:
+  -
+    - '947'
+    - 'draft|belum'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    -- baris tanpa tanggal kegiatan SELECT COUNT(*) FROM mv_pemeriksaan WHERE tanggal_mulai IS NULL; -- statusnya apa SELECT status, COUNT(*) FROM mv_pemeriksaan WHERE tanggal_mulai IS NULL GROUP BY 1 ORDER BY 2 DESC; -- dua basis hitung yang berbeda SELECT COUNT(*) FROM mv_pemeriksaan WHERE tanggal_mulai >= ''2025-01-01'' AND tanggal_mulai < ''2026-01-01''; SELECT COUNT(*) FROM mv_pemeriksaan WHERE tanggal_input >= ''2025-01-01'' AND tanggal_input < ''2026-01-01'';
+    
+    JEBAKAN: filter periode berbasis `tanggal_mulai` MEMBUANG 947 baris secara diam-diam. Baris itu bukan acak — 934 di antaranya berstatus DRAFT, yaitu berkas yang dibuat tetapi pemeriksaannya belum dicatat sehingga belum punya tanggal kegiatan. Semuanya punya `tanggal_input`. MANA YANG BENAR tergantung pertanyaan: ''berapa pemeriksaan tahun X'' -> pakai tanggal_mulai, draft memang belum jadi kegiatan. ''berapa berkas yang masuk'' -> pakai tanggal_input, draft ikut. KENAPA MUDAH SALAH: v1 menyebut bahwa kolom tanggal punya baris kosong, tetapi TIDAK menghubungkannya dengan status draft — sehingga pilihan itu tidak pernah diambil secara sadar.'

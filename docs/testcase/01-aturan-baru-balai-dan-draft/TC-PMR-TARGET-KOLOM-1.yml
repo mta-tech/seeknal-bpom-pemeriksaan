@@ -1,0 +1,16 @@
+name: TC_PMR_TARGET_KOLOM_1
+scenario_id: TC-PMR-TARGET-KOLOM-1
+verification_date: '2026-08-14'
+description: 'TC-PMR-TARGET-KOLOM-1 — Domain ini punya dua kolom target yang dipilih menurut rantai sarana.'
+turns:
+- prompt: 'berapa target pemeriksaan sarana produksi nasional?'
+  assert_contains:
+  - 'produksi'
+  assert_any_of:
+  -
+    - '6.000'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT SUM(target_sarana_produksi) FROM target_balai = 6.000. Bandingkan `target_sarana_distribusi` = 34.083 — kolom berbeda, angka berbeda, keduanya nyata.;
+    
+    KOLOM FILTER: TUJUH kolom target tersedia — target_penandaan, target_pengawasan, target_pengujian, target_pengujian_pangan, target_pengujian_pangan_fortifikasi, target_sarana_distribusi, target_sarana_produksi. Domain ini memakai DUA: `target_sarana_produksi` dan `target_sarana_distribusi`, dipilih menurut rantai yang ditanya. Bila pertanyaan tidak menyebut rantainya, klarifikasi dulu; menjumlahkan keduanya hanya benar bila yang diminta memang total sarana. GRAIN: 1 baris = 1 balai x 1 komoditi x 1 tahun. CAKUPAN TAHUN: hanya 2024. KENAPA MUDAH SALAH: v1 menyebut nama tabel lalu berhenti.'

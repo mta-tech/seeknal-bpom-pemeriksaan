@@ -1,0 +1,17 @@
+name: TC_PMR_JENIS_SAR_395_2025
+scenario_id: TC-PMR-JENIS_SAR-395-2025
+verification_date: '2026-08-14'
+description: 'Silang `jenis_sarana` dengan periode; menguji kelengkapan filter dari pertanyaan majemuk.'
+turns:
+- prompt: 'berapa pemeriksaan dengan jenis sarana PANGAN MD pada tahun 2025?'
+  assert_contains:
+  - 'PANGAN MD'
+  - '2025'
+  assert_any_of:
+  -
+    - '4.417'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE jenis_sarana = ''PANGAN MD'' AND tanggal_mulai >= ''2025-01-01'' AND tanggal_mulai < ''2026-01-01'';
+    
+    HASIL DB 14Agu2026 = 4.417. KOLOM: `jenis_sarana` di `mv_pemeriksaan`. NILAI FILTER ''PANGAN MD'' diambil apa adanya dari data. DUA KOMPONEN: nilai kode dan periode — komponen yang halamannya tidak dibuka akan hilang dari filter secara senyap.'

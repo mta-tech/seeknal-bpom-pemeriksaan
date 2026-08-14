@@ -1,0 +1,17 @@
+name: TC_PMR_RIWAYAT_SARANA_01
+scenario_id: TC-PMR-RIWAYAT-SARANA-01
+verification_date: '2026-08-14'
+description: 'TC-PMR-RIWAYAT-SARANA-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'bagaimana riwayat pemeriksaan sarana alfamart dalam periode tahun 2024?'
+  assert_contains:
+  - 'ALFAMART'
+  assert_any_of:
+  -
+    - '3'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_sarana, lower(sarana), lower(komoditi), tujuan_pemeriksaan, kesimpulan, count(*) FROM mv_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2024 AND LOWER(nama_sarana) LIKE ''%alfamart%'' GROUP BY nama_sarana , lower(sarana) , lower(komoditi) , tujuan_pemeriksaan , kesimpulan;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + tanggal_mulai. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 587 baris; baris teratas ''ALFAMART'' dengan nilai 3.'

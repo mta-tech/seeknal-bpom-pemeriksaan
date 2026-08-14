@@ -1,0 +1,17 @@
+name: TC_PMR_LAINNYA_03
+scenario_id: TC-PMR-LAINNYA-03
+verification_date: '2026-08-14'
+description: 'TC-PMR-LAINNYA-03 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Riwayat kepatuhan CPOB dari Soho Industri Pharmasi dalam periode 2 tahun pengawasan'
+  assert_contains:
+  - 'SOHO INDUSTRI PHARMASI'
+  assert_any_of:
+  -
+    - 'SOHO INDUSTRI PHARMASI'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mp.tanggal_mulai, nama_sarana, kabupaten_kota, mp.tingkat_pemenuhan_cpob from mv_pemeriksaan mp where mp.tingkat_pemenuhan_cpob is not null and status in (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') and lower(nama_sarana) like ''%soho industri%'' order by 1, 2, 3;
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 12 baris; baris teratas ''SOHO INDUSTRI PHARMASI''.'

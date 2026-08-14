@@ -1,0 +1,16 @@
+name: TC_PMR_KATEGORI_BEKU_1
+scenario_id: TC-PMR-KATEGORI-BEKU-1
+verification_date: '2026-08-14'
+description: 'TC-PMR-KATEGORI-BEKU-1 — ETL tabel kategori berhenti; tren antar tahun akan menampilkan penurunan palsu.'
+turns:
+- prompt: 'kategori temuan apa yang paling banyak ditemukan tahun 2026?'
+  assert_contains:
+  - '2026'
+  assert_any_of:
+  -
+    - 'tidak lengkap|tidak tercakup|keterbatasan|belum diperbarui|tidak tersedia|ETL|sebagian kecil'
+  tolerance_pct: 0
+  note: 'SQL LENGKAP:
+    -- stempel sync tabel kategori versus tabel lain SELECT max(sync)::date FROM mv_pemeriksaan_kategori_temuan; SELECT max(sync)::date FROM mv_pemeriksaan_temuan; -- cakupan per bulan: porsi temuan yang punya baris kategori SELECT to_char(p.tanggal_mulai, ''YYYY-MM'') AS bulan, COUNT(DISTINCT t.id_pemeriksaan) AS bertemuan, COUNT(DISTINCT k.id_pemeriksaan) AS ada_kategori FROM mv_pemeriksaan p JOIN mv_pemeriksaan_temuan t ON t.id_pemeriksaan = p.id LEFT JOIN mv_pemeriksaan_kategori_temuan k ON k.id_pemeriksaan = t.id_pemeriksaan WHERE p.tanggal_mulai >= ''2025-07-01'' GROUP BY 1 ORDER BY 1; JAWABAN BENAR = KETERBATASAN DATA, BUKAN PENURUNAN. Tabel `mv_pemeriksaan_kategori_temuan` berhenti diperbarui: stempel sync terakhirnya 2025-11-12, sementara seluruh tabel lain di database ini tersinkron pada hari pengambilan data. Akibatnya temuan periode berjalan hampir tidak punya baris kategori sama sekali. BAHAYA UTAMA bukan angka kosong, melainkan angka yang terlihat masuk akal: perbandingan antar tahun akan menampilkan penurunan tajam yang sebenarnya berasal dari ETL yang berhenti. ALTERNATIF: ambil kategori dari kolom array di tabel temuan induk dan normalisasi sendiri.;
+    
+    KENAPA MUDAH SALAH: v1 tidak memuat peringatan apa pun soal ini. tolerance 0 karena assert tekstual.'

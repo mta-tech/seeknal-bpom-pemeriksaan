@@ -1,0 +1,17 @@
+name: TC_PMR_WILAYAH_PERSEBARAN_03
+scenario_id: TC-PMR-WILAYAH-PERSEBARAN-03
+verification_date: '2026-08-14'
+description: 'TC-PMR-WILAYAH-PERSEBARAN-03 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan tiga temuan/ketidaksesuaian paling sering ditemui di wilayah kerja bbpom di dki jakarta pada triwulan 1 tahun 2025.'
+  assert_contains:
+  - 'BALAI BESAR POM DI JAKARTA'
+  assert_any_of:
+  -
+    - '2'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_upt, provinsi, mpt.tp_kategori, count(*) FROM public.mv_pemeriksaan mp JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE lower(provinsi) LIKE ''%dki jakarta%'' AND mp.tanggal_mulai BETWEEN ''2025-01-01'' AND ''2025-04-01'' AND mp.status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') GROUP BY 1, 2, 3;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 7 baris; baris teratas ''BALAI BESAR POM DI JAKARTA'' dengan nilai 2.'

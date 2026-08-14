@@ -1,0 +1,16 @@
+name: TC_PMR_TUJUAN_PEMERIKSAAN_049
+scenario_id: TC-PMR-TUJUAN-PEMERIKSAAN-049
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `tujuan_pemeriksaan`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan tujuan pemeriksaan INTENSIFIKASI PENGAWASAN PANGAN?'
+  assert_contains:
+  - 'INTENSIFIKASI PENGAWASAN PANGAN'
+  assert_any_of:
+  -
+    - '16.231'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE tujuan_pemeriksaan = ''INTENSIFIKASI PENGAWASAN PANGAN'';
+    
+    HASIL DB 14Agu2026 = 16.231. KOLOM: `tujuan_pemeriksaan` di `mv_pemeriksaan`. NILAI FILTER: ''INTENSIFIKASI PENGAWASAN PANGAN'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

@@ -1,0 +1,16 @@
+name: TC_PMR_KESIMPULAN_021
+scenario_id: TC-PMR-KESIMPULAN-021
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `kesimpulan`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan kesimpulan NULL?'
+  assert_contains:
+  - 'NULL'
+  assert_any_of:
+  -
+    - '2.949'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE kesimpulan = ''NULL'';
+    
+    HASIL DB 14Agu2026 = 2.949. KOLOM: `kesimpulan` di `mv_pemeriksaan`. NILAI FILTER: ''NULL'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

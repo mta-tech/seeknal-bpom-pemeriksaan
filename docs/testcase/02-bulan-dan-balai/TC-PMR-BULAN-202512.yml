@@ -1,0 +1,16 @@
+name: TC_PMR_BULAN_202512
+scenario_id: TC-PMR-BULAN-202512
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu bulan; menguji pembatasan rentang tanggal yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan pada bulan 2025-12?'
+  assert_contains:
+  - '2025'
+  assert_any_of:
+  -
+    - '1.950'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE tanggal_mulai >= ''2025-12-01'' AND tanggal_mulai < ''2026-01-01'';
+    
+    HASIL DB 14Agu2026 = 1.950. BATAS BULAN: pakai >= awal bulan dan < awal bulan berikutnya. Jangan memakai EXTRACT(MONTH ...) di WHERE — tabel ini tanpa indeks, dan EXTRACT memaksa pemindaian penuh. PERIODE BERJALAN: bila bulan yang ditanya adalah bulan berjalan, sebutkan bahwa datanya belum lengkap.'

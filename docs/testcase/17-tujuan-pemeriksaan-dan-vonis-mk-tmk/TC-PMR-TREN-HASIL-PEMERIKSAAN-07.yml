@@ -1,0 +1,17 @@
+name: TC_PMR_TREN_HASIL_PEMERIKSAAN_07
+scenario_id: TC-PMR-TREN-HASIL-PEMERIKSAAN-07
+verification_date: '2026-08-14'
+description: 'TC-PMR-TREN-HASIL-PEMERIKSAAN-07 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Trend hasil pemeriksaan sarana produksi MD untuk jenis pangan AMDK di UPT Bogor (tahun 2025)'
+  assert_contains:
+  - '2025-06'
+  assert_any_of:
+  -
+    - '2'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    WITH pemeriksaan_amdk AS ( SELECT mp.id, mp.tanggal_mulai, TO_CHAR(mp.tanggal_mulai, ''YYYY-MM'') AS bulan_tahun, mp.nama_upt FROM mv_pemeriksaan mp JOIN mv_pemeriksaan_jenis_pangan mpjp ON mp.id = mpjp.id_pemeriksaan WHERE EXTRACT(YEAR FROM mp.tanggal_mulai) = 2025 AND LOWER(mp.nama_upt) LIKE ''%bogor%'' AND LOWER(mpjp.jenis_pangan_name) LIKE ''%air minum dalam kemasan%'' and mp.sarana = ''PRODUKSI'' ) SELECT pa.bulan_tahun, COUNT(DISTINCT pa.id) AS jumlah_pemeriksaan_amdk FROM pemeriksaan_amdk pa GROUP BY pa.bulan_tahun ORDER BY pa.bulan_tahun;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_jenis_pangan + mp + pemeriksaan_amdk. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 5 baris; baris teratas ''2025-06'' dengan nilai 2.'

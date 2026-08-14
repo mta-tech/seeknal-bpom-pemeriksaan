@@ -1,0 +1,17 @@
+name: TC_PMR_RIWAYAT_SARANA_06
+scenario_id: TC-PMR-RIWAYAT-SARANA-06
+verification_date: '2026-08-14'
+description: 'TC-PMR-RIWAYAT-SARANA-06 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'sarana obat tradisional; suplemen kesehatan; obat kuasi apa saja yang memiliki riwayat pemeriksaan tidak memenuhi ketentuan dalam periode tahun 2025?'
+  assert_contains:
+  - 'PELAYANAN'
+  assert_any_of:
+  -
+    - 'PELAYANAN'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT DISTINCT mp.nama_sarana, mp.sarana, mp.komoditi FROM public.mv_pemeriksaan mp LEFT OUTER JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND (lower(komoditi) LIKE ''%obat%'' OR lower(komoditi) LIKE ''%obat tradisional%'' OR lower(komoditi) LIKE ''%suplemen kesehatan%'') AND lower(kesimpulan) = ''tmk'';
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan + tanggal_mulai. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 4571 baris; baris teratas ''PELAYANAN''.'

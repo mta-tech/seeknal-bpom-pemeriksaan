@@ -1,0 +1,16 @@
+name: TC_PMR_LEGAL_013
+scenario_id: TC-PMR-LEGAL-013
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `legal`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan legal PT?'
+  assert_contains:
+  - 'PT'
+  assert_any_of:
+  -
+    - '31.246'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE legal = ''PT'';
+    
+    HASIL DB 14Agu2026 = 31.246. KOLOM: `legal` di `mv_pemeriksaan`. NILAI FILTER: ''PT'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

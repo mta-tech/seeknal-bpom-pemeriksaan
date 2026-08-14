@@ -1,0 +1,17 @@
+name: TC_PMR_RIWAYAT_SARANA_04
+scenario_id: TC-PMR-RIWAYAT-SARANA-04
+verification_date: '2026-08-14'
+description: 'TC-PMR-RIWAYAT-SARANA-04 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'sarana produksi kosmetik apa saja yang memiliki riwayat pemeriksaan tidak memenuhi ketentuan dalam periode tahun 2024?'
+  assert_contains:
+  - 'SUKSES ABADI FARMINDO'
+  assert_any_of:
+  -
+    - 'SUKSES ABADI FARMINDO'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_sarana FROM mv_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2024 AND lower(sarana) ILIKE ''produksi'' AND kesimpulan = ''TMK'';
+    
+    DATA YANG DITANYA: mv_pemeriksaan + tanggal_mulai. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 2393 baris; baris teratas ''SUKSES ABADI FARMINDO''.'

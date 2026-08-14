@@ -1,0 +1,16 @@
+name: TC_PMR_TUJUAN_PEMERIKSAAN_054
+scenario_id: TC-PMR-TUJUAN-PEMERIKSAAN-054
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `tujuan_pemeriksaan`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan tujuan pemeriksaan IDUL FITRI?'
+  assert_contains:
+  - 'IDUL FITRI'
+  assert_any_of:
+  -
+    - '3.925'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE tujuan_pemeriksaan = ''IDUL FITRI'';
+    
+    HASIL DB 14Agu2026 = 3.925. KOLOM: `tujuan_pemeriksaan` di `mv_pemeriksaan`. NILAI FILTER: ''IDUL FITRI'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

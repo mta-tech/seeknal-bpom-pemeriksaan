@@ -1,0 +1,16 @@
+name: TC_PMR_STATUS_LABEL_058
+scenario_id: TC-PMR-STATUS-LABEL-058
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `status_label`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan status label SELESAI?'
+  assert_contains:
+  - 'SELESAI'
+  assert_any_of:
+  -
+    - '28.863'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE status_label = ''SELESAI'';
+    
+    HASIL DB 14Agu2026 = 28.863. KOLOM: `status_label` di `mv_pemeriksaan`. NILAI FILTER: ''SELESAI'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

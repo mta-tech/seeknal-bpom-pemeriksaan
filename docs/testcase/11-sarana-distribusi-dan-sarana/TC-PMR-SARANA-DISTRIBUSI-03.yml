@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_DISTRIBUSI_03
+scenario_id: TC-PMR-SARANA-DISTRIBUSI-03
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-DISTRIBUSI-03 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'apa temuan/ketidaksesuaian yang paling banyak ditemukan pada seluruh sarana distribusi tmk di wilayah kerja balai pom di payakumbuh?'
+  assert_contains:
+  - 'KOTA PAYAKUMBUH'
+  assert_any_of:
+  -
+    - '366'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT kabupaten_kota, mp.sarana, mpt.tp_kategori, count(*) FROM public.mv_pemeriksaan mp JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE lower(kabupaten_kota) LIKE ''%payakumbuh%'' AND lower(mp.sarana) LIKE ''%distribusi%'' AND mp.status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') GROUP BY 1, 2, 3 ORDER BY 4 DESC;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 8 baris; baris teratas ''KOTA PAYAKUMBUH'' dengan nilai 366.'

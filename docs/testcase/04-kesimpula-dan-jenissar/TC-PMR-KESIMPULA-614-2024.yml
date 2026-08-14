@@ -1,0 +1,19 @@
+name: TC_PMR_KESIMPULA_614_2024
+scenario_id: TC-PMR-KESIMPULA-614-2024
+verification_date: '2026-08-14'
+description: 'Silang `kesimpulan` dengan periode; menguji kelengkapan filter dari pertanyaan majemuk.'
+turns:
+- prompt: 'berapa pemeriksaan dengan kesimpulan NULL pada tahun 2024?'
+  assert_contains:
+  - 'NULL'
+  - '2024'
+  assert_any_of:
+  -
+    - '272'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE kesimpulan = ''NULL'' AND tanggal_mulai >= ''2024-01-01'' AND tanggal_mulai < ''2025-01-01'';
+    
+    HASIL DB 14Agu2026 = 272.
+    
+    KOLOM: `kesimpulan` di `mv_pemeriksaan`. NILAI FILTER ''NULL'' diambil apa adanya dari data. DUA KOMPONEN: nilai kode dan periode — komponen yang halamannya tidak dibuka akan hilang dari filter secara senyap.'

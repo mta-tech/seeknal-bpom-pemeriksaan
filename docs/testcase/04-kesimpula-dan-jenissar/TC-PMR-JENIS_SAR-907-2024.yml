@@ -1,0 +1,17 @@
+name: TC_PMR_JENIS_SAR_907_2024
+scenario_id: TC-PMR-JENIS_SAR-907-2024
+verification_date: '2026-08-14'
+description: 'Silang `jenis_sarana` dengan periode; menguji kelengkapan filter dari pertanyaan majemuk.'
+turns:
+- prompt: 'berapa pemeriksaan dengan jenis sarana APOTEK pada tahun 2024?'
+  assert_contains:
+  - 'APOTEK'
+  - '2024'
+  assert_any_of:
+  -
+    - '4.889'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE jenis_sarana = ''APOTEK'' AND tanggal_mulai >= ''2024-01-01'' AND tanggal_mulai < ''2025-01-01'';
+    
+    HASIL DB 14Agu2026 = 4.889. KOLOM: `jenis_sarana` di `mv_pemeriksaan`. NILAI FILTER ''APOTEK'' diambil apa adanya dari data. DUA KOMPONEN: nilai kode dan periode — komponen yang halamannya tidak dibuka akan hilang dari filter secara senyap.'

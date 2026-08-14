@@ -1,0 +1,17 @@
+name: TC_PMR_VONIS_MK_TMK_05
+scenario_id: TC-PMR-VONIS-MK-TMK-05
+verification_date: '2026-08-14'
+description: 'TC-PMR-VONIS-MK-TMK-05 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan total nilai keekonomian produk tmk (tie, rusak kedaluwarsa) di balai pom di batam pada tahun 2025.'
+  assert_contains:
+  - 'ED (Expire Date / Kedaluwarsa)'
+  assert_any_of:
+  -
+    - 'ED (Expire Date / Kedaluwarsa)'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mpt.tp_kategori, sum(mpt.tp_harga_total) FROM public.mv_pemeriksaan mp LEFT OUTER JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE lower(mp.nama_upt) LIKE ''%pom di batam%'' AND lower(kesimpulan) = ''tmk'' AND status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') AND EXTRACT(YEAR FROM tanggal_mulai) = 2025 GROUP BY 1;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan + tanggal_mulai. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 12 baris; baris teratas ''ED (Expire Date / Kedaluwarsa)''.'

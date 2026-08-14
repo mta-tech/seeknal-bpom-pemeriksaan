@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_PRODUKSI_10
+scenario_id: TC-PMR-SARANA-PRODUKSI-10
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-PRODUKSI-10 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan profil kepatuhan pelaku usaha sarana produksi dan distribusi per komoditi untuk tahun 2025'
+  assert_contains:
+  - 'DISTRIBUSI'
+  assert_any_of:
+  -
+    - '2'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select sarana, mp.komoditi, mp.kesimpulan, count(*) from mv_pemeriksaan mp where extract(year from mp.tanggal_mulai) = 2025 and lower(mp.sarana) in (''produksi'', ''distribusi'') group by 1, 2, 3;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 50 baris; baris teratas ''DISTRIBUSI'' dengan nilai 2.'

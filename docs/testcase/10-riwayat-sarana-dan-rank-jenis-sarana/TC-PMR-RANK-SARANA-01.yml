@@ -1,0 +1,16 @@
+name: TC_PMR_RANK_SARANA_01
+scenario_id: TC-PMR-RANK-SARANA-01
+verification_date: '2026-08-14'
+description: 'Peringkat nilai `sarana`; menguji pengeluaran penanda kosong dari peringkat.'
+turns:
+- prompt: 'sarana apa yang paling banyak pada pemeriksaan?'
+  assert_contains:
+  - 'DISTRIBUSI'
+  assert_any_of:
+  -
+    - '141.509'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT sarana, COUNT(*) AS jumlah FROM mv_pemeriksaan WHERE sarana IS NOT NULL AND btrim(sarana) <> '''' GROUP BY 1 ORDER BY 2 DESC LIMIT 5;
+    
+    HASIL DB 14Agu2026: teratas ''DISTRIBUSI'' dengan 141.509. KOLOM: `sarana` di `mv_pemeriksaan`. Baris dengan nilai kosong dikeluarkan lewat `btrim(sarana) <> ''''` — penanda kosong bukan kategori dan tidak boleh ikut diperingkat. Sebutkan porsi yang dikeluarkan bila besar.'

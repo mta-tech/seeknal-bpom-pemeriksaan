@@ -1,0 +1,17 @@
+name: TC_PMR_TEMUAN_PRODUK_04
+scenario_id: TC-PMR-TEMUAN-PRODUK-04
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-04 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan profil temuan ketidaksesuaian berdasarkan hasil pemeriksaan pada tahun 2025.'
+  assert_contains:
+  - 'Aspek CPOB / CPOTB / CPMB'
+  assert_any_of:
+  -
+    - '28'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mpt.tp_kategori, count(*) AS jumlah_pemeriksaan, sum(mpt.tp_jml_temuan) AS jumlah_temuan, sum(mpt.tp_harga_total) AS nilai_temuan FROM public.mv_pemeriksaan mp LEFT OUTER JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE lower(kesimpulan) = ''tmk'' AND status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') AND EXTRACT(YEAR FROM tanggal_mulai) = 2025 GROUP BY 1;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan + tanggal_mulai. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 71 baris; baris teratas ''Aspek CPOB / CPOTB / CPMB'' dengan nilai 28.'

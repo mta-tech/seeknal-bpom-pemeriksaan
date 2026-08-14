@@ -1,0 +1,17 @@
+name: TC_PMR_TEMUAN_PRODUK_01
+scenario_id: TC-PMR-TEMUAN-PRODUK-01
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'sarana obat tradisional; suplemen kesehatan; obat kuasi apa saja yang pernah memproduksi dan mengedarkan obat tradisional; suplemen kesehatan; obat kuasi tie dalam periode tahun 2025?'
+  assert_contains:
+  - 'APOTEK EKA FARMA  '
+  assert_any_of:
+  -
+    - 'APOTEK EKA FARMA  '
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.nama_sarana, mpt.product_name, mp.sarana, mp.komoditi, mpt.tp_kategori FROM public.mv_pemeriksaan mp LEFT OUTER JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND (lower(komoditi) LIKE ''%obat%'' OR lower(komoditi) LIKE ''%obat tradisional%'' OR lower(komoditi) LIKE ''%suplemen kesehatan%'') AND lower(tp_kategori) LIKE ''%tie%'';
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan + tanggal_mulai. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 26549 baris; baris teratas ''APOTEK EKA FARMA ''.'

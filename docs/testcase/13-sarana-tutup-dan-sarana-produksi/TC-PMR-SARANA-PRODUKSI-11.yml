@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_PRODUKSI_11
+scenario_id: TC-PMR-SARANA-PRODUKSI-11
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-PRODUKSI-11 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan sarana produksi TMK pada tiga tahun terakhir di wilayah kerja Balai POM di Pangkalpinang beserta tindak lanjut masing-masing sarana'
+  assert_contains:
+  - 'BALAI POM DI PANGKALPINANG'
+  assert_any_of:
+  -
+    - 'BALAI POM DI PANGKALPINANG'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.tanggal_input, mp.nama_upt, mp.kesimpulan, mp.tl_saran_names FROM mv_pemeriksaan mp WHERE LOWER(mp.sarana) LIKE ''%produksi%'' AND mp.tanggal_input >= (CURRENT_DATE - INTERVAL ''3 years'') AND LOWER(mp.nama_upt) LIKE ''%pangkalpinang%'' AND mp.kesimpulan = ''TMK'' ORDER BY 1;
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 23 baris; baris teratas ''BALAI POM DI PANGKALPINANG''.'

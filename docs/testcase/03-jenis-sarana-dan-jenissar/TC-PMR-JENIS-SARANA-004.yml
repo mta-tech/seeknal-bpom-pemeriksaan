@@ -1,0 +1,16 @@
+name: TC_PMR_JENIS_SARANA_004
+scenario_id: TC-PMR-JENIS-SARANA-004
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `jenis_sarana`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan jenis sarana PUSAT KESEHATAN MASYARAKAT (PKM)?'
+  assert_contains:
+  - 'PUSAT KESEHATAN MASYARAKAT (PKM)'
+  assert_any_of:
+  -
+    - '19.759'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE jenis_sarana = ''PUSAT KESEHATAN MASYARAKAT (PKM)'';
+    
+    HASIL DB 14Agu2026 = 19.759. KOLOM: `jenis_sarana` di `mv_pemeriksaan`. NILAI FILTER: ''PUSAT KESEHATAN MASYARAKAT (PKM)'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

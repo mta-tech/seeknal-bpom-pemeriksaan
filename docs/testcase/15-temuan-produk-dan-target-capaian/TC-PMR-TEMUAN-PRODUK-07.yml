@@ -1,0 +1,17 @@
+name: TC_PMR_TEMUAN_PRODUK_07
+scenario_id: TC-PMR-TEMUAN-PRODUK-07
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-07 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan total temuan produk dan total nilai temuan pada kategori ''lainnya''.'
+  assert_contains:
+  - 'ED (Expire Date / Kedaluwarsa), Lain - Lain'
+  assert_any_of:
+  -
+    - 'ED (Expire Date / Kedaluwarsa), Lain - Lain'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT tp_kategori, SUM(tp_jml_temuan) AS total_temuan_produk, SUM(tp_harga_total) AS total_nilai_temuan FROM mv_pemeriksaan_temuan WHERE LOWER(tp_kategori) LIKE ''%lain - lain%'' GROUP BY 1;
+    
+    DATA YANG DITANYA: mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 7 baris; baris teratas ''ED (Expire Date / Kedaluwarsa), Lain - Lain''.'

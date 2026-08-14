@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_PRODUKSI_05
+scenario_id: TC-PMR-SARANA-PRODUKSI-05
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-PRODUKSI-05 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'sarana produksi kosmetik apa saja yang pernah memproduksi dan mengedarkan kosmetik tie dalam periode tahun 2025?'
+  assert_contains:
+  - 'PRODUKSI'
+  assert_any_of:
+  -
+    - 'PRODUKSI'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.sarana, mp.nama_sarana, mpt.product_name, mp.tanggal_mulai, mpt.tp_kategori FROM public.mv_pemeriksaan mp LEFT OUTER JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND lower(komoditi) like ''%kosmetik%'' AND lower(sarana) like ''%produksi%'' AND lower(mpt.tp_kategori) LIKE ''%tie%'' AND status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'');
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_kategori_temuan + mp. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 77 baris; baris teratas ''PRODUKSI''.'

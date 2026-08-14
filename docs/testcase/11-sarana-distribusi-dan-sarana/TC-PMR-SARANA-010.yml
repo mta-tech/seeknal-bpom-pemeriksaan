@@ -1,0 +1,16 @@
+name: TC_PMR_SARANA_010
+scenario_id: TC-PMR-SARANA-010
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `sarana`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan sarana PRODUKSI?'
+  assert_contains:
+  - 'PRODUKSI'
+  assert_any_of:
+  -
+    - '43.355'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE sarana = ''PRODUKSI'';
+    
+    HASIL DB 14Agu2026 = 43.355. KOLOM: `sarana` di `mv_pemeriksaan`. NILAI FILTER: ''PRODUKSI'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

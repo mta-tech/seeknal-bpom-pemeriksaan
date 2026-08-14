@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_PRODUKSI_01
+scenario_id: TC-PMR-SARANA-PRODUKSI-01
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-PRODUKSI-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan jumlah sarana produksi kategori mk dan tmk per komoditi, periode, wilayah, dan cakupan upt.'
+  assert_contains:
+  - 'bahan baku obat'
+  assert_any_of:
+  -
+    - '1'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT lower(komoditi), DATE(tanggal_mulai) AS periode, provinsi, nama_upt, kesimpulan, COUNT(*) AS jumlah FROM mv_pemeriksaan WHERE lower(sarana) LIKE ''%produksi%'' GROUP BY lower(komoditi), periode, provinsi, nama_upt, kesimpulan;
+    
+    DATA YANG DITANYA: mp + mv_pemeriksaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 29909 baris; baris teratas ''bahan baku obat'' dengan nilai 1.'

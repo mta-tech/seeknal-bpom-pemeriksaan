@@ -1,0 +1,16 @@
+name: TC_PMR_LEGAL_018
+scenario_id: TC-PMR-LEGAL-018
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `legal`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan legal TOKO OBAT?'
+  assert_contains:
+  - 'TOKO OBAT'
+  assert_any_of:
+  -
+    - '8.905'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE legal = ''TOKO OBAT'';
+    
+    HASIL DB 14Agu2026 = 8.905. KOLOM: `legal` di `mv_pemeriksaan`. NILAI FILTER: ''TOKO OBAT'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

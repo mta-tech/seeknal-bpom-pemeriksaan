@@ -1,0 +1,17 @@
+name: TC_PMR_X_38506
+scenario_id: TC-PMR-X-38506
+verification_date: '2026-08-14'
+description: 'Silang dua kolom berkode; menguji resolusi dua konsep sekaligus.'
+turns:
+- prompt: 'berapa pemeriksaan OBAT TRADISIONAL dengan kesimpulan TMK?'
+  assert_contains:
+  - 'OBAT TRADISIONAL'
+  - 'TMK'
+  assert_any_of:
+  -
+    - '6.284'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE komoditi = ''OBAT TRADISIONAL'' AND kesimpulan = ''TMK'';
+    
+    HASIL DB 14Agu2026 = 6.284. DUA KOLOM BERKODE: `komoditi` = ''OBAT TRADISIONAL'' dan `kesimpulan` = ''TMK''. Keduanya nilai persis dari data. Bila kolom vonis termasuk di sini, ingat bahwa gradasi dicocokkan dengan pola awalan bila pertanyaannya menyebut keluarga, bukan satu tingkat tertentu.'

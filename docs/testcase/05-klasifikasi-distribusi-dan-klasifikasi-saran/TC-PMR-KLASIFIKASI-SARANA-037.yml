@@ -1,0 +1,16 @@
+name: TC_PMR_KLASIFIKASI_SARANA_037
+scenario_id: TC-PMR-KLASIFIKASI-SARANA-037
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `klasifikasi_sarana`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan klasifikasi sarana SARANA RITEL TRADISIONAL?'
+  assert_contains:
+  - 'SARANA RITEL TRADISIONAL'
+  assert_any_of:
+  -
+    - '24.310'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE klasifikasi_sarana = ''SARANA RITEL TRADISIONAL'';
+    
+    HASIL DB 14Agu2026 = 24.310. KOLOM: `klasifikasi_sarana` di `mv_pemeriksaan`. NILAI FILTER: ''SARANA RITEL TRADISIONAL'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

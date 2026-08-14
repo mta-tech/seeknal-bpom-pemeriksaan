@@ -1,0 +1,17 @@
+name: TC_PMR_BALAI_9137_2025
+scenario_id: TC-PMR-BALAI-9137-2025
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu balai pada satu tahun; menguji normalisasi nama balai dan filter periode.'
+turns:
+- prompt: 'berapa pemeriksaan yang dilaporkan BALAI BESAR POM DI SEMARANG pada tahun 2025?'
+  assert_contains:
+  - 'BALAI BESAR POM DI SEMARANG'
+  - '2025'
+  assert_any_of:
+  -
+    - '1.167'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE btrim(nama_upt) = ''BALAI BESAR POM DI SEMARANG'' AND tanggal_mulai >= ''2025-01-01'' AND tanggal_mulai < ''2026-01-01'';
+    
+    HASIL DB 14Agu2026 = 1.167. NORMALISASI WAJIB: `btrim(nama_upt)` — sebagian nilai nama balai tersimpan dengan spasi menempel di ujung, sehingga filter kesamaan persis tanpa btrim bisa mengembalikan nol baris tanpa pesan kesalahan. DUA FILTER: balai dan periode; keduanya harus muncul di SQL final.'

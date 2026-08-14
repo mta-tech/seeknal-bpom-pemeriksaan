@@ -1,0 +1,18 @@
+name: TC_PMR_KOMODITI_031
+scenario_id: TC-PMR-KOMODITI-031
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `komoditi`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan komoditi OBAT OBAT TERTENTU?'
+  assert_contains:
+  - 'OBAT OBAT TERTENTU'
+  assert_any_of:
+  -
+    - '176'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE komoditi = ''OBAT OBAT TERTENTU'';
+    
+    HASIL DB 14Agu2026 = 176.
+    
+    KOLOM: `komoditi` di `mv_pemeriksaan`. NILAI FILTER: ''OBAT OBAT TERTENTU'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

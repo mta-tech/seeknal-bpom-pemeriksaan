@@ -1,0 +1,16 @@
+name: TC_PMR_KLASIFIKASI_DISTRIBUSI_044
+scenario_id: TC-PMR-KLASIFIKASI-DISTRIBUSI-044
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `klasifikasi_distribusi`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan klasifikasi distribusi TOKO OBAT / SWALAYAN?'
+  assert_contains:
+  - 'TOKO OBAT / SWALAYAN'
+  assert_any_of:
+  -
+    - '4.510'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE klasifikasi_distribusi = ''TOKO OBAT / SWALAYAN'';
+    
+    HASIL DB 14Agu2026 = 4.510. KOLOM: `klasifikasi_distribusi` di `mv_pemeriksaan`. NILAI FILTER: ''TOKO OBAT / SWALAYAN'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

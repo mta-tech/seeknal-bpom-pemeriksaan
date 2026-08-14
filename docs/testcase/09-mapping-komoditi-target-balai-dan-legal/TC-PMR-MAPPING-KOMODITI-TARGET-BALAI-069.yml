@@ -1,0 +1,16 @@
+name: TC_PMR_MAPPING_KOMODITI_TARGET_BALAI_069
+scenario_id: TC-PMR-MAPPING-KOMODITI-TARGET-BALAI-069
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `mapping_komoditi_target_balai`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan mapping komoditi target balai OBAT?'
+  assert_contains:
+  - 'OBAT'
+  assert_any_of:
+  -
+    - '83.769'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE mapping_komoditi_target_balai = ''OBAT'';
+    
+    HASIL DB 14Agu2026 = 83.769. KOLOM: `mapping_komoditi_target_balai` di `mv_pemeriksaan`. NILAI FILTER: ''OBAT'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

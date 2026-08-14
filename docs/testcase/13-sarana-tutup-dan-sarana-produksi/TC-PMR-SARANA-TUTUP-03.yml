@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_TUTUP_03
+scenario_id: TC-PMR-SARANA-TUTUP-03
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-TUTUP-03 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan sarana distribusi dan pelayanan yang tutup pada periode tahun 2025'
+  assert_contains:
+  - 'DOS NI ROHA  PT'
+  assert_any_of:
+  -
+    - 'DOS NI ROHA  PT'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_sarana FROM mv_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND lower(sarana) IN (''distribusi'', ''Pelayanan'') AND kesimpulan = ''TTP'';
+    
+    DATA YANG DITANYA: mv_pemeriksaan + tanggal_mulai. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 79 baris; baris teratas ''DOS NI ROHA PT''.'

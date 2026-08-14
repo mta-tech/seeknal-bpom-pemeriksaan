@@ -1,0 +1,17 @@
+name: TC_PMR_TEMUAN_PRODUK_02
+scenario_id: TC-PMR-TEMUAN-PRODUK-02
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-02 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan merek-merek temuan produk kosmetik pada pemeriksaan tahun 2025 diurutkan berdasarkan temuan yang terbanyak?'
+  assert_contains:
+  - 'KOSMETIK'
+  assert_any_of:
+  -
+    - '24'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mpt.product_brands, mp.komoditi, mpt.tp_kategori, count(*) FROM public.mv_pemeriksaan mp JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND LOWER(komoditi) LIKE ''%kosmetik%'' AND mp.status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') GROUP BY 1, 2, 3;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan + tanggal_mulai. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 809 baris; baris teratas ''KOSMETIK'' dengan nilai 24.'

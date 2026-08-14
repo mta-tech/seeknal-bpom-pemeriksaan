@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_DISTRIBUSI_13
+scenario_id: TC-PMR-SARANA-DISTRIBUSI-13
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-DISTRIBUSI-13 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan proporsi klasifikasi sarana peredaran yang diperiksa di Balai POM di Bandung'
+  assert_contains:
+  - 'SARANA GUDANG E-COMMERCE'
+  assert_any_of:
+  -
+    - '9'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mp.klasifikasi_sarana, count(*) from mv_pemeriksaan mp where lower(mp.sarana) = ''distribusi'' and lower(mp.nama_upt) like ''%bandung%'' group by 1;
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 5 baris; baris teratas ''SARANA GUDANG E-COMMERCE'' dengan nilai 9.'

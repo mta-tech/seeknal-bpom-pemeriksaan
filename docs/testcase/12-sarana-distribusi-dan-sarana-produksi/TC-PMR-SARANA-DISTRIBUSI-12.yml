@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_DISTRIBUSI_12
+scenario_id: TC-PMR-SARANA-DISTRIBUSI-12
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-DISTRIBUSI-12 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan jumlah temuan produk tmk (tie, rusak, kedaluwarsa) pada sarana peredaran per wilayah kerja masing-masing upt.'
+  assert_contains:
+  - 'KABUPATEN ACEH BESAR'
+  assert_any_of:
+  -
+    - 'KABUPATEN ACEH BESAR'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.kabupaten_kota, mpt.tp_kategori, sum(mpt.tp_jml_temuan) FROM public.mv_pemeriksaan mp LEFT OUTER JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE lower(mpt.tp_kategori) LIKE ''%lain - lain%'' AND lower(kesimpulan) = ''tmk'' AND lower(mp.sarana) LIKE ''%distribusi%'' AND status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') GROUP BY 1,2;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 388 baris; baris teratas ''KABUPATEN ACEH BESAR''.'

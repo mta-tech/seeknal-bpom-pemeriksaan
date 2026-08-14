@@ -1,0 +1,17 @@
+name: TC_PMR_TREN_HASIL_PEMERIKSAAN_01
+scenario_id: TC-PMR-TREN-HASIL-PEMERIKSAAN-01
+verification_date: '2026-08-14'
+description: 'TC-PMR-TREN-HASIL-PEMERIKSAAN-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'bagaimana tren data hasil pengawasan sarana obat tradisional; suplemen kesehatan; obat kuasi (profil hasil pengawasan) di upt balai besar pom di jakarta dalam periode tahun 2025?'
+  assert_contains:
+  - 'OBAT TRADISIONAL'
+  assert_any_of:
+  -
+    - '7'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select extract(month from tanggal_selesai) as bulan, extract(year from tanggal_selesai) as tahun, komoditi, count(*) as jumlah_pemeriksaan from mv_pemeriksaan where nama_upt = ''BALAI BESAR POM DI JAKARTA'' and lower(komoditi) in (''obat tradisional'', ''suplemen kesehatan'',''obat kuasi'') and extract(year from tanggal_selesai) = 2025 group by extract(month from tanggal_selesai), extract(year from tanggal_selesai), komoditi order by komoditi, extract(month from tanggal_selesai), extract(year from tanggal_selesai);
+    
+    DATA YANG DITANYA: tanggal_selesai + mv_pemeriksaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 23 baris; baris teratas ''OBAT TRADISIONAL'' dengan nilai 7.'

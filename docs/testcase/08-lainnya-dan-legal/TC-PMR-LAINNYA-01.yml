@@ -1,0 +1,19 @@
+name: TC_PMR_LAINNYA_01
+scenario_id: TC-PMR-LAINNYA-01
+verification_date: '2026-08-14'
+description: 'TC-PMR-LAINNYA-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan data profil jenis sarana yang sudah dilakukan pemeriksaan dari tahun 2025'
+  assert_contains:
+  - 'DISTRIBUSI'
+  assert_any_of:
+  -
+    - '3'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT sarana , count(*) FROM mv_pemeriksaan vpb WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2025 GROUP BY 1 LIMIT 5;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 3 baris; baris teratas ''DISTRIBUSI'' dengan nilai 18.857.
+    
+    CATATAN URUTAN: SQL ini mengembalikan banyak baris tanpa ORDER BY. sehingga urutan barisnya TIDAK dijamin. Yang diperiksa adalah CACAH BARIS (3), bukan nilai pada baris tertentu. Bila jawaban perlu diurutkan, sebutkan kolom pengurutnya secara eksplisit.'

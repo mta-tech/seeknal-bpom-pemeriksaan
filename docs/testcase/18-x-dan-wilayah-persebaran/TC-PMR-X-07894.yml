@@ -1,0 +1,17 @@
+name: TC_PMR_X_07894
+scenario_id: TC-PMR-X-07894
+verification_date: '2026-08-14'
+description: 'Silang dua kolom berkode; menguji resolusi dua konsep sekaligus.'
+turns:
+- prompt: 'berapa pemeriksaan PRODUK PANGAN dengan kesimpulan MK?'
+  assert_contains:
+  - 'PRODUK PANGAN'
+  - 'MK'
+  assert_any_of:
+  -
+    - '73.449'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE komoditi = ''PRODUK PANGAN'' AND kesimpulan = ''MK'';
+    
+    HASIL DB 14Agu2026 = 73.449. DUA KOLOM BERKODE: `komoditi` = ''PRODUK PANGAN'' dan `kesimpulan` = ''MK''. Keduanya nilai persis dari data. Bila kolom vonis termasuk di sini, ingat bahwa gradasi dicocokkan dengan pola awalan bila pertanyaannya menyebut keluarga, bukan satu tingkat tertentu.'

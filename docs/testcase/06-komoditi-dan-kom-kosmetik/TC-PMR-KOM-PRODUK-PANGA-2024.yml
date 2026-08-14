@@ -1,0 +1,17 @@
+name: TC_PMR_KOM_PRODUK_PANGA_2024
+scenario_id: TC-PMR-KOM-PRODUK-PANGA-2024
+verification_date: '2026-08-14'
+description: 'Silang komoditi dengan periode; menguji apakah kedua komponen pertanyaan masuk ke filter.'
+turns:
+- prompt: 'berapa pemeriksaan komoditi PRODUK PANGAN pada tahun 2024?'
+  assert_contains:
+  - 'PRODUK PANGAN'
+  - '2024'
+  assert_any_of:
+  -
+    - '19.809'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE komoditi = ''PRODUK PANGAN'' AND tanggal_mulai >= ''2024-01-01'' AND tanggal_mulai < ''2025-01-01'';
+    
+    HASIL DB 14Agu2026 = 19.809. DUA FILTER SEKALIGUS: komoditi dan periode. Keduanya harus muncul di SQL final; komponen yang halamannya tidak dibuka akan hilang dari filter secara senyap. NILAI KOMODITI: ''PRODUK PANGAN'' — ejaan domain ini, tidak berlaku di domain lain.'

@@ -1,0 +1,19 @@
+name: TC_PMR_SARANA_DISTRIBUSI_01
+scenario_id: TC-PMR-SARANA-DISTRIBUSI-01
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-DISTRIBUSI-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan jumlah dan nama sarana distribusi dan pelayanan yang mk/tmk masing-masing upt pada tahun 2025.'
+  assert_contains:
+  - 'distribusi'
+  assert_any_of:
+  -
+    - '4'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT lower(sarana), kesimpulan, COUNT(nama_sarana) FROM mv_pemeriksaan WHERE lower(sarana) IN (''distribusi'', ''pelayanan'') AND kesimpulan IN (''MK'', ''TMK'') AND EXTRACT(YEAR FROM tanggal_mulai) = 2025 GROUP BY lower(sarana), kesimpulan;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan + tanggal_mulai. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 4 baris; baris teratas ''distribusi'' dengan nilai 13.205.
+    
+    CATATAN URUTAN: SQL ini mengembalikan banyak baris tanpa ORDER BY. sehingga urutan barisnya TIDAK dijamin. Yang diperiksa adalah CACAH BARIS (4), bukan nilai pada baris tertentu. Bila jawaban perlu diurutkan, sebutkan kolom pengurutnya secara eksplisit.'

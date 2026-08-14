@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_BELUM_DIPERIKSA_02
+scenario_id: TC-PMR-SARANA-BELUM-DIPERIKSA-02
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-BELUM-DIPERIKSA-02 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'sarana produksi kosmetik apa saja yang belum dilakukan pemeriksaan dalam periode 2 tahun terakhir?'
+  assert_contains:
+  - 'CAPITALINC'
+  assert_any_of:
+  -
+    - 'CAPITALINC'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_sarana, MAX(tanggal_mulai) AS terakhir_diperiksa FROM mv_pemeriksaan WHERE komoditi ILIKE ''%kosmetik%'' AND sarana ILIKE ''produksi'' GROUP BY nama_sarana HAVING COALESCE(MAX(tanggal_mulai), DATE ''-infinity'') < (CURRENT_DATE - INTERVAL ''2 years'') ORDER BY terakhir_diperiksa NULLS FIRST, nama_sarana;
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 612 baris; baris teratas ''CAPITALINC''.'

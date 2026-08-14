@@ -1,0 +1,17 @@
+name: TC_PMR_RIWAYAT_SARANA_07
+scenario_id: TC-PMR-RIWAYAT-SARANA-07
+verification_date: '2026-08-14'
+description: 'TC-PMR-RIWAYAT-SARANA-07 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'sarana produksi kosmetik apa saja yang memiliki riwayat pemeriksaan tidak memenuhi ketentuan dalam periode tahun 2025?'
+  assert_contains:
+  - 'PRODUKSI'
+  assert_any_of:
+  -
+    - 'PRODUKSI'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.sarana, mp.nama_sarana, mpt.product_name, mp.tanggal_mulai, mpt.tp_kategori, mp.kesimpulan FROM public.mv_pemeriksaan mp LEFT OUTER JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND lower(komoditi) like ''%kosmetik%'' AND lower(sarana) like ''%produksi%'' AND lower(kesimpulan) = ''tmk'' AND status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'');
+    
+    DATA YANG DITANYA: mv_pemeriksaan + tanggal_mulai. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 207 baris; baris teratas ''PRODUKSI''.'

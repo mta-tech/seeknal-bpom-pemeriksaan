@@ -1,0 +1,17 @@
+name: TC_PMR_TEMUAN_PRODUK_13
+scenario_id: TC-PMR-TEMUAN-PRODUK-13
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-13 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Berikan tingkat pemenuhan CPOB terhadap seluruh fasilitas produksi pada tahun 2025'
+  assert_contains:
+  - 'PRODUKSI'
+  assert_any_of:
+  -
+    - '69'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select sarana, mp.tingkat_pemenuhan_cpob, count(*) from mv_pemeriksaan mp where extract(year from mp.tanggal_mulai) = 2025 and lower(mp.sarana) like ''%produksi%'' group by 1, 2 order by 1, 2;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 5 baris; baris teratas ''PRODUKSI'' dengan nilai 69.'

@@ -1,0 +1,17 @@
+name: TC_PMR_TMK_BERULANG_01
+scenario_id: TC-PMR-TMK-BERULANG-01
+verification_date: '2026-08-14'
+description: 'TC-PMR-TMK-BERULANG-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan daftar sarana dengan hasil tmk berulang lebih dari sekali pada kurun 5 tahun terakhir hingga saat ini pada wilayah kerja balai pom di tangerang'
+  assert_contains:
+  - 'COSLINE PASIFIK INDONESIA'
+  assert_any_of:
+  -
+    - '5'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_sarana, count(*) FROM mv_pemeriksaan WHERE kesimpulan = ''TMK'' AND lower(nama_upt) LIKE ''%tangerang%'' AND tanggal_mulai >= ''2020-07-29'' GROUP BY nama_sarana HAVING COUNT(*) > 1 ORDER BY 2 DESC;
+    
+    DATA YANG DITANYA: tanggal_mulai + mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 96 baris; baris teratas ''COSLINE PASIFIK INDONESIA'' dengan nilai 5.'

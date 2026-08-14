@@ -1,0 +1,18 @@
+name: TC_PMR_TINGKAT_PEMENUHAN_CPOB_066
+scenario_id: TC-PMR-TINGKAT-PEMENUHAN-CPOB-066
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `tingkat_pemenuhan_cpob`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan tingkat pemenuhan cpob Kurang?'
+  assert_contains:
+  - 'Kurang'
+  assert_any_of:
+  -
+    - '175'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE tingkat_pemenuhan_cpob = ''Kurang'';
+    
+    HASIL DB 14Agu2026 = 175.
+    
+    KOLOM: `tingkat_pemenuhan_cpob` di `mv_pemeriksaan`. NILAI FILTER: ''Kurang'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

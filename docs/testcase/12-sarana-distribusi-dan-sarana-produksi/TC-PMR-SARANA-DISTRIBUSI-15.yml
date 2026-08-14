@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_DISTRIBUSI_15
+scenario_id: TC-PMR-SARANA-DISTRIBUSI-15
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-DISTRIBUSI-15 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'temuan produk berdasarkan kategori sarana distribusi'
+  assert_contains:
+  - 'IMPORTIR KOSMETIKA'
+  assert_any_of:
+  -
+    - '14'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select klasifikasi_distribusi, komoditi, mpt.tp_kategori, count(*), sum(mpt.tp_harga_total) from mv_pemeriksaan mp join mv_pemeriksaan_temuan mpt on mp.id = mpt.id_pemeriksaan where mp.klasifikasi_distribusi is not null group by 1, 2, 3;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 304 baris; baris teratas ''IMPORTIR KOSMETIKA'' dengan nilai 14.'

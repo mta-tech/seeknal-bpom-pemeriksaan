@@ -1,0 +1,19 @@
+name: TC_PMR_WILAYAH_PERSEBARAN_02
+scenario_id: TC-PMR-WILAYAH-PERSEBARAN-02
+verification_date: '2026-08-14'
+description: 'TC-PMR-WILAYAH-PERSEBARAN-02 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'berapa jumlah sarana yang diperiksa dalam rangka kasus di wilayah kerja bbpom di bandung pada tahun 2024?'
+  assert_contains:
+  - 'KASUS'
+  assert_any_of:
+  -
+    - '3'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT tujuan_pemeriksaan, COUNT(id) FROM mv_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2024 AND lower(tujuan_pemeriksaan) LIKE ''%kasus%'' GROUP BY tujuan_pemeriksaan;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mp. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 3 baris; baris teratas ''KASUS'' dengan nilai 322.
+    
+    CATATAN URUTAN: SQL ini mengembalikan banyak baris tanpa ORDER BY. sehingga urutan barisnya TIDAK dijamin. Yang diperiksa adalah CACAH BARIS (3), bukan nilai pada baris tertentu. Bila jawaban perlu diurutkan, sebutkan kolom pengurutnya secara eksplisit.'

@@ -1,0 +1,17 @@
+name: TC_PMR_RIWAYAT_SARANA_09
+scenario_id: TC-PMR-RIWAYAT-SARANA-09
+verification_date: '2026-08-14'
+description: 'TC-PMR-RIWAYAT-SARANA-09 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'merekap jumlah dan nama sarana distribusi dan pelayanan yang Tidak pernah diperiksa dalam kurun waktu 1 tahun terakhir'
+  assert_contains:
+  - 'OBAT'
+  assert_any_of:
+  -
+    - 'OBAT'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT DISTINCT nama_sarana, komoditi, tanggal_mulai FROM public.mv_pemeriksaan mp WHERE (lower(sarana) LIKE ''%distribusi%'' OR lower(sarana) LIKE ''%pelayanan%'') AND mp.nama_sarana NOT IN ( SELECT nama_sarana FROM public.mv_pemeriksaan WHERE tanggal_mulai >= NOW() - INTERVAL ''1 year'' AND status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') ) ORDER BY nama_sarana;
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. TAPI hasilnya 146,493 baris tanpa agregasi — jalan, bukan jawaban. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 146830 baris; baris teratas ''OBAT''.'

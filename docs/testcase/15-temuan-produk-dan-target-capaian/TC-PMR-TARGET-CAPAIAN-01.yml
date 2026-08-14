@@ -1,0 +1,18 @@
+name: TC_PMR_TARGET_CAPAIAN_01
+scenario_id: TC-PMR-TARGET-CAPAIAN-01
+verification_date: '2026-08-14'
+description: 'TC-PMR-TARGET-CAPAIAN-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Analisis data realisasi inspeksi pada periode waktu 2025 yang dilaksanakan oleh pusat maupun UPT secara mandiri'
+  assert_contains: []
+  assert_any_of:
+  -
+    - 'tidak ada|tidak ditemukan|kosong'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT count(*) FROM mv_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2025;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + tanggal_mulai. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: satu angka = 33.365.
+    
+    CATATAN URUTAN: hasilnya tidak menghasilkan cacah yang stabil; yang diperiksa hanya isi jawaban.'

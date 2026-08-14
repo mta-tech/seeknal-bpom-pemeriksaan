@@ -1,0 +1,18 @@
+name: TC_PMR_KLASIFIKASI_SARANA_039
+scenario_id: TC-PMR-KLASIFIKASI-SARANA-039
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `klasifikasi_sarana`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan klasifikasi sarana SARANA GUDANG E-COMMERCE?'
+  assert_contains:
+  - 'SARANA GUDANG E-COMMERCE'
+  assert_any_of:
+  -
+    - '52'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE klasifikasi_sarana = ''SARANA GUDANG E-COMMERCE'';
+    
+    HASIL DB 14Agu2026 = 52.
+    
+    KOLOM: `klasifikasi_sarana` di `mv_pemeriksaan`. NILAI FILTER: ''SARANA GUDANG E-COMMERCE'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

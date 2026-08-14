@@ -1,0 +1,17 @@
+name: TC_PMR_TREN_HASIL_PEMERIKSAAN_06
+scenario_id: TC-PMR-TREN-HASIL-PEMERIKSAAN-06
+verification_date: '2026-08-14'
+description: 'TC-PMR-TREN-HASIL-PEMERIKSAAN-06 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan tren audit komprehensif berdasarkan tingkat kritikalitas untuk tahun 2024'
+  assert_contains:
+  - '2024-05'
+  assert_any_of:
+  -
+    - '1'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT TO_CHAR(mkp.tgl_end, ''YYYY-MM'') AS bulan_tahun, mkp.tx_criteria AS tingkat_kritikalitas, COUNT(*) AS jumlah_audit FROM mv_kriteria_pemeriksaan mkp WHERE LOWER(mkp.tujuan) LIKE ''%komprehensif%'' AND EXTRACT(YEAR FROM mkp.tgl_end) = 2024 GROUP BY TO_CHAR(mkp.tgl_end, ''YYYY-MM''), mkp.tx_criteria ORDER BY bulan_tahun, tingkat_kritikalitas;
+    
+    DATA YANG DITANYA: mv_kriteria_pemeriksaan + mkp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 7 baris; baris teratas ''2024-05'' dengan nilai 1.'

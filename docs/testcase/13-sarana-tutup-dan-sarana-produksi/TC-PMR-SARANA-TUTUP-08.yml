@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_TUTUP_08
+scenario_id: TC-PMR-SARANA-TUTUP-08
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-TUTUP-08 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan profil pemeriksaan sarana produksi obat dan makanan selama periode 2025 dalam bentuk tabel dan grafik jumlah sarana produksi mk, tmk, tidak dapat dinilai, tutup per jenis komoditi (obat, oba'
+  assert_contains:
+  - 'PRODUKSI'
+  assert_any_of:
+  -
+    - '4'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT EXTRACT(YEAR FROM tanggal_mulai) AS tahun, EXTRACT(MONTH FROM tanggal_mulai) AS BULAN, sarana, jenis_sarana, kesimpulan, count(*) FROM public.mv_pemeriksaan mp WHERE lower(sarana) LIKE ''%produksi%'' AND (lower(jenis_sarana) LIKE ''%obat'' OR lower(jenis_sarana) LIKE ''%pangan%'') AND EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') GROUP BY 1, 2, 3, 4, 5 ORDER BY 1, 2, 3, 4, 5;
+    
+    DATA YANG DITANYA: tanggal_mulai + mv_pemeriksaan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 111 baris; baris teratas ''PRODUKSI'' dengan nilai 4.'

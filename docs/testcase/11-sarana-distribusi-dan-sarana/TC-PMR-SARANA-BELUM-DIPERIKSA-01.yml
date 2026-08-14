@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_BELUM_DIPERIKSA_01
+scenario_id: TC-PMR-SARANA-BELUM-DIPERIKSA-01
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-BELUM-DIPERIKSA-01 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan jumlah sarana yang tidak dapat diperiksa di wilayah upt surabaya dan pada tahun 2025'
+  assert_contains:
+  - 'BALAI BESAR POM DI SURABAYA'
+  assert_any_of:
+  -
+    - '33'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_upt, count(*) FROM mv_pemeriksaan vpb WHERE lower(nama_upt) LIKE ''%surabaya%'' AND EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND kesimpulan LIKE ''TDP'' GROUP BY 1;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + tanggal_mulai. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 1 baris; baris teratas ''BALAI BESAR POM DI SURABAYA'' dengan nilai 33.'

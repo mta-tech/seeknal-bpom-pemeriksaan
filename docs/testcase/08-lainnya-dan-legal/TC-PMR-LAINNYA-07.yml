@@ -1,0 +1,17 @@
+name: TC_PMR_LAINNYA_07
+scenario_id: TC-PMR-LAINNYA-07
+verification_date: '2026-08-14'
+description: 'TC-PMR-LAINNYA-07 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Tampilkan riwayat pemenuhan CPOB untuk harsen laboratories'
+  assert_contains:
+  - 'HARSEN LABORATORIES'
+  assert_any_of:
+  -
+    - 'HARSEN LABORATORIES'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select mp.tanggal_selesai, mp.nama_sarana, mp.tingkat_pemenuhan_cpob from mv_pemeriksaan mp where mp.tingkat_pemenuhan_cpob is not null and lower(mp.nama_sarana) like ''%harsen laboratories%'' order by 1, 2, 3;
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 17 baris; baris teratas ''HARSEN LABORATORIES''.'

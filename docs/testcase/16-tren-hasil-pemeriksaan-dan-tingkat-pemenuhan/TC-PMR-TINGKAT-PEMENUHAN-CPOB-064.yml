@@ -1,0 +1,18 @@
+name: TC_PMR_TINGKAT_PEMENUHAN_CPOB_064
+scenario_id: TC-PMR-TINGKAT-PEMENUHAN-CPOB-064
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `tingkat_pemenuhan_cpob`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan tingkat pemenuhan cpob Baik?'
+  assert_contains:
+  - 'Baik'
+  assert_any_of:
+  -
+    - '425'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE tingkat_pemenuhan_cpob = ''Baik'';
+    
+    HASIL DB 14Agu2026 = 425.
+    
+    KOLOM: `tingkat_pemenuhan_cpob` di `mv_pemeriksaan`. NILAI FILTER: ''Baik'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

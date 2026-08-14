@@ -1,0 +1,17 @@
+name: TC_PMR_KOMODITI_906_2025
+scenario_id: TC-PMR-KOMODITI-906-2025
+verification_date: '2026-08-14'
+description: 'Silang `komoditi` dengan periode; menguji kelengkapan filter dari pertanyaan majemuk.'
+turns:
+- prompt: 'berapa pemeriksaan dengan komoditi OBAT TRADISIONAL pada tahun 2025?'
+  assert_contains:
+  - 'OBAT TRADISIONAL'
+  - '2025'
+  assert_any_of:
+  -
+    - '3.187'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE komoditi = ''OBAT TRADISIONAL'' AND tanggal_mulai >= ''2025-01-01'' AND tanggal_mulai < ''2026-01-01'';
+    
+    HASIL DB 14Agu2026 = 3.187. KOLOM: `komoditi` di `mv_pemeriksaan`. NILAI FILTER ''OBAT TRADISIONAL'' diambil apa adanya dari data. DUA KOMPONEN: nilai kode dan periode — komponen yang halamannya tidak dibuka akan hilang dari filter secara senyap.'

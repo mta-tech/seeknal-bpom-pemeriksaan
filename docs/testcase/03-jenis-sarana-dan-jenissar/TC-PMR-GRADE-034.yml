@@ -1,0 +1,16 @@
+name: TC_PMR_GRADE_034
+scenario_id: TC-PMR-GRADE-034
+verification_date: '2026-08-14'
+description: 'Cacah pemeriksaan untuk satu nilai `grade`; menguji pemetaan istilah ke kode filter yang benar.'
+turns:
+- prompt: 'berapa pemeriksaan dengan grade C?'
+  assert_contains:
+  - 'C'
+  assert_any_of:
+  -
+    - '9.683'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT COUNT(*) FROM mv_pemeriksaan WHERE grade = ''C'';
+    
+    HASIL DB 14Agu2026 = 9.683. KOLOM: `grade` di `mv_pemeriksaan`. NILAI FILTER: ''C'' — diambil apa adanya dari data, termasuk spasi dan kapitalisasinya. Jangan mengetik nilai dari ingatan; ambil lewat SELECT DISTINCT lalu pakai persis. ENTITY: COUNT(*) menghitung baris tabel fakta.'

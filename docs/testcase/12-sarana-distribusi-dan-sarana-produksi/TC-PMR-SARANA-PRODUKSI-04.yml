@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_PRODUKSI_04
+scenario_id: TC-PMR-SARANA-PRODUKSI-04
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-PRODUKSI-04 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'apa temuan/ketidaksesuaian yang paling banyak ditemukan dari hasil pemeriksaan sarana produksi md?'
+  assert_contains:
+  - 'PANGAN MD'
+  assert_any_of:
+  -
+    - '162'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT jenis_sarana, mpt.tp_kategori, count(*) FROM public.mv_pemeriksaan mp JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND lower(jenis_sarana) LIKE ''%pangan md%'' AND mp.status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') GROUP BY 1, 2 ORDER BY 3 DESC;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan + tanggal_mulai. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 6 baris; baris teratas ''PANGAN MD'' dengan nilai 162.'

@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_DISTRIBUSI_04
+scenario_id: TC-PMR-SARANA-DISTRIBUSI-04
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-DISTRIBUSI-04 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan data jumlah pemeriksaan sarana peredaran oleh adiyati pada tahun 2025'
+  assert_contains:
+  - 'Aan Nur Adiyati'
+  assert_any_of:
+  -
+    - '42'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT T2.petugas, sarana, COUNT(T1.id) FROM public.mv_pemeriksaan AS T1 INNER JOIN public.mv_pemeriksaan_petugas AS T2 ON T1.id = T2.id_pemeriksaan WHERE LOWER(T1.sarana) like ''%distribusi%'' AND lower(T2.petugas) LIKE ''%adiyati%'' AND EXTRACT(YEAR FROM T1.tanggal_mulai) = 2025 GROUP BY 1, 2;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_petugas + t1. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 1 baris; baris teratas ''Aan Nur Adiyati'' dengan nilai 42.'

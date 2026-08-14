@@ -1,0 +1,17 @@
+name: TC_PMR_LAINNYA_04
+scenario_id: TC-PMR-LAINNYA-04
+verification_date: '2026-08-14'
+description: 'TC-PMR-LAINNYA-04 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'sarana obat tradisional; suplemen kesehatan; obat kuasi apa saja yang Tidak dilakukan pemeriksaan dalam periode 2 tahun terakhir?'
+  assert_contains:
+  - '    '
+  assert_any_of:
+  -
+    - '    '
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT DISTINCT nama_sarana, komoditi, tanggal_mulai FROM public.mv_pemeriksaan mp WHERE (lower(komoditi) LIKE ''%obat tradisional%'' OR lower(komoditi) LIKE ''%suplemen kesehatan%'' OR lower(komoditi) LIKE ''%obat kuasi%'') AND mp.nama_sarana NOT IN ( SELECT nama_sarana FROM public.mv_pemeriksaan WHERE tanggal_mulai >= NOW() - INTERVAL ''2 year'' AND status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') ) ORDER BY nama_sarana;
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 11542 baris; baris teratas '' ''.'

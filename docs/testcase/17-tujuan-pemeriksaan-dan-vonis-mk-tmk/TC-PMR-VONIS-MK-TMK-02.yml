@@ -1,0 +1,17 @@
+name: TC_PMR_VONIS_MK_TMK_02
+scenario_id: TC-PMR-VONIS-MK-TMK-02
+verification_date: '2026-08-14'
+description: 'TC-PMR-VONIS-MK-TMK-02 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'upt manakah yang hasil pemeriksaannya memiliki perserntase tmk terbanyak pada tahun 2025'
+  assert_contains:
+  - 'BALAI BESAR POM DI BANDUNG'
+  assert_any_of:
+  -
+    - '678'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT nama_upt, count(*) as jumlah_tmk FROM mv_pemeriksaan WHERE EXTRACT(YEAR FROM tanggal_mulai) = 2025 AND kesimpulan = ''TMK'' GROUP BY nama_upt ORDER BY COUNT(*) DESC LIMIT 1;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + tanggal_mulai. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 1 baris; baris teratas ''BALAI BESAR POM DI BANDUNG'' dengan nilai 678.'

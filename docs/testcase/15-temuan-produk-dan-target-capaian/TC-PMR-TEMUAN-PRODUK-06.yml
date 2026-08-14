@@ -1,0 +1,19 @@
+name: TC_PMR_TEMUAN_PRODUK_06
+scenario_id: TC-PMR-TEMUAN-PRODUK-06
+verification_date: '2026-08-14'
+description: 'TC-PMR-TEMUAN-PRODUK-06 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'tampilkan temuan ketidaksesuaian untuk klausul untuk upt balai besar pom di bandung.'
+  assert_contains:
+  - 'BKO'
+  assert_any_of:
+  -
+    - '26'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mpt.tp_kategori, count(*) AS jumlah_pemeriksaan, sum(mpt.tp_jml_temuan) AS jumlah_temuan, sum(mpt.tp_harga_total) AS nilai_temuan FROM public.mv_pemeriksaan mp LEFT OUTER JOIN public.mv_pemeriksaan_temuan mpt ON mp.id = mpt.id_pemeriksaan WHERE lower(kesimpulan) = ''tmk'' AND lower(mp.nama_upt) LIKE ''%pom di bandung%'' AND status IN (''VERIFY4'', ''VERIFY5'',''VERIFY6'',''VERIFY7'',''FINISHED'') GROUP BY 1;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mv_pemeriksaan_temuan. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 26 baris; baris teratas ''BKO'' dengan nilai 184.
+    
+    CATATAN URUTAN: SQL ini mengembalikan banyak baris tanpa ORDER BY. sehingga urutan barisnya TIDAK dijamin. Yang diperiksa adalah CACAH BARIS (26), bukan nilai pada baris tertentu. Bila jawaban perlu diurutkan, sebutkan kolom pengurutnya secara eksplisit.'

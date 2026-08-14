@@ -1,0 +1,17 @@
+name: TC_PMR_SARANA_DISTRIBUSI_10
+scenario_id: TC-PMR-SARANA-DISTRIBUSI-10
+verification_date: '2026-08-14'
+description: 'TC-PMR-SARANA-DISTRIBUSI-10 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Jumlah sarana distribusi pada Balai POM di Jakarta tahun 2025 yang memiliki Nomor Notifikasi baik yang memenuhi ketentuan dan tidak memenuhi ketentuan'
+  assert_contains:
+  - 'BALAI BESAR POM DI JAKARTA'
+  assert_any_of:
+  -
+    - '19'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    SELECT mp.nama_upt, mp.klasifikasi_distribusi, mp.kesimpulan, COUNT(*) AS jumlah FROM mv_pemeriksaan mp WHERE EXTRACT(YEAR FROM mp.tanggal_selesai) = 2025 AND LOWER(mp.nama_upt) LIKE ''%jakarta%'' AND ( LOWER(mp.klasifikasi_distribusi) LIKE ''%notifikasi%'' OR LOWER(mp.klasifikasi_distribusi) LIKE ''%importir%'' ) GROUP BY 1, 2, 3;
+    
+    DATA YANG DITANYA: mv_pemeriksaan + mp. BENTUK JAWABAN: satu angka agregat; sebutkan entity dan lingkup filternya. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 10 baris; baris teratas ''BALAI BESAR POM DI JAKARTA'' dengan nilai 19.'

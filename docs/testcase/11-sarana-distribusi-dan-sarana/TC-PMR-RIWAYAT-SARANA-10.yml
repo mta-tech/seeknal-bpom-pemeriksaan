@@ -1,0 +1,17 @@
+name: TC_PMR_RIWAYAT_SARANA_10
+scenario_id: TC-PMR-RIWAYAT-SARANA-10
+verification_date: '2026-08-14'
+description: 'TC-PMR-RIWAYAT-SARANA-10 — Regresi dari pertanyaan nyata sistem lama; angka diverifikasi ulang ke database.'
+turns:
+- prompt: 'Sarana BUPN Apa saja yang pernah diperiksa?'
+  assert_contains:
+  - 'ABBAST ARSHYA ESHAN'
+  assert_any_of:
+  -
+    - 'ABBAST ARSHYA ESHAN'
+  tolerance_pct: 5
+  note: 'SQL LENGKAP:
+    select distinct(nama_sarana), sarana, klasifikasi_sarana, klasifikasi_distribusi from mv_pemeriksaan mp where mp.klasifikasi_distribusi = ''BADAN USAHA/USAHA PERORANGAN PEMILIK NOTIFIKASI KOSMETIK'';
+    
+    DATA YANG DITANYA: mv_pemeriksaan. BENTUK JAWABAN: daftar rinci, bukan satu angka; sajikan sebagai tabel. Hasilnya daftar: yang diperiksa isi baris teratas, bukan seluruh daftar.;
+    HASIL DB 14Agu2026: 1112 baris; baris teratas ''ABBAST ARSHYA ESHAN''.'
