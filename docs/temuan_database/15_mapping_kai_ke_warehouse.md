@@ -3862,3 +3862,516 @@ LIMIT 20;
   ```sql
   SELECT nama_balai, COUNT(CASE WHEN kesimpulan <> 'MK' THEN 1 END) AS jumlah_tms, COUNT(CASE WHEN kesimpulan = 'MK' THEN 1 END) AS jumlah_ms FROM public.vw_pemeriksaan_bcc WHERE EXTRACT( YEAR FROM tgl_start ) = 2025 GROUP BY nama_balai ORDER BY jumlah_tms DESC LIMIT 1;
   ```
+
+---
+
+## §15.Z — Eksekusi 213 SQL Pair `context_stores` ke DB Live (2026-08-13)
+
+Bagian sebelumnya memetakan kolom KAI → warehouse. Bagian ini menambahkan **bukti eksekusi**:
+seluruh 213 pasangan `context_stores` (koleksi terkurasi) domain pemeriksaan dijalankan apa adanya
+lewat `SELECT count(*) FROM (<sql>) q`.
+
+### Hasil per generasi koneksi
+
+| Generasi | Pair | OK | ERROR | Catatan |
+|---|--:|--:|--:|---|
+| `pemeriksaan` (v1, Jul 2025) | 45 | **0** | 45 | semua menunjuk `vw_pemeriksaan_bcc` — relasi tidak ada |
+| `pemeriksaan_all` (v2, Ags 2025) | 70 | **70** | 0 | 100% jalan |
+| `pemeriksaan_all_v2` (v3, Nov 2025) | 98 | **98** | 0 | 100% jalan |
+
+**Pemeriksaan adalah domain paling stabil dari empat:** 168 dari 213 pair (78,9%) masih jalan, dan
+**tidak ada drift kolom sama sekali** antara `table_descriptions` KAI `_all_v2` dan skema live.
+Bandingkan dengan `pengawasan` (38,6% jalan) dan `penandaan` (44,2%), yang kehilangan kolom
+`provinsi`/`kabupaten`.
+
+Yang mati hanyalah generasi v1 — seluruhnya karena `vw_pemeriksaan_bcc` sudah digantikan
+`mv_pemeriksaan*`.
+
+### ⚠️ "SQL jalan" bukan "jawaban benar" — empat contoh yang terbukti
+
+| Sumber | Pertanyaan | Yang sebenarnya terjadi |
+|---|---|---|
+| `context_stores` + CSV #113 | *"tampilkan negara-negara dengan temuan impor tahun 2025"* | filter `lower(tp_negara) <> 'indonesia'` ikut menarik `'-'` (**14.796 baris**, Rp 9,8 M) dan `'lokal'` (397 baris) sebagai impor. `tp_negara` punya **1.299 nilai bebas**, termasuk `Korea` dan `Korea Selatan` terpisah |
+| CSV #34 | *"tiga temuan kritis paling sering di BBPOM Jakarta 2024"* | SQL memakai `tx_critical_issue` = **cacah** isu kritis, bukan **jenis** temuan. Hasilnya "793 pemeriksaan dengan 0 isu kritis" — bukan jawaban pertanyaannya. Jenis temuan ada di `mv_kriteria_pemeriksaan.tx_criteria_desc`, dan itu hanya mencakup **902 dari 257.482** pemeriksaan |
+| CSV #36 | *"persentase ketepatan grading"* | aturan aslinya memakai "nilai sarana A/B/C/D" — **kolom itu tidak ada**. SQL menggantinya dengan menguji `grade` terhadap `kesimpulan`, yang bukan hal yang sama |
+| CSV #14 / #110 | *"capaian UPT vs target"* | join komoditi memakai `mp.komoditi` mentah → **228 dari 385** pasangan ketemu target. Dengan `mapping_komoditi_target_balai` → **381 dari 385**. Lihat `04_kamus_unique_value.md` §bridge |
+
+### §15.Z.1 — `grade` dikunci `jenis_sarana='PANGAN'`, bukan hanya oleh tujuan
+
+`04_kamus_unique_value.md` §4.5 mencatat "grade hanya untuk RUTIN/INTENSIFIKASI". Itu benar tapi
+belum lengkap — dimensi penentunya adalah **jenis sarana**:
+
+```sql
+SELECT jenis_sarana, count(*) AS total, count(grade) AS grade_isi
+FROM mv_pemeriksaan WHERE grade IS NOT NULL GROUP BY 1 ORDER BY 3 DESC;
+--  PANGAN | 44119 | 44119     ← satu-satunya baris
+```
+
+**Seluruh 44.119 baris ber-`grade` adalah `jenis_sarana = 'PANGAN'`; nol di 23 jenis sarana lain.**
+Di dalam PANGAN, grade muncul pada tujuan RUTIN (32.241) dan INTENSIFIKASI PENGAWASAN PANGAN
+(11.141).
+
+**Konsekuensi:** pertanyaan "ketepatan grading di UPT X" (CSV #36) adalah **pertanyaan khusus
+sarana PANGAN**. Menjawabnya untuk UPT tanpa menyebut batas ini membuat pembaca mengira seluruh
+pemeriksaan UPT itu dinilai — padahal hanya 17% (44.119 dari 257.482).
+
+Matriks `grade × kesimpulan` juga membantah aturan yang dipakai CSV #36
+("grading B → TMK"):
+
+```sql
+SELECT grade, kesimpulan, count(*) FROM mv_pemeriksaan
+WHERE grade IS NOT NULL GROUP BY 1,2 ORDER BY 1,3 DESC;
+```
+
+| Grade | MK | TMK | Lain |
+|---|--:|--:|--:|
+| A | 24.181 | 392 | 51 |
+| **B** | **9.509** | **237** | 1 |
+| C | 638 | 9.041 | 2 |
+
+Grade B **didominasi MK (97,6%)**, bukan TMK. Aturan yang cocok dengan data adalah
+**A,B → MK · C → TMK**, bukan "B → TMK" seperti tertulis di CSV.
+
+### §15.Z.2 — `klasifikasi_distribusi` adalah filter tersembunyi
+
+`03_data_dictionary_lengkap.md` mencatat "76,7% kosong — kondisional pada sarana=DISTRIBUSI".
+Kondisinya sebenarnya lebih sempit: **DISTRIBUSI × tiga komoditi saja**.
+
+```sql
+SELECT sarana, komoditi, count(*) AS total, count(klasifikasi_distribusi) AS terisi,
+       round(100.0*count(klasifikasi_distribusi)/count(*),1) AS pct
+FROM mv_pemeriksaan GROUP BY 1,2 HAVING count(*) > 500 ORDER BY 5 DESC;
+```
+
+| Sarana | Komoditi | Total | Terisi | % |
+|---|---|--:|--:|--:|
+| DISTRIBUSI | KOSMETIK | 36.720 | 36.424 | **99,2** |
+| DISTRIBUSI | OBAT TRADISIONAL | 16.922 | 16.748 | **99,0** |
+| DISTRIBUSI | SUPLEMEN KESEHATAN | 6.808 | 6.741 | **99,0** |
+| DISTRIBUSI | PRODUK PANGAN | 70.609 | 0 | 0,0 |
+| DISTRIBUSI | OBAT | 10.324 | 1 | 0,0 |
+| PELAYANAN | OBAT | 71.691 | 0 | 0,0 |
+| PRODUKSI | *(semua)* | 43.349 | 0 | 0,0 |
+
+**`WHERE klasifikasi_distribusi IS NOT NULL` identik dengan "sarana distribusi kosmetik / OT /
+suplemen saja"** — bukan pembersihan data. Pertanyaan BUPN & Importir (CSV #1–#4, 18 pertanyaan
+user) otomatis hanya berlaku pada 60.914 baris (23,7% populasi), dan itu harus disebut.
+
+### §15.Z.3 — `mv_pemeriksaan_agg`: yang menggandakan adalah lupa memfilter `periode_type`
+
+```sql
+SELECT periode_type, count(*) AS baris, sum(jumlah_pemeriksaan) FROM mv_pemeriksaan_agg GROUP BY 1;
+--  day   | 202124 | 256536
+--  month | 164716 | 256536
+```
+
+Tiap `periode_type` menjumlah ke **256.536**, dan itu **tepat** `257.482 − 946` = fakta dikurangi
+baris ber-`tanggal_mulai` NULL (lihat `11_kualitas_data_dan_anomali.md` §11.2). Jadi agg konsisten;
+selisih 2× di `10_agg_dan_integritas_etr.md` muncul karena kedua `periode_type` dijumlahkan
+bersamaan. **Aturan: selalu filter satu `periode_type`, dan ingat 946 baris tanpa tanggal tidak
+pernah masuk agg.**
+
+### §15.Z.4 — Nilai temuan bersih per tahun (siap dipakai menjawab)
+
+`11_kualitas_data_dan_anomali.md` §11.4 sudah menyebut kontaminasi INFALGIN. Berikut angka
+bersih per tahun setelah dua penyaring (`tp_harga_total < 1e9` **dan** `tp_jml_temuan <= 1e6`):
+
+```sql
+SELECT extract(year FROM mp.tanggal_selesai)::int AS th, count(*) AS baris,
+       round(sum(mpt.tp_harga_total)/1e9,2) AS bruto_miliar,
+       round(sum(mpt.tp_harga_total) FILTER (
+             WHERE mpt.tp_harga_total < 1e9 AND mpt.tp_jml_temuan <= 1000000)/1e9,2) AS bersih_miliar
+FROM mv_pemeriksaan_temuan mpt JOIN mv_pemeriksaan mp ON mp.id = mpt.id_pemeriksaan
+GROUP BY 1 ORDER BY 1;
+```
+
+| Tahun | Baris temuan | Bruto (Rp M) | **Bersih (Rp M)** |
+|---|--:|--:|--:|
+| 2020 | 20.222 | 34,40 | **12,18** |
+| 2021 | 29.235 | 13,49 | **12,27** |
+| 2022 | 42.126 | 7.156,01 | **22,34** |
+| 2023 | 34.839 | 46,24 | **22,71** |
+| 2024 | 40.447 | 74,16 | **27,61** |
+| 2025 | 94.424 | 356,47 | **54,85** |
+| 2026 | 35.684 | 58,77 | **47,52** |
+
+Tren bersih naik konsisten. Tanpa pembersihan, 2022 terlihat 320× lebih besar dari 2021 —
+seluruhnya dari satu baris INFALGIN.
+
+### §15.Z.5 — Semantik `fullname` di log: TERPECAHKAN, dan klaim "self-approve" TERBANTAH
+
+Sebuah hitungan yang menggoda dan **keliru** — dicatat supaya tidak diulang:
+
+```sql
+WITH d AS (SELECT id_pemeriksaan,
+    min(fullname) FILTER (WHERE status='DRAFT')   AS pembuat,
+    min(fullname) FILTER (WHERE status='VERIFY1') AS v1
+  FROM mv_pemeriksaan_log GROUP BY 1)
+SELECT count(*), count(*) FILTER (WHERE pembuat=v1) FROM d
+WHERE pembuat IS NOT NULL AND v1 IS NOT NULL;
+--  253254 | 253238  → "100% diverifikasi oleh pembuatnya sendiri"
+```
+
+Aritmetikanya benar. Tafsirnya salah.
+
+#### Bukti: model log yang sebenarnya
+
+```sql
+SELECT status, count(*) AS n, count(DISTINCT fullname) AS org,
+       count(*) FILTER (WHERE coalesce(trim(catatan),'')='') AS catatan_kosong,
+       left(mode() WITHIN GROUP (ORDER BY catatan),52) AS catatan_tersering
+FROM mv_pemeriksaan_log GROUP BY 1 ORDER BY 1;
+```
+
+| `status` | Baris | Orang unik | Catatan kosong | Catatan tersering |
+|---|--:|--:|--:|---|
+| DRAFT | 256.533 | 1.720 | 0 | *"Entri Draft Pemeriksaan Sarana Pangan…"* |
+| VERIFY1 | 290.597 | 1.695 | **230.187 (79%)** | *"-"* |
+| VERIFY2 | 40.444 | 58 | 595 | *"Verifikasi Supervisor Pemdik Satu"* |
+| VERIFY3 | 256.878 | 451 | 766 | *"Verifikasi Supervisor Pemdik Satu"* |
+| VERIFY4 | 253.909 | 177 | 130 | *"Verifikasi Kepala Balai"* |
+| VERIFY5 | 82.419 | 85 | 11 | *"Sesuai"* |
+| FINISHED | 29.414 | **6** | 0 | *"ok"* |
+
+Tiga hal yang mengunci maknanya:
+
+1. **`catatan` menjelaskan aksi yang MEMBAWA berkas ke status itu.** Baris `VERIFY4` bercatatan
+   *"Verifikasi Kepala Balai"* — padahal label VERIFY**3** adalah *Kepala Balai / Loka - Verifikasi*.
+   Jadi Kepala Balai bertindak, lalu berkas berpindah ke VERIFY4.
+2. **`VERIFY1` 79% tanpa catatan** — tidak ada aksi persetujuan yang dijelaskan, karena memang
+   bukan persetujuan. Itu pengiriman.
+3. **Jumlah orang unik menurun sesuai senioritas**: 1.720 → 1.695 → 451 → 177 → 85 → **6**. Kalau
+   `VERIFY1` benar-benar tahap supervisor, mustahil dilakukan 1.695 orang berbeda — angka itu
+   justru setara jumlah operator (1.720).
+
+**Model yang benar:** `status` = keadaan **sesudah** transisi · `catatan` = aksi yang memicunya ·
+`fullname` = **pelaku aksi tersebut**, yang perannya dinamai oleh label status **sebelumnya** ·
+`status_label` = pihak yang **ditunggu berikutnya**.
+
+Konsekuensinya: operator yang mengirim draftnya sendiri ke supervisor **adalah perilaku normal**.
+Angka 100% itu bukti bahwa kolomnya merekam pengirim — bukan temuan governance.
+
+#### Pemisahan tugas yang sebenarnya
+
+Diuji pada pasangan peran yang benar — pengirim (VERIFY1) vs penyetuju (VERIFY3), lalu supervisor
+(VERIFY3) vs Kepala Balai (VERIFY4):
+
+```sql
+WITH d AS (SELECT id_pemeriksaan,
+    min(fullname) FILTER (WHERE status='VERIFY1') AS pengirim,
+    min(fullname) FILTER (WHERE status='VERIFY3') AS spv,
+    min(fullname) FILTER (WHERE status='VERIFY4') AS kabalai
+  FROM mv_pemeriksaan_log GROUP BY 1)
+SELECT count(*) FILTER (WHERE pengirim IS NOT NULL AND spv IS NOT NULL) AS punya_spv,
+       round(100.0*count(*) FILTER (WHERE pengirim=spv)/
+             nullif(count(*) FILTER (WHERE pengirim IS NOT NULL AND spv IS NOT NULL),0),2) AS pct_spv,
+       round(100.0*count(*) FILTER (WHERE spv=kabalai)/
+             nullif(count(*) FILTER (WHERE spv IS NOT NULL AND kabalai IS NOT NULL),0),2) AS pct_kabalai
+FROM d;
+```
+
+| Pasangan peran | Berkas diuji | Orang sama |
+|---|--:|--:|
+| Pengirim → Supervisor | 249.334 | **5,07%** |
+| Supervisor → Kepala Balai | 248.489 | **1,91%** |
+
+**Pemisahan tugas justru utuh pada ~95–98% berkas.** Kesimpulan yang benar berkebalikan 180° dari
+klaim awal.
+
+#### Pelajaran metodologis
+
+Angka yang benar secara aritmetika dapat menopang dua kesimpulan yang berlawanan. Sebelum sebuah
+angka dijadikan temuan governance — tuduhan yang berat bagi institusi — **semantik kolomnya wajib
+dipastikan lebih dulu**, bukan diasumsikan. Uji yang memutuskannya di sini murah: sebaran
+`count(DISTINCT fullname)` per status, dan isi `catatan` per status.
+
+> Klaim serupa (95,9%) ada di domain `pengawasan`. Sudah diuji dengan cara yang sama dan
+> terbantah juga — lihat `seeknal-bpom-pengawasan/docs/temuan_database/03_tabel_log_workflow.md`.
+
+### Cara memakai bagian ini
+
+1. 45 pair generasi v1 → **buang**; nama tabelnya (`vw_pemeriksaan_bcc`) menyesatkan.
+2. 168 pair v2/v3 yang OK → pakai sebagai **bukti pola pertanyaan**, bukan sebagai SQL siap pakai;
+   empat kelas kesalahan di tabel atas terbukti lolos tanpa error.
+3. Sebelum memakai kolom apa pun sebagai penyaring, cek dulu **apa arti kosongnya**
+   (`klasifikasi_distribusi`, `grade`, `tingkat_pemenuhan_cpob`, `hp_followup_name`).
+
+---
+
+## §15.Y — Eksekusi 27 `SQL Training` dari `BPOM User Relevant Query` (2026-08-13)
+
+Berbeda dari `context_stores` (SQL hasil AI), berkas
+`BPOM User Relevant Query.xlsx - List Pertanyaan Analitik.csv` memuat kolom **SQL Training** yang
+ditulis manual oleh tim. Untuk modul `pemeriksaan` ada 27, dan **seluruhnya jalan (27/27 OK)** —
+tidak ada satu pun yang gagal skema. Ini menegaskan bahwa `pemeriksaan` adalah domain paling stabil.
+
+| # | Pertanyaan | Baris | Yang perlu diperhatikan |
+|---|---|--:|---|
+| 1 | Sarana BUPN yang pernah diperiksa | 1.112 | dari 1.704 baris; hanya sarana distribusi kosmetik |
+| 2 | Sarana Importir | 1.288 | `IMPORTIR KOSMETIKA` 1.122 + `IMPORTIR OT/SM` 166 |
+| 3 | Temuan produk per kategori sarana distribusi | 304 | nilai temuan tercemar — lihat §15.Z.4 |
+| 5–7 | Rincian riwayat balai X tahun Y | 10 · 27 · 99 | |
+| **34** | **Tiga temuan kritis tersering** | **6** | ⚠️ hasilnya "cacah isu kritis 0–6", bukan jenis temuan |
+| 35 | Sarana produksi TMK 3 tahun + tindak lanjut | 23 | pakai `tl_saran_names` |
+| **36** | **Persentase ketepatan grading** | **3** | ⚠️ hanya 3 grade; populasi PANGAN saja |
+| 40 | Tren sarana produksi MD jenis pangan | 228 | |
+| **41** | **10 temuan terbanyak sarana AMDK** | **1** | ⚠️ satu kategori saja |
+| **44** | **Sarana produksi AMDK TMK di Bogor 2024** | **1** | ⚠️ satu sarana |
+| 45 | Realisasi inspeksi per UPT/sarana/komoditi | 719 | |
+| 46 | Riwayat kepatuhan CPOB PT X | 12 | dari 861 baris ber-CPOB |
+| 47 | Temuan inspeksi CPOB per kategori | 5 | |
+| 48 | Tren audit komprehensif | 5 / 7 | `mv_kriteria_pemeriksaan`, hanya 902 pemeriksaan |
+| 49 | Riwayat pemenuhan CPOB satu sarana | 17 | |
+| 50 | Jam terbang inspektur | 5.112 | `mv_pemeriksaan_petugas` |
+| 51 | Tingkat pemenuhan CPOB seluruh produksi | 5 | 4 nilai + NULL |
+| 52 | Tingkat kekritisan per klasifikasi & tujuan | 53 | |
+| 54 | Profil kepatuhan pelaku usaha | 50 | |
+| 59 | Ketepatan waktu pelaporan SIPT | 2 | hanya 2 kelompok (tepat/terlambat) |
+| 105 | Proporsi klasifikasi sarana peredaran | 5 | 76,2% NULL |
+| 109 | Jenis pangan paling banyak TMK | 10 | |
+| 110 | Realisasi vs target sarana distribusi | 410 | ⚠️ join komoditi mentah — lihat §7.6 |
+| **113** | **Negara temuan impor** | **347** | ⚠️ termasuk `'-'` dan `'lokal'` sebagai "impor" |
+
+### Empat hasil yang **jalan tetapi tidak menjawab pertanyaannya**
+
+| # | Yang diminta pertanyaan | Yang dikembalikan SQL |
+|---|---|---|
+| 34 | *"tiga temuan kritis paling sering"* — **jenis** temuan | cacah pemeriksaan per **jumlah** isu kritis (0, 1, 2, 4, 5, 6). Jenis temuan ada di `mv_kriteria_pemeriksaan.tx_criteria_desc`, cakupan 902 pemeriksaan |
+| 36 | ketepatan grading terhadap **nilai sarana A/B/C/D** | perbandingan `grade` vs `kesimpulan`. Kolom "nilai sarana" tidak ada; dan `grade` hanya terisi untuk `jenis_sarana='PANGAN'` |
+| 41 | *"10 temuan terbanyak"* untuk sarana AMDK | 1 kategori. Populasi AMDK + produksi + 2 tahun terakhir terlalu kecil |
+| 113 | negara **impor** | `lower(tp_negara) <> 'indonesia'` menarik `'-'` (14.796 baris) dan `'lokal'` (397) sebagai impor |
+
+### Status pertanyaan CSV modul `pemeriksaan`
+
+27 pertanyaan bermodul `pemeriksaan`; kolom *Pengecekan Data* menyatakan 23 "sudah tersedia" dan
+4 tanpa keterangan. Setelah dijalankan: **27/27 jalan**, tetapi 4 di antaranya menjawab pertanyaan
+yang berbeda dari yang ditanyakan. **"Tersedia" di CSV berarti kolomnya ada — bukan berarti
+SQL-nya menjawab pertanyaannya.**
+
+---
+
+## §15.X — Peta Terjemahan `vw_pemeriksaan_bcc` → `mv_pemeriksaan` (dan hasil eksekusinya)
+
+§15.Z menyimpulkan 45 pair generasi v1 "mati". **Kesimpulan itu perlu diperbaiki:** pair-pair itu
+tidak mati, hanya menunjuk skema lama. Setelah diterjemahkan ke skema live, **40 dari 45 langsung
+menghasilkan data**.
+
+| | Sebelum terjemahan | Sesudah terjemahan |
+|---|--:|--:|
+| Pair OK | 168 / 213 (79%) | **208 / 213 (98%)** |
+| Gagal skema | 45 | **0** |
+| Jalan tapi nol baris | 0 | 5 |
+
+### Peta kolom (diverifikasi terhadap contoh baris `table_descriptions` + data live)
+
+| `vw_pemeriksaan_bcc` (14 kolom) | `mv_pemeriksaan` (31 kolom) | Catatan |
+|---|---|---|
+| `id` | `id` | |
+| `nama_sarana` | `nama_sarana` | |
+| `provinsi` | `provinsi` | lama **Title Case** (`Jawa Timur`), live **UPPER** (`JAWA TIMUR`) |
+| `kabupaten` | **`kabupaten_kota`** | lama `Kabupaten Tulungagung`, live `KOTA MEDAN` |
+| `nama_balai` | **`nama_upt`** | |
+| `id_unit` | — | **dihapus** |
+| `klasifikasi` | **`komoditi`** | ⚠️ hanya sebagian — lihat "tidak bisa diterjemahkan mekanis" |
+| **`jenis_sarana`** | **`sarana`** | ⚠️ **paling berbahaya** — lihat di bawah |
+| `komoditi` | `komoditi` | lama `Kosmetik` Title, live `KOSMETIK` UPPER |
+| `tujuan` | **`tujuan_pemeriksaan`** | lama `Pemeriksaan Rutin`, live `PEMERIKSAAN RUTIN` |
+| `kesimpulan` | `kesimpulan` | nilai sama (`MK`/`TMK`) |
+| `tgl_start` | **`tanggal_mulai`** | |
+| `tgl_end` | **`tanggal_selesai`** | |
+
+### ⚠️ Jebakan utama: `jenis_sarana` lama ≠ `jenis_sarana` baru
+
+Di `vw_pemeriksaan_bcc`, kolom `jenis_sarana` berisi **`Distribusi` / `Pelayanan` / `Produksi`**.
+Di `mv_pemeriksaan`, konsep itu pindah ke kolom **`sarana`**, sementara nama `jenis_sarana`
+**dipakai ulang untuk konsep lain** (24 nilai: `APOTEK`, `PANGAN`, `PANGAN MD`, `PBF`, …).
+
+Akibatnya SQL lama yang disalin apa adanya **tetap jalan tanpa error dan mengembalikan nol baris** —
+kegagalan paling sulit dilihat. Jejak kesalahan ini masih hidup di dua tempat pada KAI:
+
+- **alias** `produksi` → *"produksi pada kolom jenis_sarana"* (2025-07-14);
+- **instruction** *"gunakan filter jenis_sarana yang sesuai apabila user menanyakan tentang sarana
+  distribusi/pelayanan/produksi"* (2025-07-14).
+
+Tim KAI menemukannya belakangan — instruction 2025-09-28 sudah berbunyi *"gunakan filter pada kolom
+`sarana`"*. **Yang benar sekarang: `sarana`.**
+
+### 5 pair yang tetap nol baris — perlu penulisan ulang semantik, bukan penggantian nama
+
+Semuanya berpola sama: **satu kolom lama memuat dua konsep yang kini terpisah.** Contoh:
+
+```sql
+-- ASLI (vw_pemeriksaan_bcc)
+WHERE lower(jenis_sarana) LIKE '%produksi%' AND kesimpulan='TMK' AND klasifikasi LIKE '%MD%'
+
+-- TERJEMAHAN MEKANIS → 0 baris
+WHERE lower(sarana) LIKE '%produksi%' AND kesimpulan='TMK' AND komoditi LIKE '%MD%'
+--                                                            ^^^ 'MD' tidak ada di komoditi
+
+-- PENULISAN ULANG SEMANTIK → berhasil
+WHERE sarana='PRODUKSI' AND kesimpulan='TMK' AND jenis_sarana LIKE '%MD%'
+--  SUMBER MAKMUR 13 · KUNING INDAH 12 · ES HUPINDO 9
+```
+
+Di skema lama, `klasifikasi` menampung **komoditi sekaligus penanda MD/IRT**. Di skema live,
+komoditi ada di `komoditi` dan penanda MD/IRT ada di `jenis_sarana` (`PANGAN MD`,
+`PANGAN IRT (CPPB - IRT)`, `PANGAN UMKM MENUJU MD`). Tidak ada pemetaan satu-ke-satu.
+
+Kelompok pair yang terkena:
+
+| Pola pertanyaan | Sebab nol baris |
+|---|---|
+| *"sarana produksi MD …"* (5 pair) | `MD` ada di `jenis_sarana`, bukan `komoditi` |
+| *"sarana distribusi dan pelayanan yang tutup/MK/belum pernah …"* (3 pair) | memakai `IN ('DISTRIBUSI','PELAYANAN')` pada kolom yang benar, tetapi digabung filter tanggal/`TTP` yang menyempitkan sampai kosong |
+| *"sarana obat tradisional; suplemen kesehatan; obat kuasi …"* (3 pair) | `OBAT KUASI` **tidak ada** di `mv_pemeriksaan.komoditi` (13 nilai) — konsep itu hanya hidup di `mapping_komoditi_target_balai` sebagai turunan `BAHAN BERBAHAYA` |
+
+**Kesimpulan untuk migrasi:** terjemahan berlapis tiga —
+(1) nama relasi, (2) nama kolom, (3) **penulisan ulang semantik**. Lapis ketiga tidak bisa
+diotomatiskan dan harus dikerjakan per pertanyaan.
+
+---
+
+## §15.W — Perlakuan terhadap pair yang tetap gagal: ditulis ulang, bukan dibiarkan
+
+Setelah terjemahan mekanis (§15.X), sebagian pair masih nol baris. Semuanya sudah ditelusuri
+sampai sebabnya, lalu **ditulis ulang secara semantik dan diuji ke database**. Hasilnya di bawah;
+SQL yang sudah terbukti ini bisa dipakai langsung.
+
+### Kelompok 1 — "sarana produksi MD" (5 pair)
+
+**Sebab:** di `vw_pemeriksaan_bcc`, kolom `klasifikasi` menampung komoditi **sekaligus** penanda
+MD/IRT. Di skema live keduanya terpisah: komoditi di `komoditi`, penanda MD/IRT di `jenis_sarana`
+(`PANGAN MD`, `PANGAN IRT (CPPB - IRT)`, `PANGAN UMKM MENUJU MD`). Terjemahan mekanis memetakan
+`klasifikasi → komoditi`, sehingga `komoditi LIKE '%MD%'` tidak pernah cocok.
+
+```sql
+-- SALAH (hasil terjemahan mekanis) → 0 baris
+WHERE lower(sarana) LIKE '%produksi%' AND kesimpulan='TMK' AND komoditi LIKE '%MD%'
+
+-- BENAR
+WHERE sarana = 'PRODUKSI' AND kesimpulan = 'TMK' AND jenis_sarana LIKE '%MD%'
+```
+
+Hasil uji:
+
+| Pertanyaan | SQL yang benar | Hasil |
+|---|---|---|
+| *"sarana produksi MD apa yang paling sering TMK?"* | + `GROUP BY nama_sarana` | SUMBER MAKMUR 13 · KUNING INDAH 12 · ES HUPINDO 9 |
+| *"UPT mana yang TMK sarana produksi MD terbanyak 2025?"* | + `extract(year…)=2025`, `GROUP BY nama_upt` | BANDUNG 265 · SURABAYA 152 · SEMARANG 137 · JAKARTA 130 · MAKASSAR 56 |
+| *"tren sarana produksi MD dan PIRT 2024–2025"* | `jenis_sarana LIKE '%MD%' OR LIKE '%IRT%'` | 2024: MD 5.155 · IRT 1.654 — 2025: MD 4.417 · IRT 581 |
+
+Angka terakhir sekaligus temuan bisnis: **pemeriksaan sarana PIRT turun 65%** (1.654 → 581) dari
+2024 ke 2025, sementara MD hanya turun 14%.
+
+Untuk pertanyaan yang menyebut **jenis pangan** (garam/tepung/lemak/minyak nabati), jenis pangan
+bukan di `komoditi` maupun `jenis_sarana` melainkan di tabel terpisah:
+
+```sql
+SELECT mpjp.jenis_pangan_name, count(DISTINCT mp.id) AS n
+FROM mv_pemeriksaan mp
+JOIN mv_pemeriksaan_jenis_pangan mpjp ON mpjp.id_pemeriksaan = mp.id
+WHERE mp.sarana='PRODUKSI' AND mp.jenis_sarana LIKE '%MD%'
+  AND lower(mpjp.jenis_pangan_name) ~ '(garam|tepung|lemak|minyak nabati)'
+GROUP BY 1 ORDER BY 2 DESC;
+```
+
+### Kelompok 2 — "OBAT KUASI" (3 pair)
+
+**Sebab:** `OBAT KUASI` **tidak ada** di `mv_pemeriksaan.komoditi` (13 nilai). Konsep itu hanya
+hidup di `mapping_komoditi_target_balai`, sebagai turunan dari `BAHAN BERBAHAYA` (108 baris).
+
+```sql
+-- SALAH → 0 baris untuk "obat kuasi"
+WHERE lower(komoditi) IN ('obat tradisional','suplemen kesehatan','obat kuasi')
+
+-- BENAR
+WHERE mapping_komoditi_target_balai IN
+      ('OBAT TRADISIONAL (OT)','SUPLEMEN KESEHATAN','OBAT KUASI')
+```
+
+Uji *"sarana OT/Suplemen/Obat Kuasi yang tutup 2025"*:
+
+| `komoditi` | `mapping_komoditi_target_balai` | n |
+|---|---|--:|
+| OBAT TRADISIONAL | OBAT TRADISIONAL (OT) | 29 |
+| SUPLEMEN KESEHATAN | SUPLEMEN KESEHATAN | 1 |
+| — | OBAT KUASI | **0** |
+
+Jadi jawaban yang benar untuk Obat Kuasi adalah **nol, dan itu fakta** — bukan kegagalan query.
+Sebutkan bahwa Obat Kuasi di domain pemeriksaan hanya diwakili 108 baris `BAHAN BERBAHAYA`.
+
+### Kelompok 3 — bukan masalah data, melainkan bug penerjemah saya sendiri (6 pair)
+
+Pair dengan pola `lower(kolom) IN ('distribusi','pelayanan')` sempat dilaporkan nol baris karena
+penerjemah saya menaikkan literalnya menjadi huruf besar, sehingga menjadi
+`lower(sarana) IN ('DISTRIBUSI','PELAYANAN')` — selalu salah. **SQL aslinya sudah benar dan tidak
+perlu diubah sama sekali.**
+
+Pelajarannya untuk siapa pun yang memigrasikan pair: **literal yang sudah dibungkus `lower()`/
+`upper()` jangan ikut dinormalisasi** — baik pada `=`, `LIKE`, maupun `IN (...)`. Ini kesalahan
+yang mudah terjadi dan hasilnya terlihat seperti "datanya tidak ada".
+
+### Ringkas perlakuan
+
+| Kategori | Jumlah | Perlakuan |
+|---|--:|---|
+| Kolom lama memuat dua konsep (MD/IRT) | 5 | ditulis ulang ke `jenis_sarana` — **berhasil, ada data** |
+| Nilai tidak ada di kolom yang dipetakan (Obat Kuasi) | 3 | dialihkan ke `mapping_komoditi_target_balai` — **jawabannya memang nol** |
+| Bug normalisasi literal di dalam `lower()` | 6 | SQL asli sudah benar — penerjemah yang diperbaiki |
+
+---
+
+## §15.V — Duplikasi & konsistensi: 213 pair hanya mewakili 114 pertanyaan
+
+### Angka untuk domain pemeriksaan
+
+| Ukuran | Nilai |
+|---|--:|
+| Pair tersimpan | 213 |
+| **Pertanyaan unik** | **114** |
+| Pertanyaan dengan >1 versi | 67 |
+| — di antaranya **SQL-nya berbeda** | **36** |
+| — di antaranya **hasilnya berbeda** | **31** |
+| Pertanyaan dengan selisih hasil >3× | 13 |
+| Pair redundan persis (pertanyaan + SQL identik) | 62 |
+
+Domain terbesar sekaligus paling redundan dalam angka mutlak: **62 pair adalah salinan persis**,
+dan **31 pertanyaan memberi jawaban berbeda tergantung versi mana yang terambil**.
+
+### Tiga contoh selisih terbesar
+
+| Pertanyaan | Hasil antar versi | Rasio |
+|---|---|--:|
+| *"jumlah dan nama sarana distribusi dan pelayanan yang MK/TMK per UPT"* | 4.527 · 4.527 · **4** | 1.132× |
+| *"persentase MK/TMK hasil pemeriksaan sarana pangan olahan"* | 197 · 197 · **1** | 197× |
+| *"profil jenis sarana yang sudah dilakukan pemeriksaan"* | 421 · 421 · **3** | 140× |
+
+Polanya sama di ketiganya: dua versi lama mengembalikan **baris rincian**, satu versi baru
+mengembalikan **rekap teragregasi**. Keduanya sah; yang tidak ada adalah aturan yang menentukan
+mana yang menjawab pertanyaannya.
+
+Contoh lain yang bedanya bukan grain melainkan **definisi**:
+
+| Pertanyaan | Versi A | Versi B |
+|---|---|---|
+| *"sarana distribusi & pelayanan yang belum pernah diperiksa dalam kurun 1 tahun"* | `SELECT DISTINCT nama_sarana, komoditi, tanggal_mulai …` → **146.493** | `… WHERE nama_sarana NOT IN (SELECT … WHERE tanggal_mulai = tanggal_mulai - interval '1 year')` → **214.166** |
+
+Sub-query versi B berisi `tanggal_mulai = tanggal_mulai - interval '1 year'` — kondisi yang
+**selalu salah**, sehingga sub-query-nya kosong dan `NOT IN` meloloskan seluruh tabel. Angka
+214.166 itu bukan "sarana yang belum pernah diperiksa", melainkan **hampir seluruh baris**. Pair
+ini berstatus OK dan tidak pernah ketahuan sebelum dijalankan.
+
+### Kenapa duplikasi ini muncul
+
+Setiap kali koneksi database dibuat ulang (Jul 2025 → Ags 2025 → Nov 2025), pasangan yang sudah ada
+disalin ke `db_connection_id` baru. Yang sebagian disalin apa adanya (62 pair identik), sebagian
+ditulis ulang dengan pendekatan berbeda (36 pertanyaan bercabang SQL). Tidak ada proses yang
+membandingkan versi lama dan baru, sehingga versi yang bertentangan hidup berdampingan.
+
+### Implikasi untuk migrasi
+
+Dari 213 pair, yang bernilai dipindahkan adalah **114 pertanyaannya**. SQL-nya tidak — 36 di
+antaranya saling bertentangan dan minimal satu (contoh `NOT IN` di atas) salah secara logika.
+Aturan yang menggantikannya sudah ada di dokumen ini: entity dan grain ditentukan dari kata kerja
+pertanyaan, `sarana` vs `jenis_sarana` dipilih menurut §15.X, dan filter kolom yang kosongnya
+bermakna diperiksa lebih dulu (§15.Z.2).

@@ -89,3 +89,78 @@ FROM target_balai t LEFT JOIN mv_pemeriksaan p ON ...
 
 **Untuk hitung capaian akurat**: Loka POM harus digulung ke Balai induknya.
 Filter DEMO (93 baris di fact, 2 di target).
+
+---
+
+## 7.6 Verifikasi kunci join komoditi (2026-08-13)
+
+§4.5 `04_kamus_unique_value.md` sudah menetapkan `mapping_komoditi_target_balai` sebagai bridge
+key. Berikut **bukti kuantitatif** seberapa besar bedanya kalau aturan itu dilanggar — memakai
+realisasi sarana distribusi 2025 sebagai contoh:
+
+```sql
+-- A) SALAH: join pakai komoditi mentah
+WITH ld AS (
+  SELECT nama_upt, komoditi AS k, count(*) AS j FROM mv_pemeriksaan
+  WHERE extract(year FROM tanggal_selesai)=2025 AND lower(sarana)='distribusi' GROUP BY 1,2)
+SELECT count(*) AS pasangan, count(tb.id) AS ketemu FROM ld
+LEFT JOIN target_balai tb ON lower(trim(tb.nama_balai))=lower(trim(ld.nama_upt))
+                         AND lower(trim(tb.komoditi))=lower(trim(ld.k)) AND tb.tahun=2024;
+--  385 | 228        ← 41% pasangan kehilangan target
+
+-- B) BENAR: join pakai mapping_komoditi_target_balai
+--    (ganti `komoditi AS k` menjadi `mapping_komoditi_target_balai AS k`)
+--  385 | 381        ← 99% ketemu
+```
+
+Selisihnya **153 pasangan balai×komoditi** yang diam-diam kehilangan target dan karenanya
+menghilang dari perhitungan capaian (atau muncul sebagai capaian NULL).
+
+### Peta jembatan lengkap
+
+```sql
+SELECT komoditi, mapping_komoditi_target_balai, count(*) FROM mv_pemeriksaan GROUP BY 1,2 ORDER BY 1;
+```
+
+| `komoditi` (13 nilai) | → `mapping_komoditi_target_balai` (6 nilai) | Baris |
+|---|---|--:|
+| BAHAN BAKU OBAT · BAHAN OBAT · NARKOTIKA · OBAT · OBAT OBAT TERTENTU · PREKURSOR · PRODUK BIOLOGI DAN SARANA KHUSUS · PSIKOTROPIKA | **OBAT** | 83.752 |
+| KOSMETIK | **KOSMETIKA** | 39.317 |
+| OBAT TRADISIONAL | **OBAT TRADISIONAL (OT)** | 19.925 |
+| PRODUK PANGAN | **PRODUK PANGAN** | 107.254 |
+| SUPLEMEN KESEHATAN | **SUPLEMEN KESEHATAN** | 7.126 |
+| **BAHAN BERBAHAYA** | **OBAT KUASI** ⚠️ | 108 |
+
+⚠️ Pemetaan terakhir janggal secara semantik: **BAHAN BERBAHAYA dipetakan ke OBAT KUASI**.
+Perlu konfirmasi domain sebelum dipakai untuk pelaporan capaian Obat Kuasi. Sementara itu, kalau
+pertanyaannya spesifik "Obat Kuasi", sebutkan bahwa realisasinya berasal dari komoditi
+BAHAN BERBAHAYA.
+
+Catatan: `target_balai.komoditi` punya nilai `Rokok` yang **tidak punya pasangan sama sekali** di
+`mv_pemeriksaan` — pemeriksaan sarana memang tidak mengenal komoditi rokok.
+
+### Nama balai — 15 tanpa target, dan tiga di antaranya bukan balai
+
+Setelah normalisasi `lower(trim())`, masih ada 15 dari 91 `nama_upt` tanpa target:
+
+```sql
+SELECT x.nama_upt, x.n FROM (SELECT nama_upt, count(*) n FROM mv_pemeriksaan GROUP BY 1) x
+LEFT JOIN (SELECT DISTINCT lower(trim(nama_balai)) nb FROM target_balai) t
+  ON lower(trim(x.nama_upt)) = t.nb
+WHERE t.nb IS NULL ORDER BY 2 DESC;
+```
+
+| `nama_upt` | Baris | Sifat |
+|---|--:|---|
+| DIREKTORAT PENGAWASAN DISTRIBUSI DAN PELAYANAN ONPP | 410 | unit pusat |
+| DIREKTORAT PENGAWASAN PRODUKSI ONPP | 168 | unit pusat |
+| DIREKTORAT PENGAWASAN PRODUKSI PANGAN OLAHAN | 158 | unit pusat |
+| DIREKTORAT PENGAWASAN KOSMETIK | 128 | unit pusat |
+| **DEMO TIPE A** | **90** | **akun uji — harus dikecualikan** |
+| DIREKTORAT PENGAWASAN PEREDARAN PANGAN OLAHAN | 72 | unit pusat |
+| LOKA POM DI KABUPATEN BONE · KARAWANG · GROBOGAN · TEGAL · dll | 9 loka | loka baru, belum ada target |
+
+Tiga kelompok yang berbeda penanganannya: **unit pusat** dilaporkan terpisah (memang tidak
+bertarget), **DEMO TIPE A** adalah akun uji dan harus dikecualikan dari semua hitungan
+(analog akun uji `trader_id IN (5,17,50,85)` di domain registrasi), **loka baru** dilaporkan
+sebagai "target belum ditetapkan".

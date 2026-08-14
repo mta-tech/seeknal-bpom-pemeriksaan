@@ -133,3 +133,102 @@ PT NESTLE, HEINZ ABC, INDOLAKTO = brand besar yang produknya sering kena TIE/ED.
 
 Isi `tp_pelanggaran` yang ada (12 record): "ED", "Expired", "Kadaluarsa", "TIE", "menjual kosmetik yang TIE".
 Ini duplikasi `tp_kategori` — kolom ini tak pernah dipakai secara serius.
+
+---
+
+## 8.x `tp_negara` — kolom teks bebas 1.299 nilai, dan kenapa "temuan impor" selalu salah
+
+Pertanyaan *"tampilkan negara-negara dengan temuan impor pada tahun X"* muncul berulang di log KAI
+dan menjadi `BPOM User Relevant Query` #113. SQL resminya memakai satu baris filter:
+
+```sql
+WHERE lower(mpt.tp_negara) != 'indonesia'
+```
+
+### Yang sebenarnya ada di kolom itu (live 2026-08-13, 296.987 baris)
+
+```sql
+SELECT CASE
+         WHEN lower(tp_negara)='indonesia'            THEN 'indonesia'
+         WHEN tp_negara IN ('-','','--')              THEN 'SENTINEL'
+         WHEN lower(tp_negara) IN ('lokal','local')   THEN 'lokal'
+         WHEN tp_negara IS NULL                       THEN 'NULL'
+         ELSE 'negara lain' END AS grup,
+       count(*) AS baris, count(DISTINCT tp_negara) AS nilai,
+       round(sum(tp_harga_total)/1e9,2) AS miliar
+FROM mv_pemeriksaan_temuan GROUP BY 1 ORDER BY 2 DESC;
+```
+
+| Grup | Baris | Nilai unik | Nilai temuan (Rp M) |
+|---|--:|--:|--:|
+| **indonesia** | 190.740 | **9** | 7.509,86 |
+| **SENTINEL** (`'-'`, `''`) | **53.130** | 2 | 53,87 |
+| **negara lain** (impor sebenarnya) | **46.236** | **1.285** | **159,59** |
+| NULL | 6.039 | — | 11,76 |
+| **lokal** | 842 | **3** | 4,44 |
+
+**Filter `<> 'indonesia'` mengembalikan 106.247 baris** (SENTINEL + negara lain + lokal), padahal
+yang benar-benar impor hanya **46.236**. Sentinel `'-'` sendirian menyumbang 53.130 baris — lebih
+banyak daripada seluruh temuan impor sejati.
+
+### Sembilan ejaan "Indonesia" dan tiga ejaan "lokal"
+
+| Ejaan | Baris | | Ejaan | Baris |
+|---|--:|---|---|--:|
+| `Indonesia` | 167.319 | | `lokal` | 534 |
+| `indonesia` | 13.507 | | `Lokal` | 279 |
+| `INDONESIA` | 9.611 | | `LOKAL` | 29 |
+| `iNDONESIA` | 224 | | | |
+| `INdonesia` | 75 | | | |
+| `InDONESIA` · `IndonesIa` · `IndonesiA` · `indonesiA` | 1 masing-masing | | | |
+
+`lower(tp_negara)='indonesia'` sudah menangkap kesembilan ejaan — tetapi **`lokal` (842 baris)
+lolos** dan terhitung sebagai impor.
+
+### Satu negara, banyak penulisan — peringkat "negara asal" tidak sahih tanpa normalisasi
+
+```sql
+SELECT tp_negara, count(*) FROM mv_pemeriksaan_temuan
+WHERE lower(tp_negara) LIKE '%china%' OR lower(tp_negara) LIKE '%korea%'
+   OR lower(tp_negara) LIKE '%tiongkok%' GROUP BY 1 ORDER BY 2 DESC;
+```
+
+| Penulisan | Baris | | Penulisan | Baris |
+|---|--:|---|---|--:|
+| `China` | 14.103 | | `Korea` | 1.479 |
+| `china` | 1.861 | | `korea` | 278 |
+| `CHINA` | 698 | | `Korea Selatan` | 246 |
+| `Tiongkok` | 348 | | `KOREA` | 66 |
+| `tiongkok` | 201 | | | |
+| `TIONGKOK` | 17 | | | |
+| `Made in China` | 31 | | | |
+| `Xingfu Biotechnology (Guangdong) Co., Ltd. (China)` | 53 | | | |
+
+**Tiongkok = China.** Digabung, RRT menjadi **17.312 baris**; terpecah, `China` tampil 14.103 dan
+`Tiongkok` tidak masuk lima besar. Kolom ini juga menampung **nama perusahaan** (`Xingfu
+Biotechnology…`), bukan hanya negara.
+
+### Aturan yang harus dipakai
+
+1. **Domestik** = `lower(tp_negara) IN ('indonesia','lokal','local')`.
+2. **Sentinel** = `tp_negara IN ('-','','--') OR tp_negara IS NULL` → **bukan impor**, laporkan
+   sebagai "asal tidak tercatat" (59.169 baris = 19,9%).
+3. **Impor** = sisanya (46.236 baris), dan **wajib dinormalisasi** minimal untuk China/Tiongkok
+   dan Korea/Korea Selatan sebelum diperingkat.
+4. Sebutkan bahwa 19,9% temuan tidak punya asal tercatat — tanpa itu, peringkat impor terlihat
+   lebih lengkap daripada kenyataannya.
+
+## 8.y 946 baris tanpa tanggal = draft, bukan kohort migrasi
+
+`11_kualitas_data_dan_anomali.md` §11.2 menyimpulkan NULL tanggal bersifat operasional. Rincian
+statusnya memperkuat itu:
+
+```sql
+SELECT status, count(*) FROM mv_pemeriksaan WHERE tanggal_mulai IS NULL GROUP BY 1 ORDER BY 2 DESC;
+--  DRAFT 800 · DRAFT_PUSAT 131 · VERIFY4 12 · DRAFT_REVISE 2 · VERIFY2 1
+```
+
+**931 dari 946 (98,4%) berstatus draft** — inspeksi yang dibuat tetapi belum dijalankan. Hanya 15
+baris yang sudah masuk alur verifikasi tanpa tanggal, dan itu yang layak disebut anomali.
+Konsekuensi teknis: baris-baris ini **tidak pernah masuk `mv_pemeriksaan_agg`** (agg berjumlah
+256.536 = 257.482 − 946), sehingga total dari agg selalu kurang 946 dari total fakta.

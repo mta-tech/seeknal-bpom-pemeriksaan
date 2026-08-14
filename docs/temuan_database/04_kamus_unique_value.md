@@ -283,3 +283,106 @@ Kemungkinan ID dari tabel referensi yang tidak ada di DB ini. Perlu konfirmasi t
 | Suplemen Kesehatan | SUPLEMEN KESEHATAN |
 
 **⚠️ Selalu pakai `mapping_komoditi_target_balai` sebagai bridge key.** Jangan join `komoditi` langsung.
+
+---
+
+## 4.11 Tabrakan Makna Kolom — satu nama, konsep berbeda (live 2026-08-13)
+
+Ini penyebab kesalahan diam-diam yang paling mahal: query jalan, angka masuk akal, tapi menjawab
+hal lain. Empat kasus terverifikasi di domain pemeriksaan.
+
+### (a) `sarana` vs `jenis_sarana` — dua kolom, dua taksonomi
+
+| Kolom | Nilai | Konsep |
+|---|---|---|
+| `sarana` | 3 nilai: `DISTRIBUSI` (141.491) · `PELAYANAN` (72.641) · `PRODUKSI` (43.349) + 1 NULL | **rantai pengawasan** |
+| `jenis_sarana` | 24 nilai: `PANGAN`, `KOSMETIK`, `APOTEK`, `PANGAN MD`, `PKM`, `PBF`, `TOKO OBAT`, … | **jenis usaha/fasilitas** |
+
+⚠️ **Di skema lama (`vw_pemeriksaan_bcc`) kolom bernama `jenis_sarana` berisi
+`Distribusi/Pelayanan/Produksi`** — yaitu konsep yang sekarang ada di kolom **`sarana`**.
+Menerjemahkan SQL lama dengan mempertahankan nama `jenis_sarana` menghasilkan query yang
+**jalan tanpa error tetapi nol baris** (karena `'PRODUKSI'` tidak ada di antara 24 nilai
+`jenis_sarana` yang baru).
+
+Jejak kesalahan ini masih hidup di dua tempat di KAI:
+- **alias** `produksi` → *"produksi pada kolom jenis_sarana"* (dibuat 2025-07-14) — sekarang salah;
+- **instruction** *"gunakan filter jenis_sarana yang sesuai apabila user menanyakan tentang sarana
+  distribusi/pelayanan/produksi"* (2025-07-14) — sekarang salah.
+
+Tim KAI sendiri menemukannya belakangan: instruction 2025-09-28 berbunyi *"gunakan filter pada
+kolom `sarana` … Jangan gunakan kolom `nama_sarana`"*. **Aturan yang benar sekarang: `sarana`.**
+
+### (b) `komoditi` — himpunan nilai berbeda di setiap database
+
+| Sumber | Jumlah nilai | Bentuk |
+|---|--:|---|
+| `pemeriksaan.mv_pemeriksaan` | **13** | `OBAT`, `KOSMETIK`, `PRODUK PANGAN`, `NARKOTIKA`, `PSIKOTROPIKA`, `PREKURSOR`, `BAHAN BAKU OBAT`, … |
+| `pengujian.mv_sampel` | 12 | `KOSMETIKA`, `OBAT TRADISIONAL (OT)`, `PANGAN FORTIFIKASI`, `PIRT`, `ROKOK`, … |
+| `pengawasan.mv_pengawasan` | 7 | tanpa `KEMASAN PANGAN` |
+| `penandaan.mv_penandaan` | 8 | dengan `KEMASAN PANGAN` |
+| `target_balai` (4 DB, identik) | 7 | **Title Case**: `Kosmetika`, `Obat`, `Produk Pangan`, … |
+
+Perhatikan: pemeriksaan memakai **`KOSMETIK`** (tanpa A) sementara tiga domain lain memakai
+**`KOSMETIKA`**; pemeriksaan memakai `OBAT TRADISIONAL` sementara lainnya `OBAT TRADISIONAL (OT)`.
+Karena itu `mapping_komoditi_target_balai` ada — lihat §7.6.
+
+### (c) `status` — ruang kode yang sama sekali berbeda antar domain
+
+| Domain | Tipe | Nilai |
+|---|---|---|
+| **pemeriksaan** | `text` | `DRAFT`, `DRAFT_REVISE`, `VERIFY1`…`VERIFY7`, `VERIFY_P1`…`VERIFY_P3`, `FINISHED`, `FINISHED_PUSAT`, `NULL` |
+| pengujian | `bigint` | 0–21 (+ anomali 41, 122) |
+| pengawasan | `bigint` | 0–9, 990–996, 999 |
+| penandaan | `bigint` | 0–14, 991–997, 999 |
+
+**Pemeriksaan satu-satunya yang memakai status berbentuk teks.** Kode angka dari domain lain tidak
+punya arti di sini, dan sebaliknya. Nilai `'NULL'` pada `status`/`kesimpulan` adalah **string
+empat huruf**, bukan SQL NULL.
+
+### (d) Empat nama berbeda untuk konsep "vonis"
+
+| Domain | Kolom | Nilai |
+|---|---|---|
+| **pemeriksaan** | `kesimpulan` | `MK` · `TMK` · `TDP` · `TTP` · `TMBB` · `'NULL'` |
+| pengujian | `kesimpulan_akhir` | `MS` · `TMS` · `HPST` · `'Null'` |
+| pengawasan | `kesimpulan_penilaian_akhir` | `MK` · `TMK` · `'Null'` |
+| penandaan | `kesimpulan_penilaian_pusat` | `MK` · `TMK` · `TMK MAYOR` · `TMK MINOR` · `VP` |
+
+Pemeriksaan memakai **MK/TMK** (Ketentuan), pengujian memakai **MS/TMS** (Syarat). Pertanyaan user
+sering mencampur keduanya ("hasil uji TMK") — terjemahkan ke istilah domainnya sebelum query.
+Dua nilai yang hanya ada di pemeriksaan: **`TDP`** (Tidak Dapat Diperiksa, 790 baris) dan
+**`TTP`** (Tutup, 1.540 baris) — keduanya berarti pemeriksaan tidak terjadi, bukan vonis kepatuhan.
+**`TMBB`** (18 baris) tidak terdaftar di alias/instruction KAI mana pun.
+
+### (e) Penamaan tanggal berbeda tiap domain
+
+| Domain | Kolom tanggal bisnis | Rentang live |
+|---|---|---|
+| **pemeriksaan** | `tanggal_input`, `tanggal_mulai`, `tanggal_selesai` | input 2020-03-11 → 2026-08-13 |
+| pengujian | `tglsampling` | 2019-01-14 → 2026-08-12 |
+| pengawasan | `tgl_start`, `tgl_end` | 2023-01-01 → 2026-08-31 |
+| penandaan | `tgl_start`, `tgl_end` | 2023-01-01 → 2026-08-12 |
+
+Pemeriksaan punya **tiga** tanggal dan hanya `tanggal_input` yang tidak pernah NULL (946 baris
+NULL pada `tanggal_mulai`/`tanggal_selesai`). Perhatikan `pengawasan.tgl_start` mencapai
+**2026-08-31** — tanggal di masa depan relatif hari pengambilan data.
+
+## 4.12 Filter yang tersedia per tabel (ringkas)
+
+| Tabel | Dimensi filter yang sah | Ukuran |
+|---|---|---|
+| `mv_pemeriksaan` | `sarana` (3) · `jenis_sarana` (24) · `legal` (52) · `tujuan_pemeriksaan` (37) · `komoditi` (13) · `mapping_komoditi_target_balai` (6) · `klasifikasi_distribusi` (23) · `klasifikasi_sarana` (5) · `kesimpulan` (6) · `status` (17) · `grade` (5) · `provinsi` (34) · `kabupaten_kota` (514) · `nama_upt` (91) | 257.482 baris |
+| `mv_pemeriksaan_temuan` | `tp_kategori` (106) · `tp_tindakan` (126) · `tp_negara` (1.299 bebas) | 296.987 baris · 32.504 pemeriksaan |
+| `mv_pemeriksaan_kategori_temuan` | `tp_kategori` (49, sudah dinormalisasi) | 241.609 baris |
+| `mv_pemeriksaan_jenis_pangan` | `jenis_pangan_name` (200) | 67.206 baris · 48.519 pemeriksaan |
+| `mv_kriteria_pemeriksaan` | `klasifikasi` (4) · `tujuan` (8) · `tx_criteria` (4+NULL) | 5.892 baris · **hanya 902 pemeriksaan** |
+| `mv_pemeriksaan_petugas` | `petugas` · `jenis_id` (24) · `tujuan` (36) | 581.923 baris |
+| `mv_pemeriksaan_timeline` | `status` (18) | 288.186 baris · **30.704 tanpa induk** |
+| `target_balai` | `nama_balai` (76) · `komoditi` (7) · `tahun` (**hanya 2024**) | 532 baris |
+| `coverage_balai` | `nama_balai` (88) · `kabupaten_kota` (514) | 668 baris |
+
+⚠️ `tp_kategori` muncul di **dua** tabel dengan bentuk berbeda: di `mv_pemeriksaan_temuan`
+106 nilai **termasuk gabungan berkoma** (`'TIE (Tanpa Izin Edar), Lain - Lain'`), sedangkan di
+`mv_pemeriksaan_kategori_temuan` sudah dipecah menjadi 49 nilai tunggal (dengan sisa 20 baris
+yang masih mengandung koma). **Untuk menghitung per kategori, pakai tabel kategori_temuan**;
+`mv_pemeriksaan_temuan.tp_kategori` hanya untuk menampilkan apa adanya.

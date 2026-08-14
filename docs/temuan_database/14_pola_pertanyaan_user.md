@@ -155,3 +155,70 @@ SQL KAI pakai view `vw_pemeriksaan_bcc` yang me-rename kolom. Lihat [15_mapping_
 3. **Mapping full-text ↔ kode** — user pakai "Memenuhi Ketentuan", "TMS", "Tidak Sesuai", bukan cuma MK/TMK.
 4. **Clarifikasi "periode"** — 132 pertanyaan pakai kata ambigu "periode".
 5. **Bab SQL kanonik** — 11 intent butuh template SQL siap pakai (lihat [15_mapping_kai_ke_warehouse.md](15_mapping_kai_ke_warehouse.md)).
+
+---
+
+## Batch pertanyaan tambahan — diuji ke DB live 2026-08-14
+
+Sepuluh pertanyaan baru dari pengguna, dipetakan ke kolom lalu dijalankan.
+
+| Pertanyaan | Pemetaan | Catatan hasil |
+|---|---|---|
+| Inspeksi RUTIN MK/TMK per periode 2025 | `tujuan_pemeriksaan='PEMERIKSAAN RUTIN'` + `kesimpulan` + bulan `tanggal_mulai` | jalan; MK dan TMK naik seiring bulan |
+| Total pemeriksaan Agustus 2025 | rentang `tanggal_mulai` | jalan |
+| **"Penurunan drastis pada Oktober 2025"** | uji klaim | ⛔ **KLAIM SALAH** — lihat di bawah |
+| Pemeriksaan **MD** 2025 status TMK | `jenis_sarana LIKE '%MD%'`, **bukan** `komoditi` | jalan; satu-satunya nilai yang cocok `PANGAN MD` |
+| **Top 5 Balai** | ambigu — "top" berdasar apa? | dijawab dengan cacah pemeriksaan; **perlu klarifikasi** |
+| Line chart komoditas OBAT 2025 | `komoditi='OBAT'` (bukan keluarga obat) | jalan |
+| Kepatuhan CPOB produksi obat 2024 Surabaya | `tingkat_pemenuhan_cpob` | jalan, tapi **populasinya sangat tipis** |
+| **Tabel balai + target + pemeriksaan per sarana 2025** | `target_balai` | ⛔ **tidak lengkap** — lihat di bawah |
+| Analisa total per bulan 2025 | bulan `tanggal_mulai` | jalan; **bulan berjalan parsial** |
+
+### ⛔ Klaim "penurunan drastis Oktober 2025" terbantah
+
+```sql
+SELECT to_char(tanggal_mulai,'YYYY-MM') AS bln, count(*) AS n FROM mv_pemeriksaan
+WHERE tanggal_mulai >= '2025-01-01' AND tanggal_mulai < '2026-01-01' GROUP BY 1 ORDER BY 1;
+```
+
+Bentuk kurvanya: naik dari Januari sampai puncak di Mei, landai Juni–September, **Oktober justru
+naik lagi**, baru turun di November dan tajam di Desember.
+
+Jadi bulan yang benar-benar turun adalah **November dan Desember**, bukan Oktober. Kalimat
+*"mengalami penurunan drastis pada Oktober 2025, menandai tren penurunan signifikan"* adalah
+**kesimpulan yang tidak didukung data** — kemungkinan besar keluaran AI yang lolos tanpa
+verifikasi, lalu ditanyakan balik sebagai fakta.
+
+**Aturan yang harus masuk skill:** pernyataan tren dari turn sebelumnya **tidak boleh diwarisi
+sebagai fakta**; hitung ulang dari SQL turn ini.
+
+### ⛔ `target_balai` tidak punya target untuk sarana PELAYANAN
+
+```sql
+SELECT string_agg(column_name, ', ' ORDER BY ordinal_position) FROM information_schema.columns
+WHERE table_schema='public' AND table_name='target_balai' AND column_name LIKE 'target%';
+--  target_penandaan, target_pengawasan, target_pengujian, target_pengujian_pangan,
+--  target_pengujian_pangan_fortifikasi, target_sarana_distribusi, target_sarana_produksi
+```
+
+Ada target untuk **distribusi** dan **produksi**, **tidak ada** untuk **pelayanan** — padahal
+`mv_pemeriksaan.sarana` punya tiga nilai. Pertanyaan "tabel balai + total target + total
+pemeriksaan dikelompokkan berdasarkan sarana" karena itu **hanya bisa dijawab untuk dua dari tiga
+sarana**. Menjawabnya untuk ketiganya (dengan memakai target distribusi bagi pelayanan) menghasilkan
+capaian yang keliru.
+
+Perhatikan juga pernyataan pengguna *"Saat ini tidak ada data yang tersedia untuk ditampilkan…"* —
+itu **tidak benar**: datanya ada, yang tidak ada adalah **target pelayanan**. Jawaban yang tepat
+menyebut batas itu, bukan menyatakan datanya kosong.
+
+### Catatan cakupan waktu
+
+```sql
+SELECT max(tanggal_mulai), max(tanggal_input),
+       count(*) FILTER (WHERE tanggal_mulai >= date_trunc('month', CURRENT_DATE)) AS bulan_berjalan
+FROM mv_pemeriksaan;
+```
+
+`tanggal_input` mencapai hari ini, sementara `tanggal_mulai` memuat tanggal **di masa depan** —
+gejala salah input yang sudah dicatat di `11_kualitas_data_dan_anomali.md`. Bulan berjalan selalu
+**parsial**; sebutkan itu pada setiap jawaban tren bulanan.

@@ -1,0 +1,296 @@
+﻿"no_csv","modul","pertanyaan","status","baris_hasil","detik","error","sql"
+"1","pemeriksaan","1","OK","1112","0.9","","select distinct(nama_sarana), sarana, klasifikasi_sarana, klasifikasi_distribusi
+from mv_pemeriksaan mp 
+where mp.klasifikasi_distribusi = 'BADAN USAHA/USAHA PERORANGAN PEMILIK NOTIFIKASI KOSMETIK'"
+"2","pemeriksaan","Sarana Importir apa saja yang pernah diperiksa oleh Badan POM?","OK","1288","1.7","","select distinct(nama_sarana), klasifikasi_distribusi
+from mv_pemeriksaan mp 
+where lower(mp.klasifikasi_distribusi) like '%importir%'"
+"3","pemeriksaan","Tampilkan temuan produk berdasarkan kategori sarana distribusi?","OK","304","1.2","","select klasifikasi_distribusi, komoditi, mpt.tp_kategori, count(*), sum(mpt.tp_harga_total)
+from mv_pemeriksaan mp 
+join mv_pemeriksaan_temuan mpt 
+on mp.id = mpt.id_pemeriksaan 
+where mp.klasifikasi_distribusi is not null
+group by 1, 2, 3"
+"5","pemeriksaan","","OK","10","0.5","","SELECT 
+	mp.nama_upt,
+    mp.klasifikasi_distribusi, 
+    mp.kesimpulan, 
+    COUNT(*) AS jumlah
+FROM mv_pemeriksaan mp
+WHERE 
+    EXTRACT(YEAR FROM mp.tanggal_selesai) = 2025
+    AND LOWER(mp.nama_upt) LIKE '%jakarta%'
+    AND (
+        LOWER(mp.klasifikasi_distribusi) LIKE '%notifikasi%' 
+        OR LOWER(mp.klasifikasi_distribusi) LIKE '%importir%'
+    )
+GROUP BY 
+    1, 2, 3"
+"6","pemeriksaan","","OK","27","1.2","","SELECT 
+	mp.nama_upt,
+    mp.klasifikasi_distribusi, 
+    mp.kesimpulan, 
+    COUNT(*) AS jumlah
+FROM mv_pemeriksaan mp
+WHERE 
+    EXTRACT(YEAR FROM mp.tanggal_selesai) = 2025
+    AND LOWER(mp.nama_upt) LIKE '%jakarta%'
+    AND (
+        LOWER(mp.klasifikasi_distribusi) NOT LIKE '%notifikasi%' 
+        OR LOWER(mp.klasifikasi_distribusi) NOT LIKE '%importir%'
+    )
+GROUP BY 
+    1, 2, 3"
+"7","pemeriksaan","","OK","99","0.4","","select komoditi, mpt.tp_kategori, count(*), sum(mpt.tp_harga_total)
+from mv_pemeriksaan mp 
+join mv_pemeriksaan_temuan mpt 
+on mp.id = mpt.id_pemeriksaan 
+where mp.klasifikasi_distribusi is not null
+group by 1, 2"
+"34","pemeriksaan","Tampilkan tiga temuan kritis paling sering ditemui pada Balai Besar POM di DKI Jakarta tah","OK","6","1.2","","select mp.nama_upt, mp.tx_critical_issue, count(*)
+from mv_pemeriksaan mp 
+where mp.tx_critical_issue is not null
+and lower(mp.nama_upt) like '%jakarta%'
+and extract(year from mp.tanggal_input) = 2024
+group by 1, 2"
+"35","pemeriksaan","Tampilkan sarana produksi TMK pada tiga tahun terakhir di wilayah kerja Balai POM di Pangk","OK","23","1.0","","SELECT 
+    mp.tanggal_input, 
+    mp.nama_upt, 
+    mp.kesimpulan, 
+    mp.tl_saran_names
+FROM mv_pemeriksaan mp
+WHERE 
+    LOWER(mp.sarana) LIKE '%produksi%'
+    AND mp.tanggal_input >= (CURRENT_DATE - INTERVAL '3 years')
+    AND LOWER(mp.nama_upt) LIKE '%pangkalpinang%'
+    AND mp.kesimpulan = 'TMK'
+ORDER BY 1;"
+"36","pemeriksaan","Tampilkan persentase ketepatan grading hasil pemeriksaan di UPT x di TW 1 2025 (Syarat : g","OK","3","1.2","","WITH data_grading AS (
+    SELECT 
+        mp.grade,
+        mp.kesimpulan,
+        CASE
+            WHEN UPPER(mp.grade) = 'A' AND UPPER(mp.kesimpulan) = 'MK' THEN 1
+            WHEN UPPER(mp.grade) IN ('B', 'C') AND UPPER(mp.kesimpulan) = 'TMK' THEN 1
+            ELSE 0
+        END AS tepat
+    FROM mv_pemeriksaan mp
+    WHERE 
+        EXTRACT(YEAR FROM mp.tanggal_mulai) = 2025
+        AND mp.grade IS NOT NULL
+        AND LOWER(mp.nama_upt) LIKE '%bogor%'
+)
+SELECT 
+    grade,
+    COUNT(*) AS total_pemeriksaan,
+    SUM(tepat) AS jumlah_tepat,
+    COUNT(*) - SUM(tepat) AS jumlah_tidak_tepat,
+    ROUND((SUM(tepat)::decimal / NULLIF(COUNT(*), 0)) * 100, 2) AS persentase_ketepatan
+FROM data_grading
+GROUP BY grade
+ORDER BY grade;"
+"40","pemeriksaan","Bagaimana tren hasil pemeriksaan sarana produksi MD jenis pangan Garam, Tepung, Lemak dan ","OK","228","4.8","","WITH pemeriksaan_pangan AS (
+    SELECT 
+        mp.id,
+        mp.tanggal_mulai,
+        TO_CHAR(mp.tanggal_mulai, 'YYYY-MM') AS bulan_tahun,
+        mp.nama_upt,
+        mpjp.jenis_pangan_name
+    FROM mv_pemeriksaan mp
+    JOIN mv_pemeriksaan_jenis_pangan mpjp 
+        ON mp.id = mpjp.id_pemeriksaan
+    WHERE 
+        EXTRACT(YEAR FROM mp.tanggal_mulai) >= 2024
+        AND LOWER(mpjp.jenis_pangan_name) ~ '(garam|tepung|lemak|minyak nabati)'
+        AND LOWER(mp.sarana) LIKE '%produksi%'   -- karena fokusnya sarana produksi MD
+)
+SELECT 
+    pp.bulan_tahun,
+    pp.jenis_pangan_name,
+    COUNT(DISTINCT pp.id) AS jumlah_pemeriksaan
+FROM pemeriksaan_pangan pp
+GROUP BY pp.bulan_tahun, pp.jenis_pangan_name
+ORDER BY pp.bulan_tahun, pp.jenis_pangan_name;"
+"41","pemeriksaan","Berdasarkan hasil pemeriksaan selama X tahun terakhir (misal selama 5 tahun terakhir), unt","OK","1","1.0","","WITH pemeriksaan_amdk AS (
+    SELECT 
+        mp.id
+    FROM mv_pemeriksaan mp
+    JOIN mv_pemeriksaan_jenis_pangan mpjp 
+        ON mp.id = mpjp.id_pemeriksaan
+    WHERE 
+        LOWER(mp.sarana) LIKE '%produksi%'
+        AND LOWER(mpjp.jenis_pangan_name) LIKE '%air minum dalam kemasan%'
+        AND EXTRACT(YEAR FROM mp.tanggal_mulai) >= EXTRACT(YEAR FROM CURRENT_DATE) - 1
+)
+SELECT 
+    mpkt.tp_kategori,
+    COUNT(*) AS jumlah_temuan
+FROM mv_pemeriksaan_kategori_temuan mpkt
+JOIN pemeriksaan_amdk pam ON pam.id = mpkt.id_pemeriksaan
+GROUP BY mpkt.tp_kategori
+ORDER BY jumlah_temuan DESC
+LIMIT 10;"
+"44","pemeriksaan","Ada berapa sarana produksi AMDK dengan hasil pemeriksaan TMK di wilayah kerja Balai POM di","OK","1","2.1","","SELECT 
+    COUNT(DISTINCT mp.id) AS jumlah_sarana_tmk
+FROM mv_pemeriksaan mp
+JOIN mv_pemeriksaan_jenis_pangan mpjp 
+    ON mp.id = mpjp.id_pemeriksaan
+WHERE 
+    EXTRACT(YEAR FROM mp.tanggal_mulai) = 2024
+    AND LOWER(mp.nama_upt) LIKE '%bogor%'
+    AND LOWER(mp.sarana) LIKE '%produksi%'
+    AND LOWER(mpjp.jenis_pangan_name) LIKE '%air minum dalam kemasan%'
+    AND UPPER(mp.kesimpulan) = 'TMK';"
+"45","pemeriksaan","Analisis data realisasi inspeksi pada periode waktu tertentu yang dilaksanakan oleh pusat ","OK","719","1.2","","select mp.nama_upt, sarana, mp.komoditi, count(*)  
+from mv_pemeriksaan mp
+where extract(year from mp.tanggal_mulai) = 2025
+group by 1, 2, 3
+order by 1, 3, 3"
+"46","pemeriksaan","Riwayat kepatuhan CPOB dari PT X dalam periode Y tahun pengawasan","OK","12","1.3","","select mp.tanggal_mulai, nama_sarana, kabupaten_kota, mp.tingkat_pemenuhan_cpob 
+from mv_pemeriksaan mp 
+where mp.tingkat_pemenuhan_cpob is not null
+and status in ('VERIFY4', 'VERIFY5','VERIFY6','VERIFY7','FINISHED')
+and lower(nama_sarana) like '%soho industri%'
+order by 1, 2, 3"
+"47","pemeriksaan","Tren temuan inspeksi CPOB berdasarkan kategori temuan dan tingkat kekritisan temuan dalam ","OK","5","2.0","","select mp.tingkat_pemenuhan_cpob, mpt.tp_kategori, mpt.product_name, mpt.tp_harga_total     
+from mv_pemeriksaan mp 
+join mv_pemeriksaan_temuan mpt
+on mp.id = mpt.id_pemeriksaan 
+where mp.tingkat_pemenuhan_cpob is not null"
+"48","pemeriksaan","","OK","5","4.1","","WITH pemeriksaan_amdk AS (
+    SELECT 
+        mp.id,
+        mp.tanggal_mulai,
+        TO_CHAR(mp.tanggal_mulai, 'YYYY-MM') AS bulan_tahun,
+        mp.nama_upt
+    FROM mv_pemeriksaan mp
+    JOIN mv_pemeriksaan_jenis_pangan mpjp 
+        ON mp.id = mpjp.id_pemeriksaan
+    WHERE 
+        EXTRACT(YEAR FROM mp.tanggal_mulai) = 2025
+        AND LOWER(mp.nama_upt) LIKE '%bogor%'
+        AND LOWER(mpjp.jenis_pangan_name) LIKE '%air minum dalam kemasan%'
+        and mp.sarana = 'PRODUKSI'
+)
+SELECT 
+    pa.bulan_tahun,
+    COUNT(DISTINCT pa.id) AS jumlah_pemeriksaan_amdk
+FROM pemeriksaan_amdk pa
+GROUP BY pa.bulan_tahun
+ORDER BY pa.bulan_tahun;"
+"48","pemeriksaan","tren audit komprehensif yang dihubungkan dengan region, kategori temuan dan tahun atau per","OK","7","0.5","","SELECT 
+    TO_CHAR(mkp.tgl_end, 'YYYY-MM') AS bulan_tahun,
+    mkp.tx_criteria AS tingkat_kritikalitas,
+    COUNT(*) AS jumlah_audit
+FROM mv_kriteria_pemeriksaan mkp
+WHERE 
+    LOWER(mkp.tujuan) LIKE '%komprehensif%'
+    AND EXTRACT(YEAR FROM mkp.tgl_end) = 2024
+GROUP BY 
+    TO_CHAR(mkp.tgl_end, 'YYYY-MM'),
+    mkp.tx_criteria
+ORDER BY 
+    bulan_tahun,
+    tingkat_kritikalitas;"
+"49","pemeriksaan","Analisis relevansi maturitas industri dengan hasil pengawasan berkala (rutin dan komprehen","OK","17","1.1","","select mp.tanggal_selesai, mp.nama_sarana, mp.tingkat_pemenuhan_cpob 
+from mv_pemeriksaan mp 
+where mp.tingkat_pemenuhan_cpob is not null
+and lower(mp.nama_sarana) like '%harsen laboratories%' 
+order by 1, 2, 3"
+"50","pemeriksaan","Analisis jam terbang masing-masing inspektur dalam rangka peningkatan kompetensi maupun ku","OK","5112","1.1","","select mpp.daftar_balai_pemeriksa, mpp.petugas, mpp.tujuan, count(*)
+from mv_pemeriksaan_petugas mpp 
+where extract(year from mpp.tgl_surat) = 2025
+group by 1, 2, 3
+order by 1, 2, 3"
+"51","pemeriksaan","bagaimna tingkat pemenuhan CPOB (Memuaskan, Baik, Cukup, dst) terhadap seluruh fasilitas p","OK","5","0.8","","select sarana, mp.tingkat_pemenuhan_cpob, count(*)
+from mv_pemeriksaan mp 
+where extract(year from mp.tanggal_mulai) = 2025
+and lower(mp.sarana) like '%produksi%' 
+group by 1, 2
+order by 1, 2"
+"52","pemeriksaan","Tampilan jenis observasi dan temuan yang terkait dengan tag yang tersedia","OK","53","3.1","","select mkp.klasifikasi, mkp.tujuan, mkp.tx_criteria, count(*)
+from mv_kriteria_pemeriksaan mkp 
+group by 1, 2, 3
+order by 1, 2, 3"
+"54","pemeriksaan","Analisis profil kepatuhan pelaku usaha (sarana produksi, sarana distribusi, pengawasan ikl","OK","50","2.1","","select sarana, mp.komoditi, mp.kesimpulan, count(*)
+from mv_pemeriksaan mp 
+where extract(year from mp.tanggal_mulai) = 2025
+and lower(mp.sarana) in ('produksi', 'distribusi')
+group by 1, 2, 3"
+"59","pemeriksaan","Tampilkan ketepatan waktu pelaporan SIPT oleh Balai X","OK","2","0.6","","WITH data_sipt AS (
+    SELECT 
+        mp.nama_upt,
+        mp.day_mulai_selesai,
+        CASE 
+            WHEN mp.day_mulai_selesai < 30 THEN 'Tepat Waktu'
+            ELSE 'Terlambat'
+        END AS kategori_waktu
+    FROM mv_pemeriksaan mp
+    WHERE LOWER(mp.nama_upt) LIKE '%bandung%'
+      AND mp.day_mulai_selesai IS NOT NULL
+)
+SELECT 
+    kategori_waktu,
+    COUNT(*) AS jumlah_laporan,
+    ROUND((COUNT(*)::decimal / NULLIF(SUM(COUNT(*)) OVER (), 0)) * 100, 2) AS persentase
+FROM data_sipt
+GROUP BY kategori_waktu
+ORDER BY persentase DESC;"
+"105","pemeriksaan","Tampilkan proporsi klasifikasi sarana peredaran yang diperiksa di UPT A/Nasional","OK","5","0.5","","select mp.klasifikasi_sarana, count(*)
+from mv_pemeriksaan mp 
+where lower(mp.sarana) = 'distribusi'
+and lower(mp.nama_upt) like '%bandung%'
+group by 1"
+"109","pemeriksaan","Dari seluruh UPT, sarana produksi MD dengan jenis pangan apa yang paling banyak TMK di tah","OK","10","0.5","","select mpjp.jenis_pangan_name, count(*)
+from mv_pemeriksaan_jenis_pangan mpjp
+join mv_pemeriksaan mp 
+on mpjp.id_pemeriksaan = mp.id 
+where lower(mp.jenis_sarana) like '%pangan md%'
+and lower(mp.sarana) = 'produksi'
+and lower(mp.kesimpulan) = 'tmk'
+and extract(year from mp.tanggal_selesai) = 2025
+group by 1
+order by 2 desc
+limit 10"
+"110","pemeriksaan","Analisis kesesuaian realisasi inspeksi pada periode pengawasan tertentu terhadap target in","OK","410","0.7","","WITH latest_target_year AS (
+    SELECT MAX(tb.tahun) AS tahun_terbaru FROM target_balai tb 
+),
+laporan_dikirim AS (
+    SELECT 
+        mp.nama_upt,
+        mp.komoditi,
+        EXTRACT(YEAR FROM mp.tanggal_selesai) AS tahun,
+        COUNT(*) AS jumlah_laporan
+    FROM mv_pemeriksaan mp
+    WHERE mp.tanggal_selesai IS NOT NULL
+      AND EXTRACT(YEAR FROM mp.tanggal_selesai) = EXTRACT(YEAR FROM CURRENT_DATE)
+      and lower(mp.sarana) = 'distribusi'
+    GROUP BY mp.nama_upt, mp.komoditi, EXTRACT(YEAR FROM mp.tanggal_selesai)
+)
+SELECT 
+    ld.nama_upt,
+    ld.komoditi,
+    ld.tahun AS tahun_laporan,
+    tb.tahun AS tahun_target,
+    ld.jumlah_laporan,
+    tb.target_sarana_distribusi,
+    ROUND(
+        (ld.jumlah_laporan::decimal / NULLIF(tb.target_sarana_distribusi, 0)) * 100, 
+        2
+    ) AS capaian_persen
+FROM laporan_dikirim ld
+CROSS JOIN latest_target_year lty
+LEFT JOIN target_balai tb 
+    ON LOWER(TRIM(tb.nama_balai)) = LOWER(TRIM(ld.nama_upt))
+    AND LOWER(TRIM(tb.komoditi)) = LOWER(TRIM(ld.komoditi))
+    AND tb.tahun = lty.tahun_terbaru
+ORDER BY ld.nama_upt, ld.komoditi;"
+"113","pemeriksaan","Tampilkan negara-negara dengan temuan impor pada tahun X?","OK","347","0.5","","select mpt.tp_negara, sum(mpt.tp_harga_total) 
+from mv_pemeriksaan_temuan mpt 
+join mv_pemeriksaan mp 
+on mpt.id_pemeriksaan = mp.id 
+where lower(mpt.tp_negara) != 'indonesia'
+and mpt.tp_harga_total is not null
+and extract(year from mp.tanggal_selesai) = 2025
+group by 1
+order by 2 desc"

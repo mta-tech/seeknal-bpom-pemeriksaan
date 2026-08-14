@@ -1,0 +1,32 @@
+{
+  "database": "pemeriksaan",
+  "tanggal_eksekusi": "2026-08-13",
+  "pair_context_stores": {
+    "total": 213,
+    "ok_sesudah": 208,
+    "persen_ok": 98,
+    "status_sebelum": {
+      "ERR_SCHEMA": 45,
+      "OK": 168
+    },
+    "status_sesudah": {
+      "OK": 208,
+      "NOL_BARIS": 5
+    },
+    "diagnosa": {
+      "PULIH_RELASI_KOLOM": 38,
+      "NOL_TIDAK_DITEMUKAN": 3,
+      "OK_TAPI_RAKSASA": 3,
+      "NOL_KOLOM_PECAH": 2,
+      "PULIH_RELASI_KOLOM_NILAI": 1,
+      "OK_LANGSUNG": 166
+    }
+  },
+  "csv_sql_training": {
+    "total": 27,
+    "ok": 27,
+    "hasil": {
+      "OK": 27
+    }
+  }
+}
