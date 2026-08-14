@@ -121,6 +121,35 @@ Grade hanya untuk RUTIN/INTENSIFIKASI. Sertifikasi TIDAK ber-grade.
 **Insight**: RENCANA AKSI punya TMK rate tertinggi (53%) — memang inspeksi follow-up dari kecurigaan.
 RUTIN = baseline kepatuhan populasi (~29%).
 
+Sebaran nilainya bercerita tentang **cara kerja pengawasan**: mayoritas rutin, lalu kampanye musiman
+yang menempel pada hari besar keagamaan (Idul Fitri, Natal dan Tahun Baru, Idul Adha, Imlek), jalur
+sertifikasi (CPOB, CDOB, CPKB, UMKM menjadi MD, pra/re-sertifikasi), penindakan berbasis kasus,
+intensifikasi tematik, surveilans, sampai operasi gabungan (OPGABNAS/OPGABDA). Nilai `(NULL)` bukan
+kategori — lihat kaitannya dengan status DRAFT di `11_kualitas_data_dan_anomali.md`.
+
+### 🔴 Ada TIGA kolom lain bernama mirip, di tabel dengan grain berbeda
+
+Ditemukan 14 Agustus 2026. Ini penyebab salah rute yang paling mungkin terjadi di domain ini:
+
+| Tabel | Kolom | Grain tabelnya | Aman untuk hitung pemeriksaan? |
+|---|---|---|---|
+| `mv_pemeriksaan` | `tujuan_pemeriksaan` | 1 baris = 1 pemeriksaan | ✅ ini yang benar |
+| `mv_pemeriksaan_agg` | `tujuan_pemeriksaan` | kubus pra-agregasi | hanya dengan aturan kubus (§`10_agg_dan_integritas_etr.md`) |
+| `mv_pemeriksaan_petugas` | `tujuan` | 1 baris = 1 **penugasan petugas** | ❌ **tidak** |
+| `mv_kriteria_pemeriksaan` | `tujuan` | 1 baris = 1 item checklist | ❌ tidak |
+
+**Bukti bahayanya:** `mv_pemeriksaan_petugas` memuat **582.021 baris untuk 257.522 pemeriksaan
+unik** — sekitar **2,26 baris per pemeriksaan**, karena satu pemeriksaan dikerjakan beberapa
+petugas. `GROUP BY tujuan` di tabel itu menghitung **penugasan**, bukan pemeriksaan, dan hasilnya
+melebihkan sekitar dua kali lipat tanpa terlihat aneh.
+
+> ⚠️ **Status penyaluran ke context — terbalik, dan ini yang berbahaya.** Diverifikasi 14 Agustus
+> 2026: `tujuan_pemeriksaan` **nol penyebutan** di seluruh `context/`, `skills/`, dan
+> `SEEKNAL_ASK.md` — padahal SQL sistem lama memakainya 12 kali. Sementara itu `tujuan` versi
+> petugas **sudah diajarkan**, lengkap dengan contoh `GROUP BY tujuan`, di `context/70-petugas.md`.
+> Jadi satu-satunya rute yang tersedia untuk pertanyaan "pemeriksaan per tujuan" adalah rute yang
+> salah. Perbaikannya harus menyentuh keduanya sekaligus. Lihat `16_cakupan_context_vs_database.md`.
+
 ## 4.7 `jenis_sarana` (24 nilai — top 12)
 
 | Nilai | Count | % |

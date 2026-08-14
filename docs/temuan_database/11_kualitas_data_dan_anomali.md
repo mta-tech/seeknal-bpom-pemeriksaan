@@ -166,3 +166,129 @@ Kolom-kolom berikut punya NULL rate tinggi tetapi **bukan data hilang** — kolo
 | Relasi | fact→log/petugas 100% | temuan/kriteria sparse (wajar) | 30.699 orphan, case-mismatch |
 | Value | kesimpulan/status terstandar | — | sinonim, TIE ganda |
 | Angka | issue counts wajar | 0 bermakna di target | jml_temuan & harga negatif, INFALGIN |
+
+---
+
+## ⚠️ Status penyaluran ke `context/` — tanggal kosong dan status DRAFT: BELUM
+
+Diverifikasi 14 Agustus 2026 terhadap warehouse dan terhadap `context/00-menghitung.md`.
+
+Halaman itu sudah menyatakan bahwa kolom tanggal punya baris kosong dan bahwa `tanggal_input` satu-satunya yang selalu terisi — itu benar. Yang belum tertulis adalah **sebabnya**: blok baris tanpa `tanggal_mulai` dan `tanggal_selesai` itu 98,4% berstatus DRAFT. Karena itu setiap filter periode berbasis `tanggal_mulai` membuang seluruh draft secara diam-diam. Untuk pertanyaan "berapa pemeriksaan tahun X" itu benar; untuk "berapa berkas yang masuk" itu salah. Tanpa sebabnya tertulis, pilihan itu tidak pernah diambil secara sadar.
+
+Pengukuran cakupan lengkapnya di dokumen `cakupan_context_vs_database` di direktori ini.
+
+---
+
+# Konsistensi penulisan nilai dan anomali tanggal
+
+> Diverifikasi langsung ke warehouse, 14 Agustus 2026. Bagian ini menjawab satu pertanyaan: **apakah ada
+> nilai yang maksudnya sama tetapi ditulis berbeda**, dan **apakah ada lubang atau tanggal mustahil
+> pada rentang waktunya**. Seluruh isinya khusus domain ini.
+
+Metodenya: tiap kolom berkode dinormalkan berlapis — rapatkan spasi, samakan besar-kecil huruf,
+buang tanda baca, lalu kanonikkan angka (`5`, `5.0`, dan `05` dianggap satu). Nilai mentah yang
+jatuh ke bentuk normal yang sama berarti **kembaran palsu**: dua baris berbeda di `GROUP BY`
+padahal satu makna.
+
+## K1. Spasi ekor pada nama balai — filter kesamaan persis gagal total
+
+`BALAI POM DI DUMAI ` tersimpan **dengan spasi di belakang**, dan konsisten di setiap tabel yang
+memuat nama balai: `mv_pemeriksaan.nama_upt`, `mv_pemeriksaan_log.nama_balai`,
+`mv_pemeriksaan_petugas.daftar_balai_pemeriksa`, `coverage_balai`, dan `target_balai`.
+
+Karena konsisten, **join antar tabel tetap jalan**. Yang gagal adalah filter literal:
+
+| Filter | Hasil |
+|---|---|
+| `nama_upt = 'BALAI POM DI DUMAI'` | **0 baris** |
+| `nama_upt = 'BALAI POM DI DUMAI '` | 1.428 baris |
+| `trim(nama_upt) = 'BALAI POM DI DUMAI'` | 1.428 baris |
+
+**Aturan:** setiap filter kesamaan persis pada nama balai harus lewat `trim()`, atau memakai nilai
+yang diambil dari probe `SELECT DISTINCT` apa adanya. Menyalin nama balai dari dokumen atau dari
+ingatan akan menghasilkan nol baris tanpa pesan kesalahan.
+
+## K2. `tp_negara` — satu maksud, belasan penulisan
+
+Kolom asal negara temuan adalah teks bebas, dan ia memuat beberapa keluarga kembaran sekaligus:
+
+| Keluarga | Contoh penulisan yang ditemukan |
+|---|---|
+| "tidak diketahui" | `Tidak diketahui` · `Tidak Diketahui` · `tidak diketahui` · `Tidak mencantumkan` · `Tidak Mencantumkan` · `Tidak tercantum` · `Tidak ada keterangan` · `Tidak ada` |
+| Arab Saudi | `Saudi Arabia` · `Arab Saudi` · `saudi arabia` |
+| Amerika | `Amerika Serikat` · `United States` · `New York` |
+| Cina | `Made in China` · `Made In Cina` |
+| Karakter tak kasatmata | `Belanda` versus `Belanda` + non-breaking space (U+00A0) |
+
+Dua hal yang membuatnya berbahaya: keluarga "tidak diketahui" adalah **sentinel yang menyamar
+sebagai negara**, dan sebagian nilai berisi nama perusahaan atau kota, bukan negara.
+
+**Aturan:** kolom ini tidak bisa dipakai untuk peringkat negara tanpa normalisasi eksplisit, dan
+keluarga "tidak diketahui" harus dikeluarkan lebih dulu — kalau tidak, ia bisa menempati peringkat
+atas sebagai kalau-kalau "negara".
+
+## K3. Kategori temuan — pemisah berbeda, maksud sama
+
+| Nilai | Baris |
+|---|---|
+| `Lain - Lain` | 5.241 |
+| `Lain-lain` | 4 |
+| `Kedaluwarsa / Rusak` | 17 |
+| `Kedaluwarsa, Rusak` | 2 |
+| `TIE (Tanpa Izin Edar), Lain - Lain` | 306 |
+| `TIE (Tanpa Izin Edar), Lain-lain` | 4 |
+
+Perbedaannya hanya spasi di sekitar tanda hubung dan pilihan pemisah. Varian minoritasnya kecil,
+tetapi ia **memecah bucket** pada `GROUP BY` dan menghilang dari daftar "top kategori".
+
+## K4. Nama petugas — kembaran karena gelar dan tanda baca
+
+`mv_pemeriksaan_petugas.petugas` memuat ribuan nilai unik, dan sebagian besar kembarannya lahir
+dari cara menulis gelar:
+
+| Contoh | Baris |
+|---|---|
+| `Edy Syatria,S.Kom` versus `Edy Syatria, S.Kom` | 446 vs 13 |
+| `Eka Akhriana, S.Farm., Apt.` versus `Eka Akhriana, S.Farm, Apt` | 249 vs 214 |
+| `Aan Sulistiawan, S.Farm., Apt,M.Sc` versus `... Apt, M. Sc` | 351 vs 48 |
+| `Jihad Afghan Garuda Mataram, S.H.` versus `..., SH` | 235 vs 5 |
+| ` LINDA GUSRINI FADRI, S.Si, Apt` (spasi di depan) | 67 |
+
+**Aturan:** peringkat "petugas paling produktif" dari kolom ini **salah** tanpa normalisasi — satu
+orang terpecah menjadi beberapa entri, dan yang penulisannya paling konsisten menang. Sebutkan
+keterbatasan ini bila pertanyaannya menyangkut peringkat orang.
+
+## K5. Tanggal mustahil — tiga pola yang bisa dikenali
+
+Anomali tanggal di domain ini bukan acak; ketiganya punya bentuk yang khas dan bisa dideteksi.
+
+| Pola | Bentuk | Contoh |
+|---|---|---|
+| Salah ketik abad | `19xx` ditulis alih-alih `20xx` | `1922-09-01` pada berkas yang di-input 2022-12-20 |
+| Epoch nol | `1970-01-01` sebagai pengganti kosong | 4 baris di `tanggal_mulai`, 8.506 baris di `tp_expire` |
+| Tahun terpotong | digit tahun rusak | `0004-02-21` (input 2021), `0020-12-03` (input 2020) |
+
+Sebarannya per kolom:
+
+| Kolom | Tahun mustahil yang ditemukan |
+|---|---|
+| `mv_pemeriksaan.tanggal_mulai` | 4, 20, 1922-1928, 1970, 2008, 2010, 2012, 2027 |
+| `mv_pemeriksaan.tanggal_selesai` | 4, 20, 1922-1928, 1970, 2010, 2012, 2027 |
+| `mv_pemeriksaan_petugas.tgl_surat` | 1912, 1922-1928, 2008, 2014 |
+| `mv_pemeriksaan_timeline.tgl_start` / `tgl_end` | 4, 20, 1920-1928, 1970, 2008-2012, 2027 |
+
+Jumlahnya kecil — belasan baris per kolom dari ratusan ribu. **Bahayanya bukan pada agregat,
+melainkan pada `MIN()`, `MAX()`, dan `GROUP BY` tahun**: satu baris bertahun 1922 membuat "data
+paling awal" menjadi 1922, dan menciptakan bucket tahun palsu di setiap tren.
+
+**Aturan:** pertanyaan tentang rentang waktu ("sejak kapan", "paling awal") wajib membatasi tahun
+ke rentang wajar lebih dulu. Tren per tahun sebaiknya menyaring tahun di luar rentang operasional.
+
+### Yang BUKAN anomali
+
+`mv_pemeriksaan_temuan.tp_expire` memuat tahun sampai 2035. Itu **wajar** — ini tanggal
+kedaluwarsa produk, yang memang jatuh di masa depan. Yang anomali di kolom itu hanya `1970`
+(8.506 baris, epoch) dan `1900` (132 baris).
+
+Rentang operasional sesungguhnya dimulai **2020**; baris bertahun 2018-2019 hanya puluhan dan
+merupakan sisa uji coba sistem, bukan periode pelaporan.

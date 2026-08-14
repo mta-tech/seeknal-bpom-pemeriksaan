@@ -104,6 +104,38 @@ terpisah yang **tidak boleh di-join bersamaan tanpa agregasi dulu**.
 - **Grain**: 1 baris = 1 kategori per produk temuan (exploded array).
 - **49 nilai** (vs 106 di `mv_pemeriksaan_temuan.tp_kategori` mentah).
 - **Normalisasi setengah jalan**: masih ada varian sisa ("TIE (Tanpa Izin Edar)" 128.666 vs "TIE" 30).
+- 🔴 **ETL-nya BERHENTI — jangan pakai untuk periode berjalan.** Lihat peringatan di bawah.
+
+#### 🔴 Tabel ini beku sejak 12 November 2025
+
+Ditemukan 14 Agustus 2026. Stempel `sync` tabel ini tertinggal di **2025-11-12**, sementara
+**sepuluh tabel lain di database ini tersinkron pada hari pengambilan data**. Ia satu-satunya
+yang tertinggal, dan selisihnya sembilan bulan.
+
+Akibatnya terukur — porsi pemeriksaan bertemuan yang punya baris kategori, per bulan:
+
+| Bulan | Pemeriksaan bertemuan | Ada di tabel kategori | Cakupan |
+|---|--:|--:|--:|
+| 2025-07 | 399 | 398 | 99,7% |
+| 2025-08 | 371 | 365 | 98,4% |
+| 2025-09 | 299 | 294 | 98,3% |
+| 2025-10 | 924 | 896 | 97,0% |
+| **2025-11** | 614 | 21 | **3,4%** |
+| 2025-12 | 411 | 0 | **0%** |
+| 2026-01 … 2026-08 | 1.762 | 1 | **≈0%** |
+
+**Bahaya utamanya bukan angka kosong, melainkan angka yang terlihat masuk akal.** Pertanyaan
+"kategori temuan terbanyak tahun ini" akan mengembalikan nyaris tidak ada apa-apa, dan perbandingan
+antar tahun akan menampilkan **"penurunan drastis" yang sebenarnya adalah ETL yang berhenti**.
+
+**Aturan:** untuk periode setelah Oktober 2025, tabel ini tidak bisa menjawab. Kategori temuan
+harus diambil dari `mv_pemeriksaan_temuan.tp_kategori` (array mentah, 106 varian, perlu normalisasi
+sendiri), atau pertanyaannya dijawab sebagai keterbatasan data — **bukan sebagai penurunan**.
+
+Ini cacat di sisi warehouse, bukan di sisi dokumentasi. Layak dilaporkan ke pemilik data.
+
+> ⚠️ **Status penyaluran ke context — belum.** Tidak ada peringatan apa pun soal ini di `context/`.
+> Lihat `16_cakupan_context_vs_database.md`.
 
 ### `mv_kriteria_pemeriksaan` — Checklist CPOB/CPKB
 

@@ -182,3 +182,13 @@ Variasi musiman relatif kecil (27–33%). Februari tertinggi, November terendah.
 **Pola**: TMK turun konsisten 2020→2024 (37%→24%), lalu **melonjak ke 32% di 2025-2026**.
 Pertanyaan bisnis kritis: Apa yang berubah di 2025? (Perubahan standar? Kebijakan? Atau kepatuhan riil menurun?)
 PANGAN IRT adalah kontributor utama lompatan ini (lihat [06](06_korelasi_dan_peta_risiko.md)).
+
+---
+
+## ⚠️ Status penyaluran ke `context/` — kolom tahap timeline: BELUM
+
+Diverifikasi 14 Agustus 2026 terhadap warehouse dan terhadap `context/80-waktu-dan-durasi.md`.
+
+Halaman itu menyebut nama tabel `mv_pemeriksaan_timeline` tanpa menyebut kolom tahapnya — `tanggal_kirim_kabalai`, `tanggal_kirim_direktur`, `mulai_kabalai`, `kabalai_direktur`. Padahal justru kolom itulah yang menjawab "berkas tertahan di tahap mana", dan SQL sistem lama memakainya. Kekosongannya deterministik: berkas yang tidak pernah naik ke suatu tahap memang tidak punya tanggalnya, jadi rata-rata yang menyertakan baris kosong akan salah. Kolom `urutan_step` di tabel log juga tidak disebut sama sekali.
+
+Pengukuran cakupan lengkapnya di dokumen `cakupan_context_vs_database` di direktori ini.

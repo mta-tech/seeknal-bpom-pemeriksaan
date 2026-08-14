@@ -164,3 +164,13 @@ Tiga kelompok yang berbeda penanganannya: **unit pusat** dilaporkan terpisah (me
 bertarget), **DEMO TIPE A** adalah akun uji dan harus dikecualikan dari semua hitungan
 (analog akun uji `trader_id IN (5,17,50,85)` di domain registrasi), **loka baru** dilaporkan
 sebagai "target belum ditetapkan".
+
+---
+
+## ⚠️ Status penyaluran ke `context/` — kolom target: BELUM
+
+Diverifikasi 14 Agustus 2026 terhadap warehouse dan terhadap `context/85-target-capaian.md`.
+
+Halaman itu menyebut nama tabel `target_balai` dan kunci join-nya, lalu berhenti. Ia **tidak menyebut satu pun dari tujuh kolom target**, tidak menyebut grain balai × komoditi, dan tidak menyebut bahwa `tahun` hanya memuat satu tahun. Akibatnya pertanyaan capaian tidak bisa dijawab tanpa menebak kolom, dan penjumlahan yang tidak sadar grain akan melipatgandakan target tujuh kali. Untuk domain ini kolom yang relevan adalah `target_sarana_produksi` dan `target_sarana_distribusi`; lima kolom lain milik kegiatan lain dan tidak boleh dipakai.
+
+Pengukuran cakupan lengkapnya di dokumen `cakupan_context_vs_database` di direktori ini.
