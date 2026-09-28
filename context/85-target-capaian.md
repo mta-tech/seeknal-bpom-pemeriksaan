@@ -1,76 +1,69 @@
-Target dan capaian — dan tiga batas yang harus disebut setiap kali.
+target · capaian · realisasi · pencapaian · persentase capaian · target sampling · target sarana
 
-## Tabel
+# Target & capaian
 
-`target_balai` memuat target tahunan per `(nama_balai, komoditi, tahun)`. Kolom targetnya
-terpisah per jenis kegiatan.
+## Apa yang halaman ini putuskan
 
-## Tiga batas struktural
+Target tersedia di **`dim_balai`** (per balai), bukan di tabel fakta. Halaman ini memutuskan grain dan
+cara menyajikannya dibanding realisasi.
 
-### 1. Hanya satu tahun
+## Tabel keputusan
 
-Tabel target hanya memuat **satu tahun anggaran**. Periksa dulu tahun apa yang ada
-(`SELECT DISTINCT tahun FROM target_balai`) sebelum menjanjikan capaian.
+| Kata dalam pertanyaan | Sumber |
+|---|---|
+| "target pemeriksaan nasional" | jumlah target seluruh balai — **hati-hati grain** |
+| "target balai X" | baris balai itu |
+| "realisasi" · "capaian" | hitungan kasus dari fakta |
+| "persentase capaian" | realisasi ÷ target, **per balai**, sebutkan pembilang & penyebut |
+| "target sarana" vs "target sampling" | **dua kolom berbeda** — tanyakan/pilih sesuai maksud |
 
-> Untuk realisasi di tahun yang **tidak ada targetnya**, ada dua jawaban jujur: sajikan realisasi
-> **tanpa** persentase capaian, atau bandingkan terhadap target tahun yang tersedia **sambil
-> menyatakan bahwa tahunnya berbeda**. Diam-diam memakai target tahun lain sebagai pembanding
-> adalah kesalahan.
+## Matriks operasi
 
-### 2. Tidak ada target untuk semua rantai sarana
+| Kolom | Menyaring | Mengelompokkan | Men-join | Memeringkat |
+|---|---|---|---|---|
+| `target_sampling` | per balai | langsung | dari `dim_balai` | sebutkan satuan |
+| `target_sarana` | per balai | langsung | dari `dim_balai` | sebutkan satuan |
+| realisasi (kasus) | periode + eksklusi | per balai | dari fakta ke `dim_balai` | biasa |
 
-Kolom target sarana hanya tersedia untuk **sebagian** nilai `sarana`. Periksa daftar kolomnya
-lebih dulu:
+## Cara mencari
 
 ```sql
-SELECT column_name FROM information_schema.columns
-WHERE table_schema='public' AND table_name='target_balai' AND column_name LIKE 'target%';
+-- ketersediaan target per balai
+SELECT count(*) AS balai, count(target_sampling) AS ada_sampling, count(target_sarana) AS ada_sarana
+FROM public.dim_balai;
+
+-- target vs realisasi per balai (contoh; periode sesuai pertanyaan)
+SELECT b.nama_balai, b.target_sarana,
+       count(DISTINCT f.id) AS realisasi
+FROM public.dim_balai b
+LEFT JOIN public.fact_pemeriksaan f
+       ON f.balai_id = b.balai_id AND f.tgl_start >= DATE '2025-01-01' AND f.tgl_start < DATE '2026-01-01'
+GROUP BY 1,2 ORDER BY 3 DESC;
 ```
 
-> Pertanyaan "tabel balai + target + realisasi dikelompokkan berdasarkan sarana" **hanya bisa
-> dijawab untuk rantai yang punya kolom targetnya**. Memakai target rantai lain sebagai pengganti
-> menghasilkan capaian yang keliru. Sebutkan rantai mana yang tidak punya target — itu jawaban
-> yang benar, bukan "datanya tidak ada".
+## Jebakan
 
-### 3. Beberapa unit tidak punya target sama sekali
+| Gejala | Penyebab | Cara memastikan |
+|---|---|---|
+| total target membengkak | menjumlahkan baris yang grain-nya bukan per balai-periode | periksa grain sebelum menjumlahkan |
+| persentase > 100% terlihat aneh | pembilang dan penyebut beda cakupan (mis. realisasi lintas periode) | samakan periode & cakupan, sebutkan keduanya |
+| target "nasional" dobel | unit pusat ikut dijumlahkan | bedakan unit pusat dari balai wilayah |
 
-Unit pusat (direktorat) dan sebagian loka baru tidak ada di tabel target. Laporkan terpisah
-sebagai "target belum ditetapkan"; jangan menghitung capaian nol untuk mereka.
+## Batas
 
-## Dua kunci join yang harus benar
-
-**Nama balai.** Tabel fakta menulis `nama_upt` dengan huruf besar, tabel target menulis
-`nama_balai` dengan huruf campuran. **Join persis akan gagal.** Selalu normalisasi kedua sisi:
-`lower(trim(...)) = lower(trim(...))`.
-
-**Komoditi.** Jangan join `komoditi` mentah. Pakai kolom jembatan
-`mapping_komoditi_target_balai` — lihat `20-komoditi.md`. Memakai kolom mentah membuat banyak
-pasangan balai×komoditi kehilangan targetnya tanpa error.
-
-## Bentuk jawaban
-
-Capaian = realisasi ÷ target. Sebelum menyajikannya:
-
-1. sebutkan **tahun target** yang dipakai;
-2. sebutkan **rantai sarana** mana yang tercakup;
-3. keluarkan unit pusat dan akun uji dari agregat nasional;
-4. bila periodenya berjalan, sebutkan bahwa realisasinya belum lengkap.
-
-Empat butir itu bukan hiasan — tanpanya, angka capaian terbaca sebagai penilaian kinerja yang
-tidak sepadan.
-
-## Cakupan wilayah
-
-`coverage_balai` memuat wilayah kerja balai (kabupaten/kota yang menjadi tanggung jawabnya).
-Dipakai untuk pertanyaan "berapa persen wilayah kerja yang tersentuh" — pembilangnya dari lokasi
-sarana di fakta (`kabupaten_kota`), penyebutnya dari tabel ini.
-
-Perhatikan: jumlah balai di `coverage_balai` dan di fakta **tidak sama**. Balai yang ada di
-cakupan tetapi tidak punya pemeriksaan pada periode itu harus tampil sebagai nol, bukan hilang —
-pakai LEFT JOIN dari sisi cakupan.
+- Target hanya tersedia **per balai**; memecahnya per jenis sarana tidak didukung data.
+- Bila pertanyaan menuntut grain yang tidak tersedia → nyatakan batasnya, jangan membagi rata.
+- Realisasi harus memakai eksklusi data uji (`00`).
 
 ## Rute
 
-- Menyebut komoditi → **seberang** `20-komoditi.md`.
-- Menyebut UPT/balai → **seberang** `10-sarana-dan-fasilitas.md`.
-- Menyebut periode → **seberang** `80-waktu-dan-durasi.md`.
+- Wilayah & balai → **lihat** `10-sarana-dan-fasilitas.md`
+- Periode → **lihat** `80-waktu-dan-durasi.md`
+- Label panel target → **lihat** `05-filter-katalog.md`
+
+## Manifes
+
+| Tabel | Kolom | Literal |
+|---|---|---|
+| `dim_balai` | `balai_id`, `nama_balai`, `target_sampling`, `target_sarana`, `regional_name` | — |
+| `fact_pemeriksaan` | `id`, `balai_id`, `tgl_start`, `is_data_uji` | — |

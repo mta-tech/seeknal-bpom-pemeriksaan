@@ -1,60 +1,84 @@
-Kesimpulan pemeriksaan — vonis kepatuhan sarana.
+MK · TMK · TTP · TDP · TMBB · memenuhi ketentuan · tidak memenuhi · kesimpulan · tingkat pemenuhan CPOB
 
-## Kolom `kesimpulan`
+# Kesimpulan kasus
 
-Satu kolom, memuat hasil akhir pemeriksaan sarana. Nilainya berupa singkatan huruf besar.
+## Apa yang halaman ini putuskan
 
-| Kode | Arti | Sifat |
-|---|---|---|
-| `MK` | Memenuhi Ketentuan | vonis kepatuhan |
-| `TMK` | Tidak Memenuhi Ketentuan | vonis kepatuhan |
-| `TDP` | Tidak Dapat Diperiksa | **bukan vonis** — pemeriksaan tidak terjadi |
-| `TTP` | Tutup | **bukan vonis** — sarana tutup saat didatangi |
-| `TMBB` | Tidak Memenuhi ketentuan Bahan Berbahaya | vonis khusus, sangat jarang |
-| `NULL` | **string empat huruf**, bukan SQL NULL | belum berkesimpulan |
+Kesimpulan adalah **foreign key**, bukan teks: `kesimpulan_balai_id` / `kesimpulan_pusat_id` →
+`dim_pemeriksaan_kesimpulan`. Kolom teks kesimpulan tidak ada lagi.
 
-## ⚠️ Dua jebakan wajib
+## Tabel keputusan
 
-**1. Sentinel berupa string.** Nilai `'NULL'` adalah teks, bukan SQL NULL. `WHERE kesimpulan IS NULL`
-mengembalikan nol baris. Yang benar `kesimpulan = 'NULL'` atau `kesimpulan <> 'NULL'`.
-
-**2. `TDP` dan `TTP` bukan kegagalan kepatuhan.** Keduanya berarti pemeriksaan **tidak jadi
-dilakukan** — sarananya tutup, atau tidak dapat diperiksa. Menghitung "tingkat kepatuhan" dengan
-denominator seluruh baris memasukkan keduanya dan menurunkan angka MK secara semu.
-
-> Tingkat kepatuhan dihitung pada populasi yang **benar-benar berkesimpulan**:
-> `kesimpulan IN ('MK','TMK')`. Sebutkan berapa bagian populasi yang dikeluarkan.
-
-Sebaliknya, pertanyaan **"berapa sarana yang tutup"** justru menargetkan `TTP` — dan
-**"tidak dapat diperiksa"** menargetkan `TDP`. Keduanya pertanyaan yang sah dan berbeda.
-
-## Terjemahan istilah pengguna
-
-| Istilah pengguna | Kode |
+| Kata dalam pertanyaan | Filter |
 |---|---|
-| memenuhi ketentuan · patuh · lolos | `MK` |
-| tidak memenuhi ketentuan · TMK · tidak patuh · bermasalah | `TMK` |
-| tutup · sedang tutup · tidak beroperasi | `TTP` |
-| tidak dapat diperiksa · TDP | `TDP` |
-| "tutup dan/atau tidak berproduksi" | `TTP` dan `TDP` — dua kode, sebutkan keduanya |
+| "MK" · "memenuhi ketentuan" | kode MK |
+| "TMK" · "tidak memenuhi ketentuan" | kode TMK |
+| "TTP" · "TDP" · "TMBB" | kode masing-masing |
+| "tingkat pemenuhan CPOB" · "memuaskan/baik/cukup/kurang" | **kelompok kode CPOB** pada kolom yang sama |
+| "kesimpulan pusat" · "evaluasi pusat" | `kesimpulan_pusat_id` |
+| "penilaian vaksin" · "MS/TMS" | `vaksin_kesimpulan_id` |
 
-## ⚠️ Istilah dari domain lain
+## Satu kolom, tiga taksonomi
 
-**`MS` / `TMS`** (Memenuhi Syarat / Tidak Memenuhi Syarat) adalah istilah **hasil laboratorium**
-milik domain pengujian. **Tidak ada** di domain ini. Bila pengguna menulis "hasil uji TMS",
-pertanyaannya salah rute — lihat `95-batas-domain.md`.
+`kesimpulan_balai_id` memuat **tiga kelompok** yang tidak boleh dicampur:
 
-Bila pengguna menulis "TMK" untuk hasil uji, kemungkinan yang dimaksud memang kepatuhan sarana;
-klarifikasi bila konteksnya bercampur.
+| Kelompok | Isi | Catatan |
+|---|---|---|
+| umum | MK · TMK · TTP · TDP · TMBB | vonis kasus |
+| CPOB | memuaskan · baik · cukup · kurang | tingkat pemenuhan, untuk sebagian jenis sarana |
+| vaksin | MS · TMS Mayor 1–3 · TMS Kritikal | hanya lewat `vaksin_kesimpulan_id` |
 
-## Hubungan dengan temuan produk
+Untuk rekap, **pisahkan kelompoknya lebih dulu** — kalau tidak, dua taksonomi tercampur dalam satu
+daftar.
 
-Vonis `TMK` **tidak berarti selalu ada temuan produk**, dan adanya temuan tidak selalu berujung
-`TMK`. Keduanya kolom/tabel yang berbeda dan tidak boleh dipakai bergantian. Bila pertanyaannya
-tentang produk yang ditemukan, itu `40-temuan-produk.md`; bila tentang vonis sarana, kolom ini.
+## Matriks operasi
+
+| Kolom | Menyaring | Mengelompokkan | Men-join | Memeringkat |
+|---|---|---|---|---|
+| `kesimpulan_balai_id` | kelompok kode + `type` tak berlaku (ini dim sendiri) | pisahkan taksonomi | `dim_pemeriksaan_kesimpulan.id` | biasa |
+| `kesimpulan_pusat_id` | **review pusat parsial** — NULL berarti tidak direview, bukan "belum diproses" | sebutkan cakupannya | idem | sebutkan cakupan |
+| `vaksin_kesimpulan_id` | hanya untuk kasus form vaksin | biasa | idem | — |
+
+## Cara mencari
+
+```sql
+-- seluruh isi kamus kesimpulan
+SELECT id, kode, keterangan, status, sumber FROM public.dim_pemeriksaan_kesimpulan ORDER BY id;
+
+-- kode kesimpulan mana yang BENAR-BENAR dipakai (termasuk kelompok CPOB & vaksin)
+SELECT d.kode, count(*) AS kasus
+FROM public.fact_pemeriksaan f
+JOIN public.dim_pemeriksaan_kesimpulan d ON d.id = f.kesimpulan_balai_id
+GROUP BY 1 ORDER BY 2 DESC;
+
+-- keterisian kesimpulan: balai vs pusat
+SELECT count(*) AS kasus, count(kesimpulan_balai_id) AS ada_balai, count(kesimpulan_pusat_id) AS ada_pusat
+FROM public.fact_pemeriksaan;
+```
+
+## Jebakan
+
+| Gejala | Penyebab | Cara memastikan |
+|---|---|---|
+| rekap kesimpulan bercampur dua taksonomi | kelompok CPOB disamakan dengan vonis | pisahkan berdasarkan `sumber`/kelompok kode |
+| "pusat belum memproses semua kasus" | NULL dibaca sebagai pekerjaan tertunda | review pusat memang parsial — sebutkan |
+| angka MK+TMK < total | sebagian kasus belum berkesimpulan | hitung keterisian |
+
+## Batas
+
+- Kasus tanpa kesimpulan tetap pemeriksaan sah → jangan dibuang tanpa alasan.
+- `keterangan` pada sebagian kode masih kosong → bila user menanyakan arti, katakan belum terkonfirmasi.
+- Tidak boleh menyimpulkan kualitas sarana dari kesimpulan saja tanpa menyebut cakupannya.
 
 ## Rute
 
-- Menyebut temuan produk → **seberang** `40-temuan-produk.md`.
-- Menyebut grade / kriteria / tingkat kekritisan → **seberang** `60-mutu-dan-tindak-lanjut.md`.
-- Menyebut status alur (draft/verifikasi/selesai) → **seberang** `31-status-dan-alur.md`.
+- Status & alur → **lihat** `31-status-dan-alur.md`
+- Grade & tindak lanjut → **lihat** `60-mutu-dan-tindak-lanjut.md`
+- Tingkat pemenuhan sebagai label panel → **lihat** `05-filter-katalog.md`
+
+## Manifes
+
+| Tabel | Kolom | Literal |
+|---|---|---|
+| `fact_pemeriksaan` | `kesimpulan_balai_id`, `kesimpulan_pusat_id`, `vaksin_kesimpulan_id` | — |
+| `dim_pemeriksaan_kesimpulan` | `id`, `kode`, `keterangan`, `status`, `sumber` | `MK`, `TMK`, `TTP`, `TDP`, `TMBB` |

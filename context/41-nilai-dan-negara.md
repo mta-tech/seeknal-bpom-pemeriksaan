@@ -1,67 +1,67 @@
-Nilai temuan dan negara asal — dua kolom yang tidak bisa dipakai mentah.
+nilai temuan · harga · rupiah · kerugian · nilai ekonomi · negara · impor · asal · lokal · luar negeri
 
-## Nilai temuan — WAJIB dibersihkan sebelum dijumlahkan
+# Nilai ekonomi & asal produk
 
-Kolom `tp_harga` (satuan) dan `tp_harga_total` (nilai keseluruhan) di `mv_pemeriksaan_temuan`
-memuat **pencilan ekstrem** dari salah input: sebagian baris menaruh sesuatu yang jelas bukan
-kuantitas di `tp_jml_temuan` (misalnya rangkaian angka berpola tanggal), lalu dikalikan harga
-sehingga totalnya meledak.
+## Apa yang halaman ini putuskan
 
-Satu baris seperti itu bisa **mendominasi seluruh jumlah nasional**. Menjumlahkan kolom ini apa
-adanya menghasilkan angka yang salah besaran, bukan sekadar sedikit meleset.
+Dua kolom di bridge temuan menyimpan angka besar yang **tidak boleh dipakai mentah**, dan satu kolom
+menyimpan asal produk yang sering disalahartikan.
 
-> **Aturan:** setiap penjumlahan nilai temuan menyaring pencilan lebih dulu — buang baris yang
-> `tp_jml_temuan`-nya di luar batas wajar sebagai kuantitas, dan baris yang `tp_harga_total`-nya
-> di luar batas wajar sebagai nilai satu temuan. **Sebutkan di jawaban** bahwa pencilan dibuang
-> dan berapa banyak barisnya.
+## Tabel keputusan
 
-Cara menemukan ambangnya: urutkan `tp_harga_total` menurun dan lihat di mana deretnya patah;
-lakukan hal sama untuk `tp_jml_temuan`. Jangan memakai ambang dari ingatan — ETL menambah baris
-tiap hari.
-
-Jangan pernah menyajikan angka finansial tanpa menyebut pembersihannya. Pembaca tidak punya cara
-tahu bahwa satu baris salah input menggeser totalnya.
-
-## `tp_negara` — teks bebas, bukan kode
-
-Kolom ini diisi bebas oleh petugas. Akibatnya:
-
-| Masalah | Bentuknya |
+| Kata dalam pertanyaan | Aksi |
 |---|---|
-| **Banyak ejaan untuk negara yang sama** | huruf besar/kecil/campur untuk nama yang sama |
-| **Nama alternatif** | satu negara punya dua nama resmi berbeda dalam bahasa Indonesia |
-| **Bukan negara** | sebagian baris berisi nama perusahaan lengkap dengan alamat |
-| **Sentinel** | tanda hubung dan string kosong |
-| **Penanda domestik non-negara** | kata yang berarti "lokal", dengan berbagai ejaan |
+| "nilai temuan" · "kerugian" · "rupiah" | agregasi kolom nilai, **dengan guard kualitas** |
+| "jumlah fisik" · "banyaknya produk" | agregasi kolom kuantitas |
+| "negara asal" · "impor" · "lokal" | kolom negara pada bridge temuan |
+| "produk impor" | pakai kolom negara / penanda asal — **bukan** tebakan dari nama |
 
-### ⚠️ Jangan pakai "bukan Indonesia" sebagai definisi impor
+## Matriks operasi
 
-Filter `lower(tp_negara) <> 'indonesia'` **ikut menarik**:
+| Kolom | Menyaring | Mengelompokkan | Men-join | Memeringkat |
+|---|---|---|---|---|
+| `jumlah_temuan` | hanya penyaring bila memang diminta | boleh, dengan catatan kualitas | — | **sebut outlier** |
+| `harga_total` | jangan jadi penyaring | boleh | — | **sebut outlier** |
+| `negara` | normalisasi ejaan + kenali sentinel | gabungkan varian ejaan | — | periksa puncak daftar untuk sentinel |
+| `tgl_expire` | tanggal masa depan **wajar** | — | — | — |
 
-- baris bersentinel (tanda hubung / kosong) — asalnya **tidak tercatat**, bukan impor;
-- baris berpenanda **lokal** — justru domestik.
+## Cara mencari — pemeriksaan kualitas sebelum menyajikan angka
 
-Keduanya bisa berjumlah besar dan membuat "temuan impor" jauh melebihi kenyataan.
+```sql
+-- statistik kualitas kolom angka
+SELECT count(*) AS baris,
+       min(jumlah_temuan), max(jumlah_temuan),
+       count(*) FILTER (WHERE jumlah_temuan IS NULL) AS kosong
+FROM public.bridge_pemeriksaan_temuan;
 
-> **Definisi yang benar:**
-> **domestik** = nilai yang berarti Indonesia (semua ejaannya) **atau** berarti lokal (semua
-> ejaannya) · **tidak tercatat** = sentinel dan NULL · **impor** = sisanya.
+-- daftar "negara" yang muncul (termasuk sentinel berbentuk kata)
+SELECT COALESCE(negara,'(kosong)') AS negara, count(*)
+FROM public.bridge_pemeriksaan_temuan GROUP BY 1 ORDER BY 2 DESC LIMIT 20;
+```
 
-Laporkan porsi "tidak tercatat" sebagai kelompok tersendiri — tanpa itu, peringkat impor terlihat
-lebih lengkap daripada kenyataannya.
+## Jebakan
 
-### Sebelum memeringkat negara: normalisasi
+| Gejala | Penyebab | Cara memastikan |
+|---|---|---|
+| total nilai tidak masuk akal | satu/beberapa nilai sangat besar ikut terjumlah | tampilkan median + jumlah baris, atau batasi nilai |
+| negara "tidak diketahui" menempati puncak | sentinel berupa kata dianggap negara | periksa daftar nilai sebelum memeringkat |
+| satu negara terpecah banyak baris | varian ejaan/kapitalisasi | normalisasi |
+| nilai negatif | cacat data | cek `min` dan sebutkan bila ada |
 
-Peringkat "negara asal terbanyak" **tidak sahih** tanpa menggabungkan ejaan. Minimal:
+## Batas
 
-1. samakan huruf besar-kecil (`lower(trim(tp_negara))`);
-2. gabungkan nama alternatif untuk negara yang sama;
-3. keluarkan baris yang isinya nama perusahaan.
-
-Cara menemukan varian: ambil daftar nilai terurut cacah menurun dan periksa manual — jalur **P3**.
-Sebutkan di jawaban bahwa varian digabungkan.
+- Nilai besar yang **sah** tetap ikut terjumlah; menyajikan `SUM` mentah tanpa catatan menyesatkan.
+- Sebagian baris tidak mengisi nilai/kuantitas → sebutkan cakupannya.
+- Tanggal kedaluwarsa boleh jatuh di masa depan — itu normal.
 
 ## Rute
 
-- Kembali ke konsep temuan → **naik** ke `40-temuan-produk.md`.
-- Menyebut kualitas data secara umum → **seberang** `90-kualitas-data.md`.
+- Kategori & grain temuan → **lihat** `40-temuan-produk.md`
+- Kualitas data & sentinel → **lihat** `90-kualitas-data.md`
+
+## Manifes
+
+| Tabel | Kolom | Literal |
+|---|---|---|
+| `bridge_pemeriksaan_temuan` | `jumlah_temuan`, `harga`, `harga_total`, `netto`, `negara`, `tgl_expire` | — |
+| `dim_produk` | `produk_id`, `is_imported` | — |

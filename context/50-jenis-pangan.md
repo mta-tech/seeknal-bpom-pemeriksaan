@@ -1,57 +1,71 @@
-Jenis pangan — dan di kolom mana penanda MD / IRT sebenarnya berada.
+jenis pangan · MD · IRT · PIRT · UMKM · AMDK · kategori pangan · pangan MD
 
-## Dua tempat berbeda
+# Jenis pangan & penanda MD/IRT
 
-| Konsep | Di mana | Bentuk |
+## Apa yang halaman ini putuskan
+
+Penanda seperti **MD, IRT, UMKM, AMDK** hidup di dimensi **jenis sarana** atau di kolom khusus pangan —
+bukan di komoditi. Dan kolom daftar pangan bisa merujuk **lebih dari satu kamus**.
+
+## Tabel keputusan
+
+| Kata dalam pertanyaan | Filter |
+|---|---|
+| "pangan MD" | jenis sarana yang memuat penanda MD |
+| "pangan IRT" · "PIRT" · "UMKM" | jenis sarana yang memuat penanda IRT/UMKM |
+| "AMDK" | jenis pangan spesifik, bukan jenis sarana |
+| "jenis pangan" (daftar) | kolom daftar pangan pada kasus |
+| "skala usaha" · "kapasitas pabrik" | tabel profil Pangan MD (satelit), bukan kolom fakta |
+| "sertifikat" (SNI/HACCP/Halal/ISO) | bridge sertifikat Pangan MD |
+
+## Matriks operasi
+
+| Kolom | Menyaring | Mengelompokkan | Men-join | Memeringkat |
+|---|---|---|---|---|
+| daftar pangan (jsonb array) | expand dulu | expand lalu kelompokkan | **bisa merujuk >1 kamus** → jangan filter satu `type`; tampilkan `type` sebagai hasil | normalisasi dulu |
+| `klasifikasi_sarana_kode` | sebutkan cakupannya (khusus Pangan) | batasi ke jenis sarana terkait | kamus `CLASS_SARANA` | sebutkan cakupan |
+| `jenis_id` untuk MD/IRT | jenis sarana, bukan komoditi | butuh kamus + `type` | `dim_master_data` | biasa |
+
+## Cara mencari
+
+```sql
+-- penanda MD/IRT hidup di mana? periksa jenis sarana
+SELECT master_data_id, name, parent_name FROM public.dim_master_data
+WHERE type = 'JENIS_SARANA' AND (name ILIKE '%MD%' OR name ILIKE '%IRT%' OR name ILIKE '%UMKM%')
+ORDER BY 1;
+
+-- daftar pangan merujuk kamus mana saja? (buktikan, jangan asumsikan)
+SELECT d.type, count(*)
+FROM public.fact_pemeriksaan f,
+     LATERAL jsonb_array_elements_text(f.jenis_pangan_kode) k(x)
+JOIN public.dim_master_data d ON d.master_data_id::text = k.x
+GROUP BY 1 ORDER BY 2 DESC;
+```
+
+## Jebakan
+
+| Gejala | Penyebab | Cara memastikan |
 |---|---|---|
-| **Penanda MD / IRT / UMKM** | `mv_pemeriksaan.jenis_sarana` | bagian dari nama jenis fasilitas |
-| **Jenis pangan** (produk apa yang diproduksi) | `mv_pemeriksaan_jenis_pangan.jenis_pangan_name` | tabel terpisah |
+| "pangan MD" tidak kena | dicari di kolom komoditi | pindah ke jenis sarana |
+| daftar pangan sebagian hilang | difilter ke satu `type` kamus | jalankan query sebaran `type` di atas |
+| klasifikasi sarana diklaim berlaku semua | hanya relevan untuk sebagian jenis sarana | sebutkan cakupannya |
 
-Ini pemisahan yang paling sering keliru. Skema lama menggabungkan komoditi dan penanda MD dalam
-satu kolom; sekarang terpisah.
+## Batas
 
-> **"Sarana produksi MD" bukan filter komoditi.** Yang benar:
-> `sarana = 'PRODUKSI'` **AND** `jenis_sarana LIKE '%MD%'`.
-> Memfilter `komoditi LIKE '%MD%'` mengembalikan **nol baris tanpa error**.
-
-Penanda di `jenis_sarana` mencakup varian MD, varian IRT/PIRT, dan varian UMKM menuju MD. Ambil
-daftarnya lebih dulu (jalur **P2**) supaya polanya tepat; jangan mengetik dari ingatan.
-
-## Tabel jenis pangan
-
-`mv_pemeriksaan_jenis_pangan` menempel ke fakta lewat `id_pemeriksaan`. Satu pemeriksaan bisa
-punya **beberapa** jenis pangan (ada kolom posisi dalam array) — jadi join ini **melipatgandakan**
-baris induk. Hitung dengan `COUNT(DISTINCT mp.id)` bila entity-nya pemeriksaan.
-
-Tidak semua pemeriksaan punya baris di tabel ini; join harus LEFT dari fakta bila pertanyaannya
-tentang populasi.
-
-## Istilah pengguna
-
-| Istilah | Cara mengikat |
-|---|---|
-| **AMDK** / air minum dalam kemasan | nilai `jenis_pangan_name` yang memuat *air minum* |
-| **garam**, **tepung**, **minyak nabati**, **lemak** | nilai yang memuat kata itu |
-| **MD** | `jenis_sarana`, bukan jenis pangan |
-| **PIRT / IRT** | `jenis_sarana`, bukan jenis pangan |
-
-⚠️ Nilai `jenis_pangan_name` bercampur antara **kategori produk pangan** dan **kategori
-penyimpanan** (istilah seperti kering, beku, dingin). Bila pertanyaannya tentang jenis produk,
-sebutkan bahwa sebagian nilai adalah kategori penyimpanan, bukan produk.
-
-## Pola pertanyaan yang lazim
-
-| Pertanyaan | Bentuk filter |
-|---|---|
-| tren pemeriksaan sarana produksi MD jenis pangan X | `sarana='PRODUKSI'` + `jenis_sarana LIKE '%MD%'` + join jenis pangan + pola nama |
-| berapa sarana produksi AMDK yang TMK di balai X tahun Y | idem + `kesimpulan='TMK'` + `nama_upt ILIKE` + rentang tanggal |
-| jenis pangan apa yang paling banyak TMK | join jenis pangan, `GROUP BY jenis_pangan_name`, `COUNT(DISTINCT mp.id)` |
-
-Populasi hasil kombinasi filter ini bisa **sangat kecil**. Bila hasilnya tinggal sedikit baris,
-katakan apa adanya — jangan melonggarkan filter diam-diam supaya angkanya terlihat lebih besar.
+- Kolom daftar pangan sering kosong pada populasi yang tidak relevan → sebutkan keterisiannya.
+- Profil pabrik (skala usaha, kapasitas) ada di tabel satelit, bukan di fakta.
 
 ## Rute
 
-- Kembali ke konsep sarana → **naik** ke `10-sarana-dan-fasilitas.md`.
-- Menyebut komoditi → **seberang** `20-komoditi.md`.
-- Menyebut vonis → **seberang** `30-kesimpulan.md`.
+- Jenis sarana & golongan → **lihat** `10-sarana-dan-fasilitas.md`
+- Komoditi → **lihat** `20-komoditi.md`
+- Kualitas & keterisian → **lihat** `90-kualitas-data.md`
+
+## Manifes
+
+| Tabel | Kolom | Literal |
+|---|---|---|
+| `fact_pemeriksaan` | `jenis_pangan_kode`, `klasifikasi_sarana_kode`, `jenis_id` | — |
+| `dim_master_data` | `master_data_id`, `name`, `parent_name`, `type` | `JENIS_SARANA`, `CLASS_SARANA` |
+| `fact_pemeriksaan_profil_pangan_md` | `pemeriksaan_id`, `skala_usaha`, `jumlah_karyawan` | — |
+| `bridge_pemeriksaan_sertifikat_pangan_md` | `pemeriksaan_id`, `jenis`, `nomor`, `lembaga` | — |

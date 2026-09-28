@@ -1,70 +1,75 @@
-Status berkas dan alur persetujuan — dan apa yang TIDAK bisa disimpulkan darinya.
+status · draft · verifikasi · selesai · macet · antrian · bottleneck · belum selesai · tahap
 
-## `status` di tabel fakta
+# Status berkas & alur
 
-Kolom `status` bertipe **teks** (berbeda dari domain lain yang memakai angka). Nilainya menandai
-posisi berkas dalam alur: tahap draft, tahap perbaikan, beberapa tingkat verifikasi, dan tahap
-selesai. Ada juga varian bertanda pusat untuk berkas yang ditangani unit pusat.
+## Apa yang halaman ini putuskan
 
-Ambil daftar nilainya lewat `SELECT DISTINCT status` — jalur **P2**. Jangan mengetik dari ingatan;
-penamaannya bertingkat dan mudah keliru.
+Status kasus adalah kode teks di `dim_status_code`, **wajib disaring dengan `domain='pemeriksaan'`** —
+tabel yang sama dipakai domain lain dengan ruang nilai berbeda.
 
-`status_label` adalah pasangan berbahasa manusia dari `status`. Untuk **menyaring**, pakai
-`status`; untuk **menampilkan**, pakai `status_label`.
+## Tabel keputusan
 
-⚠️ `status` juga memuat sentinel berupa string `'NULL'` — sama seperti `kesimpulan`.
-
-## Menerjemahkan pertanyaan alur
-
-| Pertanyaan | Filter |
+| Kata dalam pertanyaan | Filter |
 |---|---|
-| "sudah selesai" | nilai status bertahap akhir saja |
-| "masih diproses / belum selesai" | kebalikan dari tahap akhir |
-| "masih draft" | nilai bertahap draft saja |
-| "mangkrak / menumpuk di tahap mana" | `GROUP BY status`, tanpa filter |
+| "draft" · "belum dikirim" | kelompok draft |
+| "dikirim" · "masuk verifikasi" | kelompok verifikasi |
+| "selesai" | kelompok final — **dua kode**: jalur balai dan jalur pusat |
+| "dalam proses" · "belum selesai" | bukan kelompok final dan bukan kelompok draft |
+| "macet" · "menumpuk" · "bottleneck" | **`GROUP BY status` tanpa filter** — pertanyaannya memang tentang sebaran |
+| "siapa yang menyetujui" · "self-approval" | **tidak dapat dipastikan** → P5 |
 
-**Jangan menumpuk filter status di atas populasi yang sudah didefinisikan hal lain.** Pertanyaan
-"berapa pemeriksaan TMK" tidak memerlukan filter status sama sekali; menambahkannya menghapus
-sebagian populasi yang ditanya.
+## Matriks operasi
 
-## Tabel log
+| Kolom | Menyaring | Mengelompokkan | Men-join | Memeringkat |
+|---|---|---|---|---|
+| `status_id` | kelompok kode dari kamus + `domain` | butuh kamus | `dim_status_code.id` **dan** `domain='pemeriksaan'` | sebaran lebih bermakna daripada peringkat |
+| `status_code` (di tabel approval) | join pakai **teks**, bukan id | biasa | `dim_status_code.status_code` | — |
+| `status_label` | **tidak bisa dipakai** (kosong) | tidak bisa | — | — |
 
-`mv_pemeriksaan_log` memuat satu baris per perpindahan tahap, dengan kolom pelaku (`fullname`),
-catatan, dan waktu.
+## Cara mencari
 
-### ⚠️ Semantik kolom pelaku — jangan disalahtafsirkan
+```sql
+-- daftar status pemeriksaan (jangan hafal; catat bahwa labelnya kosong)
+SELECT id, status_code, status_label FROM public.dim_status_code
+WHERE domain = 'pemeriksaan' ORDER BY id;
 
-Model lognya: **`status` menandai keadaan SESUDAH perpindahan**, `catatan` menjelaskan aksi yang
-memicunya, dan **`fullname` adalah pelaku aksi itu** — yang perannya dinamai oleh label tahap
-**sebelumnya**. `status_label` menyebut pihak yang **ditunggu berikutnya**, bukan yang sudah
-bertindak.
+-- sebaran kasus per status
+SELECT s.status_code, count(*) AS kasus
+FROM public.fact_pemeriksaan f
+JOIN public.dim_status_code s ON s.id = f.status_id AND s.domain = 'pemeriksaan'
+GROUP BY 1 ORDER BY 2 DESC;
 
-Konsekuensi yang harus diketahui:
+-- jejak perpindahan tahap + durasi (dari approval)
+SELECT act_steps, to_steps, count(*), min(created_at), max(created_at)
+FROM public.fact_pemeriksaan_approval GROUP BY 1,2 ORDER BY 3 DESC LIMIT 20;
+```
 
-> Baris bertahap verifikasi pertama biasanya membawa nama **operator yang mengirim**, bukan
-> supervisor yang menyetujui. Menyimpulkan "diverifikasi oleh pembuatnya sendiri" dari kesamaan
-> nama pada dua baris berurutan **adalah kesalahan tafsir**, bukan temuan.
+## Jebakan
 
-**Aturan:** pertanyaan *"siapa yang menyetujui"*, *"apakah ada self-approval"*, *"apakah pemisahan
-tugas berjalan"* → **P5 NOT COVERED**. Semantik kolom pelaku tidak dapat dipastikan dari database
-ini sendirian, dan kesimpulannya bersifat tuduhan. Jawab jujur bahwa penelusuran persetujuan
-memerlukan konfirmasi alur sistem sumber.
+| Gejala | Penyebab | Cara memastikan |
+|---|---|---|
+| angka status kosong | `domain` tidak disebut → id bentrok dengan domain lain | sebut `domain='pemeriksaan'` |
+| label tahap tidak muncul | `status_label` kosong seluruhnya | pakai `status_code`, sebutkan label tidak tersedia |
+| "berapa TMK yang selesai" kehilangan populasi | menumpuk filter status di atas populasi yang sudah didefinisikan | pertanyaan TMK tidak butuh filter status kecuali diminta |
+| menyimpulkan siapa menyetujui | semantik pelaku tidak dapat dipastikan | nyatakan P5 |
 
-Yang **boleh** dijawab dari log: kapan sebuah berkas berpindah tahap, berapa lama tersangkut di
-suatu tahap, dan tahap mana yang paling banyak menahan berkas — semua itu tentang **waktu dan
-volume**, bukan tentang **siapa**.
+## Batas
 
-## Tabel timeline
-
-`mv_pemeriksaan_timeline` memuat tanggal milestone dan durasi antar tahap.
-
-⚠️ **Tabel ini memuat id yang tidak ada di tabel fakta.** Menghitung dari timeline langsung akan
-melebihi populasi pemeriksaan. Selalu **INNER JOIN dari fakta** bila jawabannya berbicara tentang
-populasi pemeriksaan. Kolom durasinya juga kosong pada tahap yang belum tercapai — lihat
-`80-waktu-dan-durasi.md`.
+- Kata "selesai" mencakup **dua** jalur final; menyebut satu saja akan mengurangi angka.
+- Tabel approval menjelaskan **perpindahan dan waktu**, bukan siapa yang memutuskan.
+- Riwayat perubahan isi kasus tidak tersimpan (edit menimpa) → jangan menjanjikan rekonstruksi.
 
 ## Rute
 
-- Menyebut durasi atau SLA → **seberang** `80-waktu-dan-durasi.md`.
-- Menyebut vonis → **seberang** `30-kesimpulan.md`.
-- Menyebut petugas/inspektur → **seberang** `70-petugas.md`.
+- Durasi & lama tertahan → **lihat** `80-waktu-dan-durasi.md`
+- Kesimpulan → **lihat** `30-kesimpulan.md`
+- Status sebagai label panel → **lihat** `05-filter-katalog.md`
+- Batas domain (TTE, siapa menyetujui) → **lihat** `95-batas-domain.md`
+
+## Manifes
+
+| Tabel | Kolom | Literal |
+|---|---|---|
+| `dim_status_code` | `id`, `status_code`, `status_label`, `domain` | `pemeriksaan` |
+| `fact_pemeriksaan` | `status_id` | — |
+| `fact_pemeriksaan_approval` | `act_steps`, `to_steps`, `status`, `created_at`, `notes` | — |

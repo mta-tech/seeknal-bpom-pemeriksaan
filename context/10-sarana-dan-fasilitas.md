@@ -1,82 +1,88 @@
-Sarana — rantai pengawasan, jenis fasilitas, bentuk badan usaha, dan UPT pemeriksa.
+apotek · PBF · pangan · pangan MD · IRT · UMKM · toko obat · PKM · klinik · rumah sakit · sarana produksi · sarana distribusi · sarana pelayanan · balai · regional · wilayah
 
-## ⚠️ Dua kolom bernama mirip, dua konsep berbeda
+# Sarana, golongan, dan wilayah
 
-Ini kesalahan paling mahal di domain ini. Query-nya jalan tanpa error dan mengembalikan nol baris.
+## Apa yang halaman ini putuskan
 
-| Kolom | Konsep | Isi |
-|---|---|---|
-| `sarana` | **rantai pengawasan** — tiga nilai | `DISTRIBUSI`, `PELAYANAN`, `PRODUKSI` |
-| `jenis_sarana` | **jenis fasilitas** — puluhan nilai | `APOTEK`, `PBF`, `TOKO OBAT`, `PANGAN`, `PANGAN MD`, `PANGAN IRT (CPPB - IRT)`, `KOSMETIK`, `PUSAT KESEHATAN MASYARAKAT (PKM)`, dan seterusnya |
+Jenis sarana versus golongannya, identitas sarana, dan **wilayah mana** yang dimaksud pertanyaan.
 
-**"Sarana produksi", "sarana distribusi", "sarana pelayanan" → kolom `sarana`.**
-**"Apotek", "PBF", "pangan MD", "toko obat" → kolom `jenis_sarana`.**
+## Tabel keputusan
 
-Skema lama sistem ini menaruh konsep rantai di kolom bernama `jenis_sarana`. Kamus istilah dan
-aturan warisan yang menyebut *"produksi ada di kolom jenis_sarana"* mengacu ke skema lama dan
-**sudah tidak berlaku**. Bila menemukan aturan lama seperti itu, abaikan; pakai `sarana`.
-
-Nilai `sarana` ditulis huruf besar. Bandingkan dengan nilai persis, atau bungkus kedua sisi dengan
-`lower()` — jangan mencampur (`lower(sarana) = 'PRODUKSI'` selalu salah).
-
-## Menggabungkan keduanya
-
-Banyak pertanyaan memerlukan dua-duanya sekaligus:
-
-| Pertanyaan | Filter |
+| Kata dalam pertanyaan | Kolom / keputusan |
 |---|---|
-| sarana **produksi MD** | `sarana = 'PRODUKSI'` **AND** `jenis_sarana LIKE '%MD%'` |
-| sarana **distribusi kosmetik** | `sarana = 'DISTRIBUSI'` **AND** `komoditi = 'KOSMETIK'` |
-| **apotek** | `jenis_sarana = 'APOTEK'` (rantainya menyusul sendiri) |
-| sarana **produksi obat** | `sarana = 'PRODUKSI'` **AND** `komoditi = 'OBAT'` |
+| apotek · PBF · toko obat · pangan · pangan MD · pangan IRT · kosmetik · obat tradisional · suplemen · klinik · PKM · rumah sakit | `jenis_id` → kamus `JENIS_SARANA` |
+| "sarana produksi" · "sarana distribusi" · "sarana pelayanan" | **golongan**, bukan jenis: `parent_name` pada kamus `JENIS_SARANA` |
+| nama sarana / pabrik / perusahaan tertentu | `sarana_id` → `dim_sarana.nama_sarana` (teks bebas → P3 probe) |
+| "oleh BBPOM X" / "UPT X" | `balai_id` → `dim_balai.nama_balai` |
+| "Regional X" | `dim_balai.regional_name` |
+| "sarana di provinsi/kabupaten X" | `dim_sarana.provinsi_id` / `kabupaten_id` |
+| "wilayah kerja UPT X" | **perlu definisi cakupan** → bila tidak tersedia: P5 |
 
-Penanda **MD / IRT / UMKM** hidup di `jenis_sarana`, **bukan** di `komoditi`. Detail di
-`50-jenis-pangan.md`.
+## Tiga makna "wilayah" (jangan dicampur)
 
-## `legal` — bentuk badan usaha atau tempat
-
-Kolom terpisah berisi bentuk hukum/tempat usaha (`PT`, `CV`, `UD`, `TOKO`, `APOTEK`,
-`SWALAYAN / MINI MARKET / SUPER MARKET`, `KIOS / WARUNG`, dan lain-lain). Beberapa nilainya
-**bertumpang tindih** dengan `jenis_sarana` (`APOTEK` dan `TOKO OBAT` muncul di kedua kolom) —
-pilih berdasarkan makna pertanyaan: bentuk usaha → `legal`, jenis fasilitas yang diawasi →
-`jenis_sarana`.
-
-`legal` punya nilai sentinel berupa tanda hubung. Lihat `90-kualitas-data.md`.
-
-## `klasifikasi_sarana` — bentuk fisik ritel/gudang
-
-Kolom terpisah lagi, berisi klasifikasi seperti ritel modern, ritel tradisional, gudang
-importir/distributor, gudang e-commerce. **Keterisiannya kondisional** — hanya relevan untuk
-sebagian populasi distribusi. Sebelum memakainya sebagai penyaring, baca
-`11-klasifikasi-distribusi.md` dan `90-kualitas-data.md`.
-
-## UPT / balai pemeriksa
-
-`nama_upt` adalah unit yang melakukan pemeriksaan. Istilah pengguna "UPT", "balai", "loka", "BPOM
-di kota X" semuanya menunjuk kolom ini.
-
-Tiga bentuk nilai yang harus dibedakan:
-
-| Bentuk | Contoh pola | Perlakuan |
+| Bahasa user | Arti | Kolom |
 |---|---|---|
-| Balai / Balai Besar | `BALAI BESAR POM DI …`, `BALAI POM DI …` | unit wilayah normal |
-| Loka | `LOKA POM DI KAB…` / `LOKA POM DI KOTA…` | unit wilayah normal |
-| **Direktorat** | `DIREKTORAT PENGAWASAN …` | **unit pusat** — bukan balai, tidak punya wilayah kerja maupun target |
-| **Akun uji** | nama bergaya demo/percobaan | **buang** dari semua hitungan |
+| oleh BBPOM Bandung | **pelaksana** pemeriksaan | `fact_pemeriksaan.balai_id` |
+| Regional Semarang | kelompok operasional balai | `dim_balai.regional_name` |
+| sarana di Bandung | **lokasi objek** | `dim_sarana.kabupaten_id` / `provinsi_id` |
 
-Peringkat "balai mana yang paling banyak" harus mengeluarkan direktorat dan akun uji, atau
-menyebutkannya terpisah. Lihat `00-menghitung.md` §3.
+Pertanyaan "temuan di Bandung" bisa berarti dua hal berbeda → Gate 1.
 
-Penulisan `nama_upt` di tabel fakta memakai **huruf besar**, sedangkan tabel target memakai
-huruf campuran — konsekuensinya ada di `85-target-capaian.md`.
+## Cara mencari
 
-Wilayah kerja balai (kabupaten/kota mana saja yang menjadi tanggung jawabnya) ada di
-`coverage_balai`. Itu **bukan** lokasi sarana; lokasi sarana ada di `provinsi` dan
-`kabupaten_kota` pada tabel fakta.
+```sql
+-- daftar jenis sarana + golongannya (jangan hafal)
+SELECT master_data_id, name, parent_id, parent_name
+FROM public.dim_master_data WHERE type = 'JENIS_SARANA' ORDER BY 1;
+
+-- sebaran regional (pakai nama, bukan kode)
+SELECT regional_name, count(*) FROM public.dim_balai GROUP BY 1 ORDER BY 2 DESC;
+
+-- cari sarana berdasarkan nama (P3): ILIKE sekali untuk menemukan varian
+SELECT sarana_id, nama_sarana FROM public.dim_sarana
+WHERE nama_sarana ILIKE '%<kata>%' LIMIT 20;
+```
+
+## Matriks operasi
+
+| Kolom | Menyaring | Mengelompokkan | Men-join | Memeringkat |
+|---|---|---|---|---|
+| `nama_sarana` | teks bebas → probe dulu, lalu `=` pada nilai temuan | normalisasi sebelum dikelompokkan | ke `fact_pemeriksaan.sarana_id` | **peringkat tanpa normalisasi tidak sahih** |
+| `regional_name` | langsung | langsung | dari `dim_balai` | pakai nama, bukan kode |
+| `regional` (kode) | **jangan** | jangan | jangan | jangan — kode tidak konsisten |
+| `parent_name` | filter golongan | grup utama | dari kamus jenis sarana | biasa |
+| `dihapus_di_sumber` | flag, bukan eksklusi otomatis | — | — | — |
+
+## Jebakan
+
+| Gejala | Penyebab | Cara memastikan |
+|---|---|---|
+| "sarana produksi" tidak mengembalikan apa pun | memfilternya di kolom jenis | itu golongan (`parent_name`), bukan jenis — pindah kolom |
+| peringkat balai terlihat acak | memakai kolom `regional` (kode) | pakai `regional_name` |
+| peringkat sarana terpecah | satu entitas punya beberapa penulisan | normalisasi; sebutkan bila tidak digabung |
+| nama balai tidak ketemu | perbedaan spasi/kapitalisasi pada filter kesamaan | probe dulu, lalu saring dengan nilai hasil probe |
+
+## Batas
+
+- `dim_sarana` memuat baris soft-delete (`dihapus_di_sumber`); default: **tetap ikut**, kecuali
+  pertanyaannya tentang sarana aktif.
+- `provinsi_id`/`kabupaten_id` sebagian tidak ketemu kamus wilayah — nyatakan bila relevan.
+- Jumlah jenis sarana yang benar-benar terpakai lebih sedikit dari isi kamus → jangan menyimpulkan
+  "semua jenis" dari daftar kamus.
 
 ## Rute
 
-- Pertanyaan menyebut BUPN, importir, notifikasi, ritel → **turun** ke `11-klasifikasi-distribusi.md`.
-- Menyebut MD, IRT, AMDK, jenis pangan → **seberang** `50-jenis-pangan.md`.
-- Menyebut komoditi → **seberang** `20-komoditi.md`.
-- Menyebut target atau capaian → **seberang** `85-target-capaian.md`.
+- Komoditi → **lihat** `20-komoditi.md`
+- Jenis pangan (MD/IRT/UMKM) → **lihat** `50-jenis-pangan.md`
+- Target → **lihat** `85-target-capaian.md`
+- Label panel sarana → **lihat** `05-filter-katalog.md`
+- Kekosongan & soft-delete → **lihat** `90-kualitas-data.md`
+
+## Manifes
+
+| Tabel | Kolom | Literal |
+|---|---|---|
+| `dim_sarana` | `sarana_id`, `nama_sarana`, `type_id`, `provinsi_id`, `kabupaten_id`, `dihapus_di_sumber` | — |
+| `dim_balai` | `balai_id`, `nama_balai`, `regional_name`, `regional` | — |
+| `dim_master_data` | `master_data_id`, `name`, `parent_id`, `parent_name` | `JENIS_SARANA` |
+| `fact_pemeriksaan` | `sarana_id`, `balai_id`, `jenis_id` | — |
