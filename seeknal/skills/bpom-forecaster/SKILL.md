@@ -2,151 +2,116 @@
 name: bpom-forecaster
 description: "Forecasting skill for predicting future trends from any pemeriksaan time series. Computes projections deterministically from historical data with quality labels."
 tags: [bpom, pemeriksaan, forecast]
-version: "1.0.0"
+version: "2.0.0"
 ---
 
 # BPOM Forecaster (Trigger)
 
-Routes BPOM forecast requests to `run_forecast`. This skill owns only the
-BPOM CAPTURE parameters — all compute is deterministic (ETS seasonal fit
-inside the IBA forecast engine). The LLM does **no** forecast arithmetic.
+Routes BPOM forecast requests to `run_forecast`. This skill owns only the BPOM CAPTURE parameters —
+all compute is deterministic (ETS seasonal fit inside the IBA forecast engine). The LLM does **no**
+forecast arithmetic.
 
-Load `context/data_architecture.md` first — it has the table inventory, join rules, and traps.
-This file covers only the tool workflow.
+Load `context/00-menghitung.md` and `context/01-peta-data-dan-routing.md` first. This file covers only
+the tool workflow.
 
 ## CAPTURE
+
 Lock `{sql, periods}`.
 
-- Default table = `mv_pemeriksaan`. Series not stated = Total Pemeriksaan.
-- **Horizon translation:** `periods` is a step count on the SQL's own grain —
-  monthly: 6 bulan -> 6, 1 tahun -> 12, 3 tahun -> 36, 5 tahun -> 60 -> capped.
-  Cap at 36; the tool clamps silently, so when the request exceeds it, SAY in
-  the answer that 36 months is the maximum supported horizon and present those.
-- **"hingga/sampai {X}"** = every step from the period after the last actual
-  **through the end of X** — the intermediate periods are part of the request.
-  **Always pass `periods` explicitly** — the tool defaults to 3 when omitted.
-- **"bulan depan" / "next month"** = the next **COMPLETE** month — i.e. the month
-  AFTER the current running month, not the first forecast step. E.g. data complete
-  through June + July running -> first step = Juli, **"bulan depan" = Agustus**.
-  So use `periods >= 2` and name that complete month (Agustus) as the answer's target.
-- Build the SQL using the template exactly (table + filter). If the **series** is
-  ambiguous, call `request_clarification` first.
+- Default **table** = `fact_pemeriksaan`. Default series = total pemeriksaan.
+- **Horizon translation:** `periods` is a step count on the SQL's own grain — monthly:
+  6 bulan → 6, 1 tahun → 12, 3 tahun → 36, 5 tahun → 60 → capped at 36. When the request exceeds it,
+  SAY in the answer that 36 months is the maximum supported horizon.
+- **"hingga/sampai {X}"** = every step through the end of X, intermediate periods included.
+  **Always pass `periods` explicitly.**
+- **"bulan depan"** = the next **COMPLETE** month (the month after the running one), not the first
+  forecast step.
+- If the **series** is ambiguous → `request_clarification` first.
 
 ## SQL Template
 
 ```sql
-SELECT date_trunc('month', tanggal_mulai) AS x,
-       COUNT(DISTINCT id)                  AS y
-FROM   <table>
-WHERE  tanggal_mulai >= '2020-01-01'
-  AND  tanggal_mulai < date_trunc('month', CURRENT_DATE)
-  AND  nama_upt NOT IN ('DEMO BALAI BESAR', 'DEMO TIPE A')
+SELECT date_trunc('month', tgl_start) AS x,
+       COUNT(DISTINCT id)             AS y
+FROM   public.fact_pemeriksaan
+WHERE  tgl_start >= DATE '2020-01-01'
+  AND  tgl_start < date_trunc('month', CURRENT_DATE)
+  AND  is_data_uji IS NOT TRUE
   AND  <series filter, if any>
 GROUP BY 1 ORDER BY 1
 ```
 
-Default Y = `COUNT(DISTINCT id)`. Default grain = monthly. No JOINs, no
-`generate_series`, no recursive CTE (tool rejects these). Univariate only.
+Default Y = `COUNT(DISTINCT id)`; default grain = monthly. No JOINs, no `generate_series`, no recursive
+CTE (the tool rejects these). Univariate only.
 
-**Date column:** `tanggal_mulai` for standard series. `tanggal_input` for data-entry lag.
-Never `day_*` columns (contain outliers).
+**Date column:** `tgl_start` for the standard series. `created_at` for data-entry lag.
+Never use `tgl_end` as the primary series date.
 
-**Exclusions are mandatory:**
-- `tanggal_mulai >= '2020-01-01'` (drops outlier dates before 2015)
-- `nama_upt NOT IN ('DEMO BALAI BESAR', 'DEMO TIPE A')` (drops test data)
+**Exclusions are mandatory:** `tgl_start >= '2020-01-01'` (drops early/edge dates) and
+`is_data_uji IS NOT TRUE` (drops test data). Both come from `context/00-menghitung.md`.
 
 ## Series Registry
 
-| Series | Table | Filter |
-|---|---|---|
-| Total Pemeriksaan | mv_pemeriksaan | none |
-| Pemeriksaan Selesai | mv_pemeriksaan | status IN ('FINISHED','FINISHED_PUSAT') |
-| Pemeriksaan TMK | mv_pemeriksaan | kesimpulan = 'TMK' |
-| Pemeriksaan MK | mv_pemeriksaan | kesimpulan = 'MK' |
-| Pemeriksaan OBAT | mv_pemeriksaan | komoditi = 'OBAT' |
-| Pemeriksaan PANGAN | mv_pemeriksaan | komoditi = 'PRODUK PANGAN' |
-| Pemeriksaan KOSMETIK | mv_pemeriksaan | komoditi = 'KOSMETIK' |
-| Pemeriksaan DISTRIBUSI | mv_pemeriksaan | sarana = 'DISTRIBUSI' |
-| Pemeriksaan PELAYANAN | mv_pemeriksaan | sarana = 'PELAYANAN' |
-| Pemeriksaan PRODUKSI | mv_pemeriksaan | sarana = 'PRODUKSI' |
-| Temuan per bulan | mv_pemeriksaan_temuan | JOIN mv_pemeriksaan ON id_pemeriksaan = id |
+| Series | Filter |
+|---|---|
+| Total Pemeriksaan | none |
+| Pemeriksaan Selesai | status = finished group (both finish codes) |
+| Pemeriksaan TMK | `kesimpulan_balai_id` → kode TMK |
+| Pemeriksaan MK | `kesimpulan_balai_id` → kode MK |
+| Pemeriksaan KOSMETIK | `klasifikasi_id` → kamus komoditi (dengan `type`) |
+| Pemeriksaan PANGAN | idem |
+| Pemeriksaan OBAT | idem |
+| Pemeriksaan DISTRIBUSI | golongan `parent_name` = Distribusi |
+| Pemeriksaan PELAYANAN | golongan `parent_name` = Pelayanan |
+| Pemeriksaan PRODUKSI | golongan `parent_name` = Produksi |
+| Temuan produk per bulan | dari `bridge_pemeriksaan_temuan`, `COUNT(DISTINCT pemeriksaan_id)`, `is_kasus_draft = false` |
 
-**Custom series:** User can request any valid filter combination. Build the SQL from the template
-with the requested filter. If the filter is ambiguous, clarify first.
+Resolve every code from `context/` — never from memory. A code that lives in the dictionary needs its
+`type`; a status needs `domain='pemeriksaan'`; a kesimpulan needs the FK join.
 
 ## RUN
+
 Call `run_forecast(sql, periods)`. Do NOT compute forecast numbers yourself.
 
-- **After a clarification is answered (user picks a scope):** call `run_forecast`
-  FRESH this turn for the resolved scope. The forecast numbers in your answer MUST
-  come from a `run_forecast` result produced **this turn** — NEVER restate/quote
-  numbers from a previous turn's answer or the conversation history.
-- `## Kesalahan` with "policy check (STEP 0.5)" -> SQL has a JOIN/
-  `generate_series`/recursive CTE — rebuild flat per the template, don't retry the same pattern.
-- `## Kesalahan` with "STEP 1: EXECUTE" -> runtime error — recheck template and retry corrected.
-- `## Ditolak` -> present the engine's reason (usually insufficient history),
-  offer historical trend instead; don't retry unless the request changes.
+- **After a clarification is answered**, call `run_forecast` FRESH this turn. Numbers in the answer
+  MUST come from a `run_forecast` result produced **this turn**.
+- `## Kesalahan` with "policy check" → the SQL has a forbidden pattern; rebuild flat per the template.
+- `## Kesalahan` with "EXECUTE" → runtime error; recheck the template and retry corrected.
+- `## Ditolak` → present the engine's reason and offer the historical trend instead.
 
 ## PRESENT
-Read the tool's markdown and compose prose around it — don't invent a new
-structure. Lead with the quality label. Follow the forecast guide for
-vocabulary (never show raw `sigma`/`sub_type`/field names/CV number).
 
-**Present the full computed horizon.** Every predicted period the tool returned
-appears in the answer — never truncate to the first months or to the named
-year only.
+Read the tool's markdown and compose prose around it. Lead with the quality label. Never show raw
+`sigma`/`sub_type`/field names/CV numbers.
 
-**The Answer Contract applies to forecasts too (transparency, general).**
-Every projected period is its own row (point + Rentang Realistis); the
-tool's history block is presented in full alongside the projection, never
-dropped; multiple series -> per-series labelled sections (code + description
-per series). The stored CSV (tool-owned, combined) covers exactly
-the horizon presented: all historical periods (`kind=historis`) AND all
-projected periods (`kind=proyeksi-*`) in one file. When the request exceeds the 36-step cap,
-the answer AND the export presentation both state "36 bulan (maksimum yang
-didukung)" — never silently deliver less than asked.
+**Present the full computed horizon.** Every predicted period the tool returned appears in the answer.
 
-**Anomaly:** if the tool's markdown has an `## Anomali` block, include it
-and state the points were **not removed**. If the user asks about
-anomalies directly, call `detect_anomaly(sql)` yourself (works whether or
-not a forecast ran this turn) — see the anomaly skill.
+**Two panels rule:** if the request covers both pelayanan and produksi, run **two** series and present
+them as two labelled sections — never one merged projection, because the units differ.
 
-**CSV (Store Contract — one combined store per question):** on a SUCCESSFUL
-forecast, `run_forecast` self-uploads ONE combined CSV — historical + projection
-together. **Do NOT call `upload_to_s3` yourself on a successful forecast.**
-Only when the forecast was **refused/failed** and you fall back to a
-historical-trend answer may you export the history via `upload_to_s3`.
-Multi-series (each its own `run_forecast`) -> each call self-uploads its
-own combined CSV. Never `data=`/`columns=`. Never paste the raw URL.
+**Anomaly:** if the markdown has an `## Anomali` block, include it and state the points were **not
+removed**. If the user asks about anomalies directly, call `detect_anomaly(sql)` yourself.
 
-## Stock vs Flow
+**CSV:** on a SUCCESSFUL forecast, `run_forecast` self-uploads ONE combined CSV (history + projection).
+**Do NOT call `upload_to_s3` yourself.** Only on a refused/failed forecast, when you fall back to a
+historical trend, may you export the history.
+
+## Stock vs flow
 
 | Question pattern | Kind | Y expression |
 |---|---|---|
-| "pemeriksaan **baru**/selesai per bulan" | flow | `COUNT(DISTINCT id)` |
-| "total pemeriksaan **aktif**/akumulasi" | stock | `SUM(COUNT(DISTINCT id)) OVER (ORDER BY date_trunc(...))` |
+| "pemeriksaan baru/selesai per bulan" | flow | `COUNT(DISTINCT id)` |
+| "total pemeriksaan aktif/akumulasi" | stock | `SUM(COUNT(DISTINCT id)) OVER (ORDER BY date_trunc(...))` |
 
-For stock queries, the fit may show some upward drift but doesn't
-reliably track a real cumulative total's growth rate — say so.
+For stock series the fit may drift — say so.
 
 ## Hard rules
 
-- **Never use `execute_python` for forecast arithmetic.** LLM-generated
-  Python varies per turn -> inconsistent numbers for the same question.
-  `run_forecast` is the single deterministic source.
-- **Follow-up consistency:** if a follow-up asks about the same series
-  (different horizon, clarifying question), reuse the exact SQL from the
-  prior turn — don't rebuild it from scratch.
-- **If the projection ran but its chart did not render**, the numbers still
-  stand: present the full projection in words and note the chart could not be
-  shown — never re-run `run_forecast` just to force the visual.
-- **Same question -> same SQL:** resolve the series from the registry exactly
-  (same wording -> same registry row, no improvised filters).
-- **Consistency contract:** the same question (same series, grain, horizon)
-  MUST produce the same numbers in any session and in follow-ups — the
-  engine is deterministic, so any difference means you built a different
-  SQL or `periods`. Resolve from the registry verbatim, pass `periods`
-  explicitly, and for follow-ups reuse the prior turn's exact SQL.
-- **Custom series:** if the user requests a filter not in the registry,
-  build the SQL from the template with their filter. Document the filter
-  in the answer so it can be reproduced.
+- **Never use `execute_python` for forecast arithmetic.** `run_forecast` is the single deterministic source.
+- **Follow-up consistency:** reuse the exact SQL from the prior turn for the same series.
+- **If the projection ran but its chart did not render**, the numbers still stand: present them in
+  words and note the chart could not be shown — never re-run to force the visual.
+- **Same question → same SQL:** resolve the series from the registry exactly.
+- **Consistency contract:** same question (same series, grain, horizon) → same numbers in any session.
+  Any difference means a different SQL or `periods`.
+- **Custom series:** build from the template, and document the filter in the answer.

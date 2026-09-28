@@ -1,71 +1,91 @@
-Temuan produk — apa yang ditemukan saat pemeriksaan, dan tindakannya.
+TIE · tanpa izin edar · kedaluwarsa · rusak · substandard · BKO · obat keras · palsu · sitaan · dimusnahkan · diamankan · temuan produk · kategori temuan
 
-## Dua tabel, dua bentuk
+# Temuan produk
 
-| Tabel | Grain | Pakai untuk |
-|---|---|---|
-| `mv_pemeriksaan_temuan` | satu baris per produk temuan | rincian produk, nilai, negara, tindakan |
-| `mv_pemeriksaan_kategori_temuan` | satu baris per kategori temuan | **menghitung per kategori** |
+## Apa yang halaman ini putuskan
 
-Keduanya menempel ke fakta lewat `id_pemeriksaan`.
+Temuan produk hidup di `bridge_pemeriksaan_temuan`. Halaman ini memutuskan **grain mana yang dihitung**,
+karena empat angka berbeda bisa dihasilkan dari tabel yang sama.
 
-⚠️ **Kolom `tp_kategori` ada di kedua tabel dengan bentuk berbeda.** Di tabel temuan, satu baris
-bisa memuat **beberapa kategori tergabung dalam satu teks berkoma**. Di tabel kategori_temuan,
-kategori sudah dipecah menjadi nilai tunggal per baris.
+## Empat grain — pilih satu, jangan dicampur
 
-> Untuk pertanyaan **"kategori temuan apa yang paling banyak"**, pakai
-> `mv_pemeriksaan_kategori_temuan`. Memakai `tp_kategori` di tabel temuan memecah satu kategori
-> menjadi banyak kombinasi berkoma dan merusak peringkat.
-
-Tabel kategori_temuan pun masih menyisakan sedikit nilai berkoma; bila peringkatnya harus rapi,
-sebutkan bahwa sebagian kecil nilai masih gabungan.
-
-## Kategori temuan — istilah pengguna
-
-Nilai kategorinya berupa label panjang. Ambil daftarnya lebih dulu (jalur **P2**), lalu ikat:
-
-| Istilah pengguna | Cara mengikat |
+| Yang ditanya | Hitungan |
 |---|---|
-| **TIE** / tanpa izin edar / ilegal | cari nilai yang memuat *TIE* atau *izin edar* — ada lebih dari satu penulisan |
-| **kedaluwarsa** / ED / expired | cari nilai yang memuat *kedaluwarsa* atau *expire* — ada beberapa varian ejaan |
-| **bahan berbahaya** / BKO | cari nilai yang memuat *bahan berbahaya*, *dilarang*, atau *BKO* — beberapa nilai berbeda menunjuk konsep yang sama |
-| **rusak / substandard** | cari nilai yang memuat *rusak* |
-| **lain-lain** | ada beberapa penulisan berbeda (*Lain - Lain*, *Lain-lain*) — sertakan semuanya |
+| berapa **kasus/pemeriksaan** yang menemukan produk bermasalah | `COUNT(DISTINCT pemeriksaan_id)` |
+| berapa **baris/entri** temuan | `COUNT(*)` |
+| berapa **fisik produk** (kuantitas) | agregasi kolom kuantitas |
+| berapa **nilai ekonomi** | agregasi kolom nilai |
 
-**Selalu perlakukan ini sebagai keluarga nilai, bukan satu nilai.** Ejaan bervariasi (spasi,
-tanda hubung, huruf besar-kecil), dan memilih satu penulisan saja melewatkan sebagian populasi.
+Menyebut "jumlah temuan" tanpa grain → Gate 1.
 
-## Tindakan atas produk
+## Tabel keputusan
 
-`tp_tindakan` memuat tindakan yang diambil (pemusnahan, pengamanan, dikembalikan ke
-produsen/importir, penarikan, pendataan, dan lain-lain). Kolom ini juga **bisa memuat beberapa
-tindakan berkoma** dalam satu baris — perlakukan seperti `tp_kategori`.
+| Kata dalam pertanyaan | Aksi |
+|---|---|
+| "TIE" · "tanpa izin edar" | kategori TIE |
+| "kedaluwarsa" · "ED" | kategori kedaluwarsa |
+| "rusak" · "substandard" | perlu keputusan penggabungan — lihat Jebakan |
+| "BKO" · "obat keras" · "palsu" · "bahan berbahaya" | kategori masing-masing |
+| "paling banyak" | `COUNT(DISTINCT pemeriksaan_id)` lalu urutkan |
+| "berapa kali keputusan" | grain baris |
 
-Pertanyaan "produk kategori X tetapi tidak dimusnahkan/diamankan" memerlukan kombinasi kategori
-dan tindakan; keduanya multi-nilai, jadi pakai pencocokan pola, bukan kesamaan persis.
+## Matriks operasi
 
-## Kolom lain di tabel temuan
+| Kolom | Menyaring | Mengelompokkan | Men-join | Memeringkat |
+|---|---|---|---|---|
+| `kategori_kode` (jsonb array) | **expand dulu** | expand lalu kelompokkan | kamus lewat **teks**: `master_data_id::text = elemen` | normalisasi/bucket dulu |
+| `tindakan_kode` (jsonb array) | expand dulu | expand lalu kelompokkan | idem | biasa |
+| `tp_product_id` | — | — | `dim_produk.produk_id` | biasa |
+| `is_kasus_draft` | **buang** bila angka diklaim final | — | — | — |
+| `jumlah_temuan` · `harga_total` | jangan jadi penyaring | jangan | — | pakai guard kualitas (`41`) |
 
-| Kolom | Isi | Catatan |
+## Cara mencari
+
+```sql
+-- nilai kategori yang benar-benar dipakai, dan mana yang TIDAK ada di kamus
+SELECT e.kode,
+       COALESCE(d.name, '(tidak di kamus)') AS nama,
+       count(*) AS baris
+FROM public.bridge_pemeriksaan_temuan t
+CROSS JOIN LATERAL jsonb_array_elements_text(t.kategori_kode) e(kode)
+LEFT JOIN public.dim_master_data d
+       ON d.master_data_id::text = e.kode AND d.type = 'KATEGORI_TEMUAN_PRODUK'
+GROUP BY 1, 2 ORDER BY 3 DESC;
+
+-- sebaran grain
+SELECT count(*) AS baris,
+       count(DISTINCT pemeriksaan_id) AS kasus,
+       count(DISTINCT (pemeriksaan_id, tp_product_id)) AS pasangan_unik
+FROM public.bridge_pemeriksaan_temuan WHERE is_kasus_draft = false;
+```
+
+## Jebakan
+
+| Gejala | Penyebab | Cara memastikan |
 |---|---|---|
-| `product_name`, `product_register`, `product_brands` | identitas produk | teks bebas |
-| `registrar` | pendaftar produk | teks bebas, keterisian tidak penuh |
-| `tp_negara` | negara asal | **teks bebas** — lihat `41-nilai-dan-negara.md` |
-| `tp_jml_temuan`, `tp_harga`, `tp_harga_total` | kuantitas dan nilai | **tercemar** — lihat `41-nilai-dan-negara.md` |
-| `tp_expire` | tanggal kedaluwarsa produk | keterisian sebagian |
-| `tp_pelanggaran`, `tp_netto` | **praktis kosong seluruhnya** | jangan dipakai sebagai penyaring |
+| kategori kosong / nol | array tidak di-expand, atau join tanpa cast teks | bandingkan `jsonb_array_elements_text` + `::text` |
+| angka kategori lebih kecil dari kenyataan | kode tidak ada di kamus → dibuang oleh INNER JOIN | pakai `LEFT JOIN` + bucket "(tidak di kamus)" |
+| satu makna terpecah | ada beberapa kode untuk makna serupa di kamus | periksa daftar kamus & kode yang dipakai |
+| angka draft ikut terhitung | `is_kasus_draft` tidak disaring | saring bila angka diklaim final |
+| "jumlah temuan" raksasa | itu **kuantitas**, bukan jumlah kasus | tegaskan grain |
 
-⚠️ Dua kolom terakhir terdaftar di dokumentasi lama seolah punya kategori nilai. Di database ini
-keduanya kosong. Memfilternya menghasilkan nol baris tanpa error.
+## Batas
 
-## Hubungan dengan vonis
-
-Hanya sebagian pemeriksaan menghasilkan temuan. `INNER JOIN` ke tabel temuan **menjatuhkan
-mayoritas pemeriksaan** — untuk pertanyaan populasi, LEFT JOIN dari fakta. Dan seperti dicatat di
-`30-kesimpulan.md`, temuan dan vonis `TMK` adalah dua hal berbeda.
+- Kode kategori di data **lebih banyak** daripada di kamus, dan sebagian kamus tidak dipakai → jangan
+  mengklaim seluruh kategori terpetakan.
+- `tp_asset` adalah id eksternal; tidak ada tabel targetnya → jangan dibangunkan lookup.
+- Angka kuantitas/nilai punya nilai besar yang sah → `41`.
 
 ## Rute
 
-- Menyebut nilai rupiah atau negara asal → **turun** ke `41-nilai-dan-negara.md`.
-- Menyebut kategori sarana distribusi → **seberang** `11-klasifikasi-distribusi.md`.
-- Menyebut vonis sarana → **seberang** `30-kesimpulan.md`.
+- Nilai & kuantitas → **lihat** `41-nilai-dan-negara.md`
+- Kategori sebagai dimensi panel → **lihat** `05-filter-katalog.md`
+- Grain & eksklusi → **lihat** `00-menghitung.md`
+
+## Manifes
+
+| Tabel | Kolom | Literal |
+|---|---|---|
+| `bridge_pemeriksaan_temuan` | `id`, `pemeriksaan_id`, `tp_product_id`, `kategori_kode`, `tindakan_kode`, `is_kasus_draft`, `jumlah_temuan`, `harga_total`, `tp_asset` | — |
+| `dim_master_data` | `master_data_id`, `name`, `type` | `KATEGORI_TEMUAN_PRODUK`, `TL_PRODUK_TEMUAN` |
+| `dim_produk` | `produk_id`, `nama_produk`, `nomor_registrasi` | — |

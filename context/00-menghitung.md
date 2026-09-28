@@ -1,109 +1,102 @@
-Cara menghitung — entity, grain, tanggal kanonik, eksklusi. Berlaku untuk SETIAP pertanyaan data.
+pemeriksaan · inspeksi · sarana · temuan · petugas · berapa · jumlah · periode · tanggal
 
-Domain ini merekam **pemeriksaan sarana** (inspeksi ke fasilitas), bukan pengujian laboratorium,
-bukan iklan, bukan penandaan. Batasnya di `95-batas-domain.md`.
+# Cara menghitung — entity, grain, tanggal, eksklusi
 
-## 1. Entity — dari SUBJEK pertanyaan, bukan dari kata bendanya
+Berlaku untuk **setiap** pertanyaan data di domain ini.
 
-| Subjek | Hitung dengan | Tabel | Tanggal kanoniknya |
-|---|---|---|---|
-| Pemeriksaan / inspeksi | `COUNT(*)` atau `COUNT(DISTINCT id)` | `mv_pemeriksaan` | `tanggal_mulai` |
-| Sarana (fasilitas) unik | `COUNT(DISTINCT nama_sarana)` | `mv_pemeriksaan` | idem |
-| Temuan produk | `COUNT(*)` pada tabel temuan | `mv_pemeriksaan_temuan` | tanggal induknya |
-| Pemeriksaan yang punya temuan | `COUNT(DISTINCT id_pemeriksaan)` | `mv_pemeriksaan_temuan` | idem |
-| Penugasan petugas | `COUNT(*)` pada tabel petugas | `mv_pemeriksaan_petugas` | `tgl_surat` |
+## Apa yang halaman ini putuskan
 
-`id` di `mv_pemeriksaan` **unik penuh** — satu baris satu pemeriksaan. Karena itu `COUNT(*)` dan
-`COUNT(DISTINCT id)` memberi hasil sama di tabel fakta, dan keduanya sah.
+Apa yang dihitung (entity), seberapa halus (grain), kolom tanggal mana yang dipakai, dan baris mana
+yang wajib dibuang — sebelum satu baris SQL ditulis.
 
-**Yang tidak sama:** pemeriksaan ≠ sarana. Satu sarana bisa diperiksa berkali-kali lintas tahun.
-Pertanyaan "berapa sarana yang diperiksa" menuntut `COUNT(DISTINCT nama_sarana)`; menjawabnya
-dengan cacah pemeriksaan melebihkan angkanya. Kalau pertanyaannya tidak jelas, **tanya di Gate 1**.
+## Tabel keputusan — kata pertanyaan menentukan entity
 
-**Tabel pendamping mengubah grain.** Menjoin `mv_pemeriksaan` ke tabel temuan, petugas, jenis
-pangan, atau kategori temuan **melipatgandakan baris induk**. Bila entity-nya pemeriksaan, hitung
-dengan `COUNT(DISTINCT mp.id)` setelah join, atau saring dengan sub-query `EXISTS` alih-alih join.
-
-## 2. Tanggal kanonik — tiga kolom, tiga arti
-
-| Kolom | Arti | Pakai untuk |
+| Kata dalam pertanyaan | Entity | Tanggal kanonik |
 |---|---|---|
-| `tanggal_mulai` | pemeriksaan dimulai | **default** untuk "kapan diperiksa", tren, periode |
-| `tanggal_selesai` | pemeriksaan selesai | pertanyaan tentang penyelesaian |
-| `tanggal_input` | entri ke sistem | pertanyaan tentang pelaporan/administrasi, bukan kegiatan |
+| pemeriksaan · inspeksi · kunjungan · kegiatan | `COUNT(DISTINCT fact_pemeriksaan.id)` | `tgl_start` |
+| sarana · fasilitas · pabrik · apotek · toko (sebagai objek) | `COUNT(DISTINCT sarana_id)` | `tgl_start` |
+| temuan produk — **kasus terdampak** | `COUNT(DISTINCT pemeriksaan_id)` | `tgl_start` |
+| temuan produk — **baris/entri** | `COUNT(*)` pada bridge temuan | `tgl_start` |
+| penugasan petugas | `COUNT(*)` pada bridge petugas | `tgl_start` |
+| item/klausul tidak sesuai (produksi) | `COUNT(*)` pada bridge checklist | dari kasus induk |
 
-**Entity dan kolom tanggal adalah SATU keputusan.** Menghitung pemeriksaan lalu menyaringnya
-dengan `tanggal_input` mencampur dua peristiwa: yang dihitung kegiatannya, yang disaring
-administrasinya.
+**Entity ≠ sarana.** Satu sarana bisa diperiksa berkali-kali; "berapa sarana yang diperiksa" berbeda
+dari "berapa pemeriksaan". Bila pertanyaannya tidak jelas → Gate 1.
 
-`tanggal_input` adalah satu-satunya yang selalu terisi. Dua lainnya punya baris kosong — lihat
-`90-kualitas-data.md`.
+## Matriks operasi — kolom yang sering salah dipakai
 
-## 3. Eksklusi WAJIB
+| Kolom | Menyaring | Mengelompokkan | Men-join | Memeringkat |
+|---|---|---|---|---|
+| `id` | biasa | biasa | kunci ke seluruh bridge (`pemeriksaan_id`) | biasa |
+| `sarana_id` | biasa | `COUNT(DISTINCT)` untuk sarana unik | ke `dim_sarana.sarana_id` | biasa |
+| `tgl_start` | **rentang berbatas**, bukan `EXTRACT` | `date_trunc` boleh untuk melabeli hasil | — | biasa |
+| `jenis_id` | butuh kamus + `type` | butuh kamus + `type` | `dim_master_data` dengan `type='JENIS_SARANA'` | biasa |
+| `is_data_uji` | **eksklusi wajib** saat membahas kegiatan nyata | biasa | — | — |
+| `flag_varian_datas` | penentu bridge | bermanfaat untuk audit cakupan | — | — |
+
+## Cara mencari bila nilainya tidak stabil
+
+```sql
+-- 1. pastikan rentang tanggal yang benar-benar terisi
+SELECT min(tgl_start), max(tgl_start), count(*) FILTER (WHERE tgl_start IS NULL)
+FROM public.fact_pemeriksaan;
+
+-- 2. nilai yang dipakai untuk menyaring (jangan hafal)
+SELECT DISTINCT jenis_id FROM public.fact_pemeriksaan ORDER BY 1;
+```
+
+## Eksklusi wajib
 
 | Apa | Aturan | Alasan |
 |---|---|---|
-| Akun uji | buang `nama_upt` yang berupa akun demo/uji | bukan balai sungguhan |
-| Unit pusat pada hitungan per-balai | `nama_upt` yang berupa direktorat bukan balai | tidak punya wilayah kerja maupun target |
+| data uji | `is_data_uji IS NOT TRUE` | bukan kegiatan nyata |
+| unit pusat pada hitungan per-balai | tidak dibuang sebagai baris, tapi **dibedakan** dari balai wilayah | pusat tidak punya wilayah kerja |
+| baris temuan yang diklaim final | `is_kasus_draft = false` | angka final |
 
-Kedua nilai itu dikenali dari daftar di `10-sarana-dan-fasilitas.md` §UPT. Terapkan pada hitungan
-per-balai dan pada capaian; sebutkan bila angkanya dibandingkan sumber lain.
-
-### Uji satu kalimat sebelum menambah klausa `WHERE` apa pun
+### Uji satu kalimat sebelum menambah `WHERE` apa pun
 
 > **Apakah baris yang dibuang klausa ini bisa menjadi jawaban yang benar?**
-> **Bisa → itu PENYEMPITAN, dan penyempitan hanya ada bila pertanyaan memintanya.**
-> **Tidak bisa → itu eksklusi, dan boleh selalu.**
+> **Bisa → itu PENYEMPITAN**, dan penyempitan hanya sah bila pertanyaan memintanya.
+> **Tidak bisa → itu EKSKLUSI**, dan boleh selalu.
 
-Akun uji lolos uji itu. **Kolom yang kosong tidak lolos** — baris berkolom kosong tetap pemeriksaan
-sungguhan yang ikut dihitung, kecuali pertanyaannya memang tentang kolom itu.
+Kolom yang kosong **tidak lolos** uji ini: baris berkolom kosong tetap pemeriksaan sungguhan dan ikut
+dihitung, kecuali pertanyaannya memang tentang kolom itu.
 
-## 4. Bentuk angka & eksekusi
+## Bentuk angka
 
-- **Angka utama dari query global sendiri**, bukan penjumlahan partisi. Setelah join ke tabel
-  pendamping, penjumlahan per kelompok bisa melebihi total karena satu pemeriksaan muncul di
+- **Angka utama dari query globalnya sendiri**, bukan penjumlahan partisi.
+- Setelah join ke bridge, penjumlahan per kelompok bisa melebihi total — satu pemeriksaan muncul di
   beberapa kelompok.
 - Satu statement per panggilan, tanpa `;`.
-- **Jangan `EXTRACT(YEAR ...)` untuk menyaring** — pakai rentang berbatas (`>= awal AND < akhir`).
-  `EXTRACT` hanya untuk melabeli hasil yang sudah dikelompokkan. Tidak ada indeks di database ini,
-  jadi setiap query memindai penuh; bentuk filter yang salah membuatnya jauh lebih lambat.
-- `ILIKE '%…%'` memindai seluruh kolom — pakai **sekali** untuk menemukan nilai, lalu hitung
-  dengan `=` pada nilai itu.
-- Semua kolom bertipe asli (date, bigint, numeric). **Tidak perlu cast.**
+- Scope yang sudah disetujui harus **terlihat di SQL**, bukan hanya di kalimat jawaban.
 
-## 5. Tabel pendamping — arah join
+## Jebakan
 
-Semua join bersifat **logis**; tidak ada foreign key di schema.
-
-| Tabel | Kunci | Arah aman |
+| Gejala | Penyebab | Cara memastikan |
 |---|---|---|
-| `mv_pemeriksaan_temuan` | `id_pemeriksaan` = `mv_pemeriksaan.id` | dari fakta, LEFT JOIN |
-| `mv_pemeriksaan_kategori_temuan` | idem | dari fakta, LEFT JOIN |
-| `mv_pemeriksaan_jenis_pangan` | idem | dari fakta, LEFT JOIN |
-| `mv_pemeriksaan_petugas` | idem | dari fakta, LEFT JOIN |
-| `mv_pemeriksaan_log` | idem | dari fakta |
-| `mv_kriteria_pemeriksaan` | `pemeriksaan_id` = `mv_pemeriksaan.id` | dari fakta |
-| `mv_pemeriksaan_timeline` | idem | **dari fakta (INNER)** — timeline memuat id yang tidak ada di fakta |
-| `mv_pemeriksaan_agg` | tanpa id | jangan dijoin; pakai langsung, lihat §6 |
-| `target_balai` | `nama_balai` | lihat `85-target-capaian.md` |
-| `coverage_balai` | `nama_balai` | many-to-many; jangan dijoin bila hanya butuh daftar balai |
+| angka ±2× lipat | `COUNT(*)` setelah join ke bridge, lalu disebut jumlah pemeriksaan | pakai `COUNT(DISTINCT` pada id fakta |
+| total tidak sama dengan penjumlahan bagian | bagian dihitung dari query berbeda / pengelompokan ganda | hitung ulang angka utama dari query globalnya sendiri |
+| hasil kosong padahal kasusnya ada | membaca bridge yang salah varian | periksa `flag_varian_datas` (`01`) |
+| filter periode menghilangkan banyak baris | memakai `EXTRACT` di `WHERE`, atau kolom administrasi alih-alih kolom kegiatan | pakai rentang berbatas pada kolom kegiatan |
+| populasi menyusut tanpa diminta | menambahkan penjaga keterisian kolom yang tidak diminta pertanyaan | terapkan uji penyempitan vs eksklusi di atas |
 
-**INNER JOIN ke tabel temuan menjatuhkan sebagian besar pemeriksaan** — hanya sebagian kecil
-pemeriksaan yang menghasilkan temuan. Untuk pertanyaan populasi, LEFT JOIN dari fakta.
+## Batas & honest gap
 
-## 6. Tabel `agg` — satu syarat
-
-`mv_pemeriksaan_agg` menyimpan kubus pra-agregasi dengan kolom `periode_type` yang punya dua nilai
-(harian dan bulanan). **Selalu saring satu `periode_type`**; tanpa itu angkanya tergandakan karena
-periode harian dan bulanan dijumlahkan bersamaan.
-
-Kubus ini juga **tidak memuat baris yang tanggalnya kosong**, sehingga totalnya selalu sedikit di
-bawah total fakta. Untuk angka populasi, hitung dari fakta; kubus dipakai bila pertanyaannya
-memang berbentuk deret waktu per dimensi yang tersedia di sana.
+- Sebagian kasus tidak punya tanggal kegiatan → tidak pernah masuk hitungan berbasis periode;
+  **hitung keterisiannya** dan sebutkan bila pertanyaannya tentang total populasi.
+- Satu kasus bertanggal jauh ke depan (jadwal terjadwal) itu **valid**, bukan data kotor.
 
 ## Rute
 
-- Konsep berkode belum teresolusi → **kembali** ke peta halaman di `SEEKNAL_ASK.md`.
-- Menyebut periode / tren / durasi → **seberang** `80-waktu-dan-durasi.md`.
-- Berkata "belum / tanpa / kosong / tidak melaporkan" → **seberang** `90-kualitas-data.md`.
-- Menyentuh kolom yang belum pernah dipakai → `describe_table` dulu sebelum menulis filter.
+- Butuh tahu tabel/bridge mana → **lihat** `01-peta-data-dan-routing.md`
+- Menyentuh kekosongan kolom → **lihat** `90-kualitas-data.md`
+- Entity berupa aspek/klausul → **lihat** `35` / `37`
+- Entity berupa produk → **lihat** `40`
+
+## Manifes
+
+| Tabel | Kolom | Literal |
+|---|---|---|
+| `fact_pemeriksaan` | `id`, `sarana_id`, `jenis_id`, `tgl_start`, `tgl_end`, `is_data_uji`, `flag_varian_datas` | — |
+| `bridge_pemeriksaan_temuan` | `pemeriksaan_id`, `is_kasus_draft` | — |
+| `bridge_pemeriksaan_petugas` | `pemeriksaan_id` | — |

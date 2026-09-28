@@ -1,92 +1,97 @@
-Kualitas data — sentinel, kekosongan yang bermakna, dan cara menyebutnya.
+belum · tanpa · kosong · tidak punya · tidak terisi · tidak melaporkan · sentinel · soft delete · cakupan
 
-## 1. Sentinel: kosong tidak selalu berarti NULL
+# Kualitas data, sentinel, dan karantina kolom
 
-Database ini memakai beberapa bentuk penanda kosong, dan bentuknya **berbeda per kolom**:
+## Apa yang halaman ini putuskan
 
-| Bentuk | Di mana lazimnya |
+Apakah sebuah kekosongan berarti "belum diisi", "tidak berlaku", atau "tidak ada kolomnya" — dan kolom
+mana yang **tidak boleh dikutip**.
+
+## Tabel keputusan — membaca kekosongan sebelum menyaring
+
+| Pertanyaan | Tindakan |
 |---|---|
-| **SQL NULL** | kolom tanggal, kolom numerik, sebagian kolom teks |
-| **string `'NULL'` (empat huruf)** | kolom vonis dan kolom status |
-| **tanda hubung** | kolom teks isian bebas |
-| **string kosong** | sebagian kolom teks |
+| "belum punya X" | hitung keterisian kolom X lebih dulu; bila kolomnya kosong seluruhnya, jawabannya **seluruh populasi** — bukan temuan data |
+| "yang tidak melaporkan" | cek apakah ada kolomnya; bila tidak ada → P5 |
+| "kosong" pada kolom berkode | kenali bentuk sentinelnya (bukan selalu NULL) |
+| kolom dipakai sebagai penyaring | **cek keterisian dulu**; kolom kosong = filter yang membuang populasi |
 
-> Karena itu `WHERE kolom IS NULL` **tidak cukup**. Untuk kolom vonis dan status, sentinel-nya
-> berupa teks; `IS NULL` di sana mengembalikan nol baris dan menyembunyikan populasinya.
+## Kolom yang praktis kosong (jangan dipakai sebagai penyaring)
 
-Cara aman sebelum memakai kolom sebagai penyaring: lihat daftar nilainya lebih dulu (jalur **P2**)
-dan kenali bentuk kosongnya. Domain lain memakai ejaan sentinel yang berbeda — jangan menyalin
-aturan dari sana (`95-batas-domain.md`).
-
-## 2. Kekosongan yang berkorelasi dengan makna = FILTER TERSEMBUNYI
-
-Kolom yang kosongnya **tidak acak** bukan cacat data — ia menandai sebuah kelompok. Menyaring
-"yang terisi" pada kolom seperti itu **diam-diam memfilter kelompok tersebut**, tanpa error dan
-tanpa jejak di kalimat jawaban.
-
-Yang terbukti berperilaku begitu di domain ini:
-
-| Kolom | Kosongnya berarti |
+| Kolom | Gejala |
 |---|---|
-| `klasifikasi_distribusi` | bukan sarana distribusi pada komoditi yang memakai skema notifikasi |
-| `klasifikasi_sarana` | tidak relevan bagi jenis sarana itu |
-| `grade` | bukan jenis sarana yang dinilai dengan grade |
-| `tingkat_pemenuhan_cpob` | bukan pemeriksaan berskema CPOB |
-| `hp_followup_name` | bukan pemeriksaan berskema sertifikasi |
-| `tx_*_issue` | formulir pemeriksaannya tidak memakai skema kritis/mayor/minor |
+| `sediaan_kode` | hampir selalu kosong |
+| `unit_id` · `penelusuran_id` · `kasus_id` · `metode_inspeksi` | terisi sangat tipis |
+| `tl_ba_pusat` · `tl_attachment_pusat` | nyaris tidak terisi |
+| `status_label` | kosong seluruhnya |
+| `dim_produk.is_imported` | bernilai sama di semua baris |
 
-**Cara mengenalinya sebelum memakai kolom apa pun sebagai penjaga:** tanyakan **apa arti
-kosongnya**. Bila kosong berarti "tidak berlaku bagi kelompok X" — bukan "datanya belum diisi" —
-maka menyaringnya membuang kelompok X. Bila perlu diperiksa, **silangkan keterisiannya** dengan
-kolom yang mendefinisikan kelompok itu (`GROUP BY sarana, komoditi` dengan `count(kolom)`), jangan
-dihitung sendirian.
+## Daftar karantina (jangan dikutip — pakai penggantinya)
 
-## 3. Kolom yang praktis kosong seluruhnya
+| Jangan dikutip | Alasan | Pakai ini |
+|---|---|---|
+| kolom provinsi-tujuan distribusi sebagai "klasifikasi distribusi" | itu tujuan distribusi pabrik Pangan MD | nyatakan honest gap |
+| `status_label` | kosong | `status_code` + label dari luar |
+| `legal_id` difilter satu `type` | merujuk lebih dari satu kamus | tampilkan `type` sebagai hasil |
+| `opsi` sebagai penanda temuan global | maknanya per `area_key` | `35` |
+| `nilai_aspek` sebagai satu konsep | memuat empat makna | `37` |
+| tabel domain pengawasan | akses ditolak | `95` |
 
-Dua kolom di tabel temuan (`tp_pelanggaran`, `tp_netto`) terdaftar di dokumentasi lama seolah
-punya himpunan nilai, tetapi di database ini **tidak terisi**. Memfilternya mengembalikan nol
-baris tanpa error. Jangan dipakai.
+## Matriks operasi
 
-**Pelajaran umumnya:** daftar nilai di dokumentasi lama adalah **sampel**, bukan bukti bahwa
-kolomnya terisi. Sebelum memakai kolom yang belum pernah dipakai, periksa keterisiannya.
+| Kolom | Menyaring | Mengelompokkan | Men-join | Memeringkat |
+|---|---|---|---|---|
+| `dihapus_di_sumber` | **flag, bukan eksklusi otomatis** — default: baris ikut | boleh untuk audit | — | — |
+| `is_data_uji` | eksklusi saat membahas kegiatan nyata | — | — | — |
+| `is_kasus_draft` | eksklusi saat angka diklaim final | — | — | — |
+| nilai teks bebas | probe dulu, saring dengan nilai temuan | **normalisasi sebelum mengelompokkan** | — | peringkat tanpa normalisasi tidak sahih |
 
-## 4. Baris tanpa tanggal kegiatan
+## Cara mencari
 
-Sebagian baris tidak punya tanggal mulai maupun selesai; hampir semuanya berstatus draft —
-pemeriksaan yang dibuat tetapi belum dijalankan. Konsekuensinya:
+```sql
+-- keterisian kolom yang dicurigai
+SELECT count(*) AS total, count(<kolom>) AS terisi FROM public.<tabel>;
 
-- baris itu **tidak pernah** masuk hitungan berbasis periode;
-- baris itu juga **tidak masuk** kubus `agg`, sehingga total dari kubus selalu sedikit di bawah
-  total fakta.
+-- kolom mana yang benar-benar kosong? (pola: satu kali per pertanyaan, bukan borongan)
+SELECT count(*) FILTER (WHERE <kolom> IS NULL) AS kosong FROM public.<tabel>;
 
-Bukan kohort yang harus dibuang, tetapi harus **disebut** bila pertanyaannya tentang total populasi.
+-- kategori temuan: kode mana yang tidak ada di kamus
+SELECT e.kode, COALESCE(d.name,'(tidak di kamus)') AS nama, count(*) AS baris
+FROM public.bridge_pemeriksaan_temuan t
+CROSS JOIN LATERAL jsonb_array_elements_text(t.kategori_kode) e(kode)
+LEFT JOIN public.dim_master_data d
+       ON d.master_data_id::text = e.kode AND d.type = 'KATEGORI_TEMUAN_PRODUK'
+GROUP BY 1, 2 ORDER BY 3 DESC;
+```
 
-## 5. Teks bebas: satu entitas, banyak penulisan
+## Jebakan
 
-`nama_sarana`, `nama_produk`, `registrar`, `tp_negara` diisi bebas. Satu entitas yang sama muncul
-dengan beberapa penulisan (huruf besar-kecil, spasi ganda, prefiks badan usaha ikut/tidak,
-kadang alamat ikut tertulis di dalam nama).
+| Gejala | Penyebab | Cara memastikan |
+|---|---|---|
+| "belum punya X" = seluruh populasi | kolomnya memang kosong | hitung keterisian |
+| peringkat memuat "tidak diketahui" di puncak | sentinel berbentuk kata dianggap entitas | periksa nilai teratas sebelum menyajikan |
+| satu entitas terpecah beberapa baris | spasi/kapitalisasi | normalisasi |
+| filter mengembalikan nol baris | nilai diketik dari ingatan | probe dulu |
+| sebagian hasil hilang tanpa error | memfilter kolom multi-kamus dengan satu `type` | tampilkan `type` sebagai hasil |
 
-> Peringkat berdasarkan kolom teks bebas **tidak sahih tanpa normalisasi**. Bila memeringkat,
-> sebutkan bahwa varian penulisan digabungkan — atau bahwa tidak digabungkan.
+## Batas
 
-Pola kerjanya: `ILIKE` **sekali** untuk menemukan varian (jalur **P3**), lalu hitung dengan
-himpunan nilai persis.
-
-Perhatikan juga bahwa kolom teks bebas bisa memuat **sentinel berbentuk kalimat** (frasa yang
-artinya "tidak ada data"). Ia akan tampil di puncak peringkat seolah entitas nyata. Periksa
-puncak daftar sebelum menyajikannya.
-
-## 6. Menyebutkan cakupan di jawaban
-
-Bila kolom yang dipakai punya keterisian rendah pada populasi yang ditanya, **sebutkan porsinya
-sebelum menyajikan peringkat atau persentase**. Tanpa itu, pembaca mengira jawabannya mencakup
-seluruh populasi.
-
-Kalimatnya cukup satu baris, misalnya: *"dihitung atas pemeriksaan yang kolom ini terisi; sebagian
-besar pemeriksaan tidak memakai skema ini."*
+- Kekosongan **tidak selalu** cacat: pada sebagian kolom ia berarti "tidak berlaku untuk kelompok itu".
+- Bila kolom yang dipakai punya keterisian rendah, **sebutkan cakupannya sebelum** menyajikan
+  peringkat atau persentase.
 
 ## Rute
 
-- Kembali ke aturan hitung → **naik** ke `00-menghitung.md`.
-- Menyebut batas domain → **seberang** `95-batas-domain.md`.
+- Entity & eksklusi → **lihat** `00-menghitung.md`
+- Label panel tanpa kolom → **lihat** `05-filter-katalog.md`
+- Batas domain → **lihat** `95-batas-domain.md`
+
+## Manifes
+
+| Tabel | Kolom | Literal |
+|---|---|---|
+| `dim_sarana` | `dihapus_di_sumber` | — |
+| `dim_master_data` | `dihapus_di_sumber`, `type` | `KATEGORI_TEMUAN_PRODUK` |
+| `fact_pemeriksaan` | `is_data_uji`, `sediaan_kode`, `unit_id`, `penelusuran_id`, `kasus_id`, `metode_inspeksi`, `tl_ba_pusat`, `tl_attachment_pusat` | — |
+| `dim_status_code` | `status_label` | — |
+| `dim_produk` | `is_imported` | — |

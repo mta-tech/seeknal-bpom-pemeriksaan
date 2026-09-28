@@ -1,69 +1,73 @@
-Waktu, periode, dan durasi.
+tahun · bulan · triwulan · periode · tren · durasi · lama · berapa hari · sejak · paling awal · terakhir
 
-## Memilih kolom tanggal
+# Waktu, periode, dan durasi
 
-Tiga kolom, tiga arti — daftar lengkapnya di `00-menghitung.md` §2. Ringkasnya: kegiatan memakai
-`tanggal_mulai` (atau `tanggal_selesai` bila pertanyaannya tentang penyelesaian); administrasi
-memakai `tanggal_input`.
+## Apa yang halaman ini putuskan
 
-**Entity dan kolom tanggal adalah satu keputusan** — jangan mengambil dari dua baris berbeda.
+Kolom tanggal mana yang dipakai, bagaimana menyaring periode, dan kapan sebuah tren **tidak boleh**
+disimpulkan.
 
-## Bentuk filter periode
+## Tabel keputusan
 
-Pakai **rentang berbatas**: `kolom >= awal AND kolom < akhir_eksklusif`.
+| Kata dalam pertanyaan | Kolom | Catatan |
+|---|---|---|
+| kegiatan · diperiksa · periode · tren | `tgl_start` | default |
+| selesai · berapa lama | `tgl_end` | penyelesaian |
+| dilaporkan · diinput · administrasi | `created_at` / `updated_at` | bukan kegiatan |
+| lama tertahan di tahap X | dari tabel approval (`created_at` per perpindahan) | bukan dari fakta |
+| "paling awal" · "sejak kapan" | lihat Jebakan — butuh penjaga | — |
 
-Jangan `EXTRACT(YEAR …) = tahun` sebagai penyaring — tidak ada indeks di database ini, dan bentuk
-itu memaksa perhitungan per baris pada tabel penuh. `EXTRACT` dan `to_char` hanya untuk **melabeli**
-hasil yang sudah dikelompokkan.
+**Entity dan kolom tanggal adalah satu keputusan.** Menghitung pemeriksaan lalu menyaringnya dengan
+kolom administrasi mencampur dua peristiwa.
 
-| Frasa pengguna | Bentuk |
-|---|---|
-| tahun X | `>= 'X-01-01' AND < '(X+1)-01-01'` |
-| bulan X tahun Y | `>= 'Y-X-01' AND < bulan berikutnya` |
-| triwulan I | tiga bulan pertama, rentang berbatas |
-| "3 tahun terakhir" | relatif terhadap tanggal hari ini; **nyatakan tanggal acuannya** |
-| "tahun ini" / "bulan ini" | periode berjalan — **selalu parsial**, nyatakan |
+## Matriks operasi
 
-## ⚠️ Tanggal kotor
+| Kolom | Menyaring | Mengelompokkan | Men-join | Memeringkat |
+|---|---|---|---|---|
+| `tgl_start` | **rentang berbatas** (`>= awal AND < akhir`), bukan `EXTRACT` | `date_trunc` untuk melabeli hasil | — | biasa |
+| `tgl_end` | rentang | boleh | — | biasa |
+| `created_at` / `updated_at` | rentang (administrasi) | boleh | — | memeringkat "terbaru" pakai `updated_at` |
+| `created_at` (approval) | rentang | boleh | dari fakta | durasi antar tahap |
 
-Kolom tanggal kegiatan memuat sejumlah nilai yang jelas keliru: tahun jauh di masa lalu dan tahun
-di **masa depan** relatif hari ini. Jumlahnya kecil, tetapi:
+## Cara mencari
 
-- tren "sejak tahun paling awal" akan menampilkan ekor panjang yang menyesatkan;
-- nilai maksimum kolom tanggal **bukan** penanda kesegaran data.
+```sql
+-- rentang nyata + kekosongan
+SELECT min(tgl_start), max(tgl_start), count(*) FILTER (WHERE tgl_start IS NULL) FROM public.fact_pemeriksaan;
 
-> Untuk tren, **batasi rentangnya secara eksplisit** ke periode yang masuk akal, dan sebutkan
-> bahwa baris di luar rentang dikeluarkan. Untuk mengetahui kesegaran data, pakai `tanggal_input`
-> atau kolom `sync`, bukan `tanggal_mulai`.
+-- sebaran per tahun (jangan pakai EXTRACT di WHERE)
+SELECT date_trunc('year', tgl_start) AS thn, count(*)
+FROM public.fact_pemeriksaan WHERE tgl_start IS NOT NULL GROUP BY 1 ORDER BY 1;
 
-Sebagian baris juga **tidak punya tanggal kegiatan sama sekali** — lihat `90-kualitas-data.md`.
-Baris itu tidak pernah masuk hitungan berbasis periode, dan juga tidak masuk kubus `agg`.
+-- durasi perpindahan tahap
+SELECT act_steps, to_steps, percentile_cont(0.5) WITHIN GROUP (ORDER BY created_at) 
+FROM public.fact_pemeriksaan_approval GROUP BY 1,2 LIMIT 10;
+```
 
-## Periode berjalan selalu parsial
+## Jebakan
 
-Bulan (dan tahun) yang sedang berlangsung belum lengkap. Setiap tren bulanan **wajib** menyebutnya;
-tanpa itu, penurunan di titik terakhir terbaca sebagai penurunan kinerja padahal hanya belum
-lengkap.
+| Gejala | Penyebab | Cara memastikan |
+|---|---|---|
+| "paling awal" mengembalikan tahun tidak masuk akal | ada nilai tanggal rusak/terjadwal | batasi ke rentang operasional; sebutkan bila membatasi |
+| tren naik/turun menyesatkan | periode pembanding tidak lengkap (periode berjalan) | sebutkan periode berjalan bersifat parsial |
+| filter periode kosong | memakai `EXTRACT` di `WHERE` | ganti ke rentang berbatas |
+| durasi kosong untuk tahap tertentu | tahap belum tercapai | sebutkan, bukan dianggap nol |
 
-Hal yang sama berlaku untuk periode yang datanya masih mengalir: bila titik terakhir jauh lebih
-rendah dari sebelumnya, periksa dulu apakah itu periode berjalan sebelum menyebutnya penurunan.
+## Batas
 
-## Durasi
-
-Tiga kolom durasi tersedia di tabel fakta: selisih hari antara input dan mulai, input dan selesai,
-serta mulai dan selesai. Semuanya dalam hari kalender.
-
-⚠️ Nilai durasi memuat **pencilan ekstrem** yang berasal dari tanggal kotor. Sebelum menyajikan
-rata-rata durasi, pakai **median** atau buang pencilan, dan sebutkan perlakuannya. Rata-rata
-mentah pada kolom ini tidak stabil.
-
-Durasi antar tahap persetujuan ada di `mv_pemeriksaan_timeline`. Ingat: tabel itu memuat id yang
-tidak ada di fakta, dan kolom durasinya kosong pada tahap yang belum tercapai — menghitung
-rata-rata tanpa menyaring akan mencampur "cepat" dengan "belum sampai". Lihat
-`31-status-dan-alur.md`.
+- Periode berjalan selalu parsial → wajib disebut.
+- Sebagian kasus tanpa tanggal kegiatan tidak masuk hitungan periode.
+- Tanggal jadwal ke depan itu **valid** (bukan data kotor).
 
 ## Rute
 
-- Menyebut target/capaian per periode → **seberang** `85-target-capaian.md`.
-- Menyebut alur/tahapan → **seberang** `31-status-dan-alur.md`.
-- Menyebut baris tanpa tanggal → **seberang** `90-kualitas-data.md`.
+- Status & tahap alur → **lihat** `31-status-dan-alur.md`
+- Entity & eksklusi → **lihat** `00-menghitung.md`
+- Target vs realisasi per periode → **lihat** `85-target-capaian.md`
+
+## Manifes
+
+| Tabel | Kolom | Literal |
+|---|---|---|
+| `fact_pemeriksaan` | `tgl_start`, `tgl_end`, `created_at`, `updated_at` | — |
+| `fact_pemeriksaan_approval` | `created_at`, `act_steps`, `to_steps` | — |

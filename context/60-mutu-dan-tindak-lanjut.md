@@ -1,78 +1,79 @@
-Grade, kriteria temuan, pemenuhan CPOB, dan tindak lanjut — empat konsep berbeda.
+grade · mutu · CAPA · tindak lanjut · sanksi · pembinaan · teguran · rekomendasi · temuan kritis · mayor · minor · CPOB
 
-## Peta cepat
+# Mutu & tindak lanjut
 
-| Konsep pengguna | Kolom / tabel | Cakupan |
+## Apa yang halaman ini putuskan
+
+Tingkat mutu, ringkasan kekritisan per kasus, dan tindak lanjut. Ketiganya berada di tempat berbeda dan
+**tidak boleh disamakan** dengan kategori temuan produk.
+
+## Tabel keputusan
+
+| Kata dalam pertanyaan | Sumber |
+|---|---|
+| "grade A/B/C" | `fact_pemeriksaan.grade` (subset jenis sarana) |
+| "berapa temuan Major/Kritis" (per kasus) | counter kekritisan + level kesimpulan |
+| "berapa klausul Kritis" (per klausul) | `nilai_aspek` → `37` |
+| "tindak lanjut" · "CAPA" | kolom CAPA (teks) + tabel narasi |
+| "sanksi" · "pembinaan" · "teguran" · "rekomendasi" | saran TL + narasi rekomendasi |
+| "tindakan terhadap produk" (dimusnahkan/ditarik) | `tindakan_kode` pada temuan produk → `40` |
+| "tingkat pemenuhan CPOB" | kelompok kode kesimpulan → `30` |
+
+## Matriks operasi
+
+| Kolom | Menyaring | Mengelompokkan | Men-join | Memeringkat |
+|---|---|---|---|---|
+| `grade` | hanya untuk jenis sarana yang dinilai dengan grade | kelompok sebaran (termasuk kategori kosong) | — | biasa |
+| counter kekritisan | **sebut cakupan** (tidak semua kasus punya) | boleh | — | biasa |
+| `level_kesimpulan` | nilai teks tetap | boleh | — | bahasa asosiasi |
+| saran tindak lanjut (jsonb array) | **merujuk >1 kamus** → jangan filter satu `type` | tampilkan `type` sebagai hasil | `dim_master_data` tanpa filter type | normalisasi dulu |
+| CAPA | teks bebas → jangan disaring sebagai kode | lewat pengelompokan topik teks | — | bukan entitas |
+
+## Cara mencari
+
+```sql
+-- sebaran grade (termasuk kosong = bukan jenis yang dinilai dengan grade)
+SELECT COALESCE(grade,'(kosong)') AS grade, count(*) FROM public.fact_pemeriksaan GROUP BY 1 ORDER BY 2 DESC;
+
+-- seberapa luas kekritisan per kasus tersedia?
+SELECT count(*) AS kasus,
+       count(*) FILTER (WHERE level_kesimpulan IS NOT NULL) AS ada_level,
+       count(*) FILTER (WHERE kritis_count IS NOT NULL) AS ada_counter
+FROM public.fact_pemeriksaan;
+
+-- saran TL merujuk kamus mana saja? (buktikan)
+SELECT d.type, count(*)
+FROM public.fact_pemeriksaan f, LATERAL jsonb_array_elements_text(f.tl_saran) k(x)
+JOIN public.dim_master_data d ON d.master_data_id::text = k.x
+GROUP BY 1 ORDER BY 2 DESC;
+```
+
+## Jebakan
+
+| Gejala | Penyebab | Cara memastikan |
 |---|---|---|
-| grade / grading | `mv_pemeriksaan.grade` | **hanya sebagian jenis sarana** |
-| temuan kritis / mayor / minor (cacah) | `tx_critical_issue`, `tx_major_issue`, `tx_minor_issue` | sebagian populasi |
-| kriteria / jenis temuan (uraian) | `mv_kriteria_pemeriksaan` | **populasi sangat sempit** |
-| tingkat pemenuhan CPOB | `tingkat_pemenuhan_cpob` | **populasi sangat sempit** |
-| tindak lanjut sarana | `tl_saran_names` (array) | populasi luas |
-| tindak lanjut hasil inspeksi | `hp_followup_name` | **populasi sangat sempit** |
+| "tingkat mutu seluruh sarana" terlihat lengkap | grade tidak berlaku untuk semua jenis sarana | sebutkan cakupannya |
+| angka Major/Kritis dibandingkan dengan jumlah klausul | dua grain berbeda dicampur | pisahkan per kasus vs per klausul |
+| tindak lanjut sebagian hilang | filter satu `type` pada kolom multi-kamus | jalankan query sebaran `type` |
+| CAPA diklaim sebagai kategori | CAPA teks bebas, tidak terkamusk | sajikan sebagai teks/topik |
 
-"Populasi sempit" berarti kolomnya hanya terisi untuk irisan kecil pemeriksaan. Menjawab
-dengannya tanpa menyebut cakupan membuat pembaca mengira seluruh pemeriksaan tercakup.
+## Batas
 
-## `grade` — dikunci jenis sarana
-
-Kolom `grade` **hanya terisi untuk satu jenis sarana** (keluarga pangan), dan nol untuk seluruh
-jenis sarana lain. Karena itu:
-
-> Pertanyaan "ketepatan grading di UPT X" adalah **pertanyaan khusus sarana pangan**, bukan
-> tentang seluruh pemeriksaan UPT itu. Sebutkan batas ini.
-
-Nilai `grade` berupa huruf tunggal, ditambah satu nilai yang berarti tidak berlaku.
-
-⚠️ **"Nilai sarana" bukan `grade`.** Aturan penilaian unit menyebut "nilai sarana A/B/C/D" sebagai
-masukan dan grade sebagai keluarannya. **Kolom nilai sarana tidak ada di database ini.**
-Pertanyaan ketepatan grading yang menuntut perbandingan grade terhadap nilai sarana →
-**P5 NOT COVERED**. Yang bisa dijawab hanyalah hubungan antara `grade` dan `kesimpulan`, dan itu
-**bukan hal yang sama** — sebutkan perbedaannya.
-
-## `tx_*_issue` — cacah, bukan jenis
-
-Ketiga kolom berisi **berapa banyak** isu kritis/mayor/minor ditemukan, bukan **isu apa**.
-
-> Pertanyaan *"tiga temuan kritis paling sering"* menanyakan **jenis**. Menjawabnya dengan
-> `GROUP BY tx_critical_issue` menghasilkan "berapa pemeriksaan yang punya N isu kritis" — bukan
-> jawaban pertanyaannya.
-
-Jenis dan uraian temuan ada di `mv_kriteria_pemeriksaan` (`tx_criteria` untuk tingkat kekritisan,
-`tx_criteria_desc` untuk uraiannya). Tabel itu mencakup **populasi yang sangat sempit** —
-terkonsentrasi pada klasifikasi dan tujuan tertentu. Sebutkan cakupannya, atau jawab NOT COVERED
-bila pertanyaannya menuntut cakupan nasional.
-
-## Tingkat pemenuhan CPOB
-
-`tingkat_pemenuhan_cpob` berisi tingkat kepatuhan cara pembuatan obat yang baik, dengan beberapa
-tingkat bernama. Terisi hanya untuk pemeriksaan sarana produksi obat — **populasinya sangat
-sempit** relatif seluruh pemeriksaan.
-
-Pertanyaan "riwayat kepatuhan CPOB PT X" dijawab dari kolom ini plus `nama_sarana` (jalur **P3**:
-`ILIKE` untuk menemukan, lalu nilai persis). Sebutkan bahwa datanya hanya ada untuk sarana yang
-memang diperiksa dengan skema CPOB.
-
-## Dua kolom tindak lanjut yang berbeda
-
-| Kolom | Bentuk | Cakupan |
-|---|---|---|
-| `tl_saran_names` | **array** teks | luas — mayoritas pemeriksaan |
-| `hp_followup_name` | teks tunggal | sangat sempit |
-
-Isinya berbeda jenis: yang pertama berisi saran tindak lanjut untuk sarana (pembinaan, peringatan,
-peringatan keras, dan seterusnya); yang kedua berisi tindak lanjut hasil inspeksi bergaya
-sertifikasi (rekomendasi pencabutan, penghentian sementara, permintaan CAPA).
-
-> Pertanyaan umum *"tindak lanjut apa yang diberikan"* dijawab dari **`tl_saran_names`**.
-> `hp_followup_name` hanya untuk konteks sertifikasi/CPOB, dan cakupannya harus disebut.
-
-Karena `tl_saran_names` bertipe array, mengelompokkannya perlu `unnest`. Satu pemeriksaan bisa
-punya lebih dari satu saran — cacah per saran akan melebihi cacah pemeriksaan; itu benar dan
-harus dinyatakan.
+- Kekritisan **tidak merata** antar jenis sarana → selalu sebutkan cakupan sebelum menyajikan peringkat.
+- Hubungan antara severitas dan tindak lanjut bersifat **asosiasi**, bukan sebab-akibat.
+- Riwayat perubahan keputusan tidak tersimpan → jangan menjanjikan rekonstruksi.
 
 ## Rute
 
-- Menyebut vonis MK/TMK → **seberang** `30-kesimpulan.md`.
-- Menyebut temuan produk → **seberang** `40-temuan-produk.md`.
-- Mempertanyakan keterisian kolom → **seberang** `90-kualitas-data.md`.
+- Severitas per klausul → **lihat** `37-klausul-dan-severity.md`
+- Kesimpulan & CPOB → **lihat** `30-kesimpulan.md`
+- Tindakan produk → **lihat** `40-temuan-produk.md`
+- Narasi & ringkasan teks → **lihat** `45-observasi-dan-vaksin.md`
+
+## Manifes
+
+| Tabel | Kolom | Literal |
+|---|---|---|
+| `fact_pemeriksaan` | `grade`, `kritis_count`, `major_count`, `minor_count`, `level_kesimpulan`, `tl_capa`, `tl_saran`, `tl_saran_pusat` | — |
+| `fact_pemeriksaan_narasi` | `pemeriksaan_id`, `jenis_narasi`, `teks` | `catatan_balai`, `tindak_lanjut_detil`, `hasil_balai`, `hasil_pusat`, `catatan_pusat`, `rekomendasi`, `analisa`, `detail_tmk`, `tindak_lanjut_detil_pusat` |
+| `dim_master_data` | `master_data_id`, `type`, `name` | — |
