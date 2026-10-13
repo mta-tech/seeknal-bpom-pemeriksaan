@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_C07_NARASI_FASKES
+scenario_id: TC-PMR-SIPT-C07-NARASI-FASKES
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-C07-NARASI-FASKES — laporan. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa banyak catatan naratif fasilitas kesehatan yang terekam, dan bagaimana cara merangkumnya?
+  assert_contains:
+  - narasi|catatan|ringkas
+  assert_any_of:
+  - - '6.930'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). bridge_pemeriksaan_narasi_faskes (section, teks) = 6.930 baris, varian clusterC_naratif. Narasi = teks bebas,
+    BUKAN cacahan - jangan dihitung sebagai item; ringkasan + kelompok topik + kutipan bukti. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging
+    24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

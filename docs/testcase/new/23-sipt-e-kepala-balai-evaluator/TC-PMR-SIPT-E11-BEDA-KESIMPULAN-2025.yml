@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_E11_BEDA_KESIMPULAN_2025
+scenario_id: TC-PMR-SIPT-E11-BEDA-KESIMPULAN-2025
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E11-BEDA-KESIMPULAN-2025 — dari kebutuhan user (evaluator|evaluasi). Sumber: blueprint 01 par.4 Evaluator Pusat; 06 kontrak Balai vs Pusat. Angka kanonis DB staging 25 Sep 2026
+  (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus 2025 yang kesimpulan Balai dan Pusatnya berbeda?
+  assert_contains:
+  - kesimpulan|berbeda|2025
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan WHERE kesimpulan_balai_id IS NOT NULL AND kesimpulan_pusat_id IS NOT NULL AND kesimpulan_balai_id<>kesimpulan_pusat_id AND EXTRACT(YEAR FROM tgl_start)=2025;
+    DB staging 25 Sep 2026: 817 kasus (dari 15.703 yang direview; seluruh periode 4.221). Sebut dasar review. Kebutuhan user: blueprint 01 par.4 Evaluator Pusat; 06 kontrak Balai vs Pusat. Narasi jawaban
+    (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '817'

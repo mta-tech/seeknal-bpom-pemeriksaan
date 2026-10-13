@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_F13_SARANA_TEMUAN_TERBANYAK
+scenario_id: TC-PMR-SIPT-F13-SARANA-TEMUAN-TERBANYAK
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-F13-SARANA-TEMUAN-TERBANYAK — dari kebutuhan user (pusat|risiko). Sumber: blueprint 07 Case 7 (temuan berulang sarana sama). Angka kanonis DB staging 25 Sep 2026 (bukan dari context;
+  context diupdate menyusul).'
+turns:
+- prompt: Berapa baris temuan terbanyak yang pernah dicatat pada satu sarana?
+  assert_contains:
+  - sarana|temuan|terbanyak
+  tolerance_pct: 5
+  note: 'SQL: SELECT f.sarana_id, count(*) FROM bridge_pemeriksaan_temuan t JOIN fact_pemeriksaan f ON f.id=t.pemeriksaan_id GROUP BY 1 ORDER BY 2 DESC LIMIT 1; DB staging 25 Sep 2026: 2.136 baris temuan
+    pada satu sarana (top). Repeat offender - sebut periode kejadiannya. Kebutuhan user: blueprint 07 Case 7 (temuan berulang sarana sama). Narasi jawaban (patokan, penegakan penuh menunggu update context/skill):
+    interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '2.136'

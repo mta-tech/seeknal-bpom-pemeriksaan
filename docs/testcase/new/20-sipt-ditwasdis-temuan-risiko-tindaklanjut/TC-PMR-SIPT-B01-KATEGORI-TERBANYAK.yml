@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_B01_KATEGORI_TERBANYAK
+scenario_id: TC-PMR-SIPT-B01-KATEGORI-TERBANYAK
+verification_date: '2026-09-25'
+description: TC-PMR-SIPT-B01-KATEGORI-TERBANYAK — REVISI hasil run 25 Sep 2026. Angka kanonis DB staging 25 Sep 2026.
+turns:
+- prompt: Jenis dan jumlah temuan produk apa yang paling banyak?
+  assert_contains:
+  - kategori|temuan
+  - terpetakan|kamus|belum terdaftar|lainnya|kode lain|di luar kamus|tidak terdaftar
+  assert_any_of:
+  - - '303.521'
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM bridge_pemeriksaan_temuan; -- jsonb expand: SELECT e.val, count(*) FROM bridge_pemeriksaan_temuan t, jsonb_array_elements_text(t.kategori_kode) e(val) GROUP BY 1 ORDER
+    BY 2 DESC; DB staging 25 Sep 2026: total 303.521 baris; kode terbanyak ''506'' = 173.769 kemunculan; kamus KATEGORI_TEMUAN_PRODUK hanya 28 kode dan 47 dari 49 kode dipakai TIDAK terdaftar - wajib kelompok
+    ''belum terpetakan'' + gabung kode bermakna sama (TIE/Kedaluwarsa). Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan
+    pengganti bila ada bagian yang tidak terekam.'

@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_D08_UKURAN_TIM_PETUGAS
+scenario_id: TC-PMR-SIPT-D08-UKURAN-TIM-PETUGAS
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-D08-UKURAN-TIM-PETUGAS — dari kebutuhan user (petugas|monitoring). Sumber: blueprint 01 par.2 Petugas UPT; Case 2 (pola tim pemeriksa). Angka kanonis DB staging 25 Sep 2026 (bukan
+  dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus yang dikerjakan tim dua petugas?
+  assert_contains:
+  - tim|petugas|dua
+  tolerance_pct: 5
+  note: 'SQL: SELECT n_petugas, count(*) FROM (SELECT pemeriksaan_id, count(*) n_petugas FROM bridge_pemeriksaan_petugas GROUP BY 1) x GROUP BY 1 ORDER BY 2 DESC LIMIT 1; DB staging 25 Sep 2026: tim 2 petugas
+    = 204.171 kasus (mode). Kasus tanpa baris petugas tidak masuk hitungan. Kebutuhan user: blueprint 01 par.2 Petugas UPT; Case 2 (pola tim pemeriksa). Narasi jawaban (patokan, penegakan penuh menunggu
+    update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '204.171'

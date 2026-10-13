@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_B05_SARANA_ULANG_KRITIS
+scenario_id: TC-PMR-SIPT-B05-SARANA-ULANG-KRITIS
+verification_date: '2026-09-25'
+description: TC-PMR-SIPT-B05-SARANA-ULANG-KRITIS — REVISI hasil run 25 Sep 2026. Angka kanonis DB staging 25 Sep 2026.
+turns:
+- prompt: Berdasarkan indikator tingkat kasus (kritis_count), sarana mana yang memiliki kasus kritis pada minimal dua tahun berbeda, dan berapa jumlahnya?
+  assert_contains:
+  - sarana|kritis|berulang
+  assert_any_of:
+  - - '49'
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM (SELECT sarana_id FROM fact_pemeriksaan WHERE kritis_count>0 AND EXTRACT(YEAR FROM tgl_start)>=2023 GROUP BY 1 HAVING count(DISTINCT EXTRACT(YEAR FROM tgl_start))>=2)
+    x; DB staging 25 Sep 2026: 49 sarana (rute counter kasus, ambang >=2 tahun - keduanya disebut dalam jawaban). Rute severity klausul adalah jalur berbeda yang tidak boleh dicampur. Narasi jawaban (patokan,
+    penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'

@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_E07_PENGADAAN_2024
+scenario_id: TC-PMR-SIPT-E07-PENGADAAN-2024
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E07-PENGADAAN-2024 — dari kebutuhan user (kepala balai|kepatuhan). Sumber: blueprint 03 Kelas 2 kepatuhan (tren per aspek); Q1-Q7. Angka kanonis DB staging 25 Sep 2026 (bukan dari
+  context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus yang menilai aspek Pengadaan pada tahun 2024?
+  assert_contains:
+  - pengadaan|2024
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(DISTINCT b.pemeriksaan_id) FROM bridge_pemeriksaan_skor_operasional b JOIN fact_pemeriksaan f ON f.id=b.pemeriksaan_id WHERE b.area_key LIKE ''tx_pengadaan%'' AND EXTRACT(YEAR
+    FROM f.tgl_start)=2024; DB staging 25 Sep 2026: 12.111 kasus (2025=8.344). Label aspek COALESCE(aspek_ktl_nama, aspek_label). Kebutuhan user: blueprint 03 Kelas 2 kepatuhan (tren per aspek); Q1-Q7.
+    Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '12.111'

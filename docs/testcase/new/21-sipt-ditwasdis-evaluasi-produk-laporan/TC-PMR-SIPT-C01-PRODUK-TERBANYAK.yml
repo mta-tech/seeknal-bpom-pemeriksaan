@@ -1,0 +1,13 @@
+name: TC_PMR_SIPT_C01_PRODUK_TERBANYAK
+scenario_id: TC-PMR-SIPT-C01-PRODUK-TERBANYAK
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-C01-PRODUK-TERBANYAK — risiko. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Produk apa yang paling sering menjadi temuan?
+  assert_contains:
+  - produk|temuan
+  assert_any_of: []
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). tp_product_id pada bridge_pemeriksaan_temuan - WAJIB bedakan grain: kasus (COUNT DISTINCT pemeriksaan_id) vs
+    baris temuan (COUNT(*)) vs kuantitas (jumlah_temuan) vs nilai (harga_total). Grain default kasus; sebutkan grain yang dipakai. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart
+    + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

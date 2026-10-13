@@ -1,0 +1,154 @@
+{
+    "tx_pemeriksaan": {
+        "dip": {
+            "a1": "<p>-</p>",
+            "a2": "<p>-</p>",
+            "a3": "<p>-</p>",
+            "a4": "<p>-</p>"
+        },
+        "other": "<p>1.Tersedia kartu stok Kosmetik namun pencatatan stok tidak\r\nmencantumkan nomor bets. Pencatatan produk dengan nomor bets\r\nberbeda dicatat/digabung sebagai satu stok yang menyebabkan jumlah\r\nstok per bets tidak dapat diketahui secara akurat.</p><p>2. Berdasarkan hasil evaluasi penandaan terhadap produk Mugens The M\r\nMarula Water Pack, ditemukan bahwa informasi komposisi pada label produk\r\nmenggunakan tulisan dalam Bahasa Korea dan tidak mencantumkan\r\nkomposisi dalam tulisan huruf Latin.</p><p>3.Selama beroperasi sebagai importir kosmetik belum pernah melaporkan Efek\r\nSamping Kosmetik kepada Kepala BPOM sesuai dengan Peraturan BPOM\r\nNomor 26 Tahun 2019 tentang Mekanisme Pelaporan Efek Samping\r\nKosmetik</p>",
+        "penyusunan": {
+            "a1": {
+                "note": null,
+                "aspect": "Ya"
+            },
+            "a2": {
+                "note": null,
+                "aspect": "Ya"
+            },
+            "a3": {
+                "note": null,
+                "aspect": "Ya"
+            },
+            "a4": {
+                "note": null,
+                "aspect": "Ya"
+            },
+            "a5": {
+                "note": null,
+                "aspect": "Ya"
+            },
+            "a6": {
+                "note": null,
+                "aspect": "Ya"
+            }
+        },
+        "klasifikasi": "1",
+        "penyimpanan": {
+            "gudang": {
+                "a1": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a2": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a3": {
+                    "p1": {
+                        "note": "Ditemukan hama (kecoa) pada palet di gudang penyimpanan produk\r\nkosmetik yang berada di lantai 2",
+                        "aspect": "Tidak"
+                    },
+                    "p2": {
+                        "note": "Tidak memiliki program pengendalian hama di gudang.",
+                        "aspect": "Ya"
+                    },
+                    "p3": {
+                        "note": "N/A",
+                        "aspect": "Tidak"
+                    },
+                    "p4": {
+                        "note": "Gudang Penyimpanan Kosmetik tidak dilengkapi dengan alat pemantau\r\nsuhu dan tidak tersedia form pencatatan monitoring suhu gudang.",
+                        "aspect": "Tidak"
+                    },
+                    "p5": {
+                        "note": "-",
+                        "aspect": "Ya"
+                    },
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "aspect": "Ya"
+            },
+            "display": {
+                "a1": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a2": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a3": {
+                    "note": "Tidak tersedia sampel pertinggal untuk setiap bets produk Kosmetik yang\r\ndiimpor dan diedarkan.\r\n6. Tidak tersedia area reject, area karantina dan area sampel pertinggal,",
+                    "aspect": "Ya"
+                },
+                "a4": {
+                    "p1": {
+                        "note": "-",
+                        "aspect": "Ya"
+                    },
+                    "p2": {
+                        "note": "-",
+                        "aspect": "Ya"
+                    },
+                    "p3": {
+                        "note": "-",
+                        "aspect": "Ya"
+                    },
+                    "p4": {
+                        "note": "-",
+                        "aspect": "Ya"
+                    },
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "aspect": "Ya"
+            }
+        },
+        "administrasi": {
+            "importir": {
+                "a1": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a2": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a3": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a4": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a5": {
+                    "note": "1. Ditemukan produk Mugens The Marula Water Park, POM NA26251000384, nomor bets B5K01, ED 25 November 2028, sebanyak 1.656 pcs (69 karton) yang tidak disertai dokumen SKI.\r\n- Berdasarkan SKI Nomor ST.05.04.92.925.01.26.00070 tanggal 23\r\nJanuari 2026, produk yang diimpor adalah MUGENS The Marula Water Pack Botol 250 mL sebanyak 4.992 botol, dengan nomor bets B5K02. Pada kartu stok Mugens Water Pack tercatat pemasukan sebanyak 4.992 pcs pada tanggal 6 Februari 2026, namun nomor bets produk yang masuk tidak dicantumkan. Menurut keterangan Saudara Tjun Hian, CoA yang dikirim oleh pabrik merupakan CoA untuk bets B5K02, dan CoA tersebut\r\ndigunakan sebagai dasar pengajuan SKI. \r\n2. Ditemukan produk New Power Magic Straight 1st Agent Pouch 500\r\ng, POM NA26171000358, nomor bets B5B02, sebanyak 40 pcs\r\n(pouch).\r\n- Berdasarkan dokumen SKI Nomor ST.05.04.92.925.09.25.000663\r\ntanggal 12 September 2025, terdapat importasi produk New Power\r\nMagic Straight 1st Agent Pouch 500 g, POM NA26171000358,\r\nsebanyak 400 pcs dengan nomor bets B5B01.\r\n- Pada kartu stok Mugens New Power tercatat pemasukan sebanyak\r\n400 pcs pada tanggal 16 September 2025, namun nomor bets\r\nproduk yang masuk tidak dicantumkan.\r\n- Sisa stok sebanyak 360 pcs untuk nomor bets B5B01.\r\n- Belum ada produk tersebut yang didistribusikan.",
+                    "aspect": "Tidak"
+                },
+                "a6": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a7": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a8": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a9": {
+                    "note": "-",
+                    "aspect": "Ya"
+                },
+                "a10": {
+                    "note": "-",
+                    "aspect": "Ya"
+                }
+            }
+        }
+    }
+}

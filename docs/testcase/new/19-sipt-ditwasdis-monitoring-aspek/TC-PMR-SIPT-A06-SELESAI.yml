@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_A06_SELESAI
+scenario_id: TC-PMR-SIPT-A06-SELESAI
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A06-SELESAI — monitoring. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa pemeriksaan yang sudah selesai? Sebutkan jalurnya (balai atau pusat).
+  assert_contains:
+  - FINISHED|selesai
+  assert_any_of:
+  - - '29.155'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). ''Selesai'' = FINISHED + FINISHED_PUSAT (kata ''selesai semua/selesai pusat'' menambah jalur). Status via status_id
+    -> dim_status_code; sebut kode status, bukan label tampilan. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji).
+    Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

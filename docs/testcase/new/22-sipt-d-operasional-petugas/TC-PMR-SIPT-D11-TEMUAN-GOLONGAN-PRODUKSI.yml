@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_D11_TEMUAN_GOLONGAN_PRODUKSI
+scenario_id: TC-PMR-SIPT-D11-TEMUAN-GOLONGAN-PRODUKSI
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-D11-TEMUAN-GOLONGAN-PRODUKSI — dari kebutuhan user (petugas|risiko). Sumber: blueprint 03 Kelas 3 risiko; Case 3 (temuan produksi). Angka kanonis DB staging 25 Sep 2026 (bukan
+  dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa banyak baris temuan produk pada kasus sarana produksi?
+  assert_contains:
+  - temuan|produksi
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM bridge_pemeriksaan_temuan t JOIN fact_pemeriksaan f ON f.id=t.pemeriksaan_id JOIN dim_master_data j ON j.master_data_id=f.jenis_id JOIN dim_master_data g ON g.master_data_id=j.parent_id
+    WHERE g.name=''Produksi''; DB staging 25 Sep 2026: 1.712 baris temuan (golongan Produksi; total seluruh golongan 303.521). Join golongan via jenis_id->parent JENIS_SARANA (wajib sebut type). Kebutuhan
+    user: blueprint 03 Kelas 3 risiko; Case 3 (temuan produksi). Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti
+    bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '1.712'

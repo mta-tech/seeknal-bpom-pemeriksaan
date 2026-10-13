@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_F01_TEMUAN_PER_REGIONAL
+scenario_id: TC-PMR-SIPT-F01-TEMUAN-PER-REGIONAL
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-F01-TEMUAN-PER-REGIONAL — dari kebutuhan user (pusat|risiko). Sumber: blueprint 07 Case 3 (Pusat: kategori temuan dominan per regional); Q9. Angka kanonis DB staging 25 Sep 2026
+  (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Regional mana yang paling banyak mencatat baris temuan produk?
+  assert_contains:
+  - regional|temuan
+  tolerance_pct: 5
+  note: 'SQL: SELECT b.regional_name, count(*) FROM bridge_pemeriksaan_temuan t JOIN fact_pemeriksaan f ON f.id=t.pemeriksaan_id JOIN dim_balai b ON b.balai_id=f.balai_id GROUP BY 1 ORDER BY 2 DESC LIMIT
+    1; DB staging 25 Sep 2026: Semarang = 54.796 baris temuan; 9 regional punya temuan. Regional = dim_balai.regional_name (jangan kolom ''regional''); beda dari lokasi sarana. Kebutuhan user: blueprint
+    07 Case 3 (Pusat: kategori temuan dominan per regional); Q9. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti
+    bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '54.796'

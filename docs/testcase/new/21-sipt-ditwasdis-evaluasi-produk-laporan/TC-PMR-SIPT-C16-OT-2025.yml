@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_C16_OT_2025
+scenario_id: TC-PMR-SIPT-C16-OT-2025
+verification_date: '2026-09-25'
+description: TC-PMR-SIPT-C16-OT-2025 — REVISI hasil run 25 Sep 2026. Angka kanonis DB staging 25 Sep 2026.
+turns:
+- prompt: Berapa pemeriksaan pada jenis sarana Obat Tradisional (kamus JENIS_SARANA) tahun 2025?
+  assert_contains:
+  - Obat Tradisional|obat tradisional
+  assert_any_of:
+  - - '2.803'
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan f JOIN dim_master_data j ON j.master_data_id=f.jenis_id WHERE j.name=''Obat Tradisional'' AND EXTRACT(YEAR FROM tgl_start)=2025 AND is_data_uji IS NOT
+    TRUE; DB staging 25 Sep 2026: 2.803 kasus (jenis sarana ''Obat Tradisional'' golongan Distribusi). Jalur komoditi (3.184 pada 2025) adalah bacaan berbeda - sebut jalur yang dipakai. Narasi jawaban (patokan,
+    penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'

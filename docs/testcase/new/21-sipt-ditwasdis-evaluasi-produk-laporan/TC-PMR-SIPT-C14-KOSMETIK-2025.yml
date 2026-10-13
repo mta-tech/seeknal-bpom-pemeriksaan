@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_C14_KOSMETIK_2025
+scenario_id: TC-PMR-SIPT-C14-KOSMETIK-2025
+verification_date: '2026-09-25'
+description: TC-PMR-SIPT-C14-KOSMETIK-2025 — REVISI hasil run 25 Sep 2026. Angka kanonis DB staging 25 Sep 2026.
+turns:
+- prompt: Berapa pemeriksaan pada jenis sarana Kosmetik (kamus JENIS_SARANA, golongan distribusi) tahun 2025?
+  assert_contains:
+  - Kosmetik|kosmetik
+  assert_any_of:
+  - - '5.637'
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan f JOIN dim_master_data j ON j.master_data_id=f.jenis_id WHERE j.name=''Kosmetik'' AND EXTRACT(YEAR FROM tgl_start)=2025 AND is_data_uji IS NOT TRUE; DB
+    staging 25 Sep 2026: 5.637 kasus (jenis sarana ''Kosmetik''). Jalur lain yang sah: komoditi klasifikasi_id (6.045 pada 2025) - sebut jalur yang dipakai. Narasi jawaban (patokan, penegakan penuh menunggu
+    update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'

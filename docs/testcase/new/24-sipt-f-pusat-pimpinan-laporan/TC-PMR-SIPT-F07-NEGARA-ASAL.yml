@@ -1,0 +1,18 @@
+name: TC_PMR_SIPT_F07_NEGARA_ASAL
+scenario_id: TC-PMR-SIPT-F07-NEGARA-ASAL
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-F07-NEGARA-ASAL — dari kebutuhan user (pusat|laporan). Sumber: blueprint 03 Kelas 6; 41-nilai-dan-negara. Angka kanonis DB staging 25 Sep 2026 (bukan dari context; context diupdate
+  menyusul).'
+turns:
+- prompt: Negara asal apa yang paling sering muncul pada temuan produk?
+  assert_contains:
+  - negara|impor
+  tolerance_pct: 5
+  note: 'SQL: SELECT negara, count(*) FROM bridge_pemeriksaan_temuan WHERE negara IS NOT NULL AND negara<>'''' GROUP BY 1 ORDER BY 2 DESC LIMIT 1; DB staging 25 Sep 2026: ''Indonesia'' = 172.330 baris (terbanyak).
+    Sebut juga proporsi impor vs lokal bila ditanya. Kebutuhan user: blueprint 03 Kelas 6; 41-nilai-dan-negara. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik
+    -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam. KOREKSI: wajib filter is_kasus_draft IS NOT TRUE pada bridge - Indonesia = 168.704 baris non-draft (DB staging 25
+    Sep 2026). Narasi jawaban (patokan): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam. Dua hitungan sah: tanpa normalisasi Indonesia=168.704; setelah
+    normalisasi ejaan negara (indonesia/ID/Indonesia digabung)=193.651 dari 293.041 baris - agent wajib menyebut bahwa ia menormalisasi.'
+  assert_any_of:
+  - - '168.704'
+  - - '193.651'

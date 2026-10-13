@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_A11_TOKO_OBAT_2025
+scenario_id: TC-PMR-SIPT-A11-TOKO-OBAT-2025
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A11-TOKO-OBAT-2025 — monitoring. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa pemeriksaan toko obat pada tahun 2025?
+  assert_contains:
+  - Toko Obat|toko obat
+  assert_any_of:
+  - - '810'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). jenis_id -> dim_master_data JENIS_SARANA nama ''Toko Obat''; golongan Distribusi via parent_name. Jawaban wajib:
+    interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query
+    ulang.'

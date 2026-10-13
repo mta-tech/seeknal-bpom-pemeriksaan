@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_D02_VERIFIKASI_PUSAT_P
+scenario_id: TC-PMR-SIPT-D02-VERIFIKASI-PUSAT-P
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-D02-VERIFIKASI-PUSAT-P — dari kebutuhan user (petugas|monitoring). Sumber: blueprint 01 par.2 Petugas UPT (kasus mana yang belum bergerak); Case 9 operasional. Angka kanonis DB
+  staging 25 Sep 2026 (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus yang sedang berada di tahap verifikasi pusat (VERIFY_P)?
+  assert_contains:
+  - VERIFY_P|verifikasi pusat
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan f JOIN dim_status_code s ON s.id=f.status_id WHERE s.status_code IN (''VERIFY_P1'',''VERIFY_P2'',''VERIFY_P3''); DB staging 25 Sep 2026: 448 kasus. Bedakan
+    dari VERIFY1-7 (verifikasi balai; VERIFY4 backlog 167.116). Kebutuhan user: blueprint 01 par.2 Petugas UPT (kasus mana yang belum bergerak); Case 9 operasional. Narasi jawaban (patokan, penegakan penuh
+    menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '448'

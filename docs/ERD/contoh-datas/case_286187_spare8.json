@@ -1,0 +1,42 @@
+{
+    "tx_file_bap": 3182790,
+    "tx_pemeriksaan": {
+        "other": null,
+        "penyusunan": {
+            "a1": {
+                "note": null,
+                "aspect": "Ya"
+            },
+            "a2": {
+                "note": null,
+                "aspect": "Ya"
+            },
+            "a3": {
+                "note": null,
+                "aspect": "Ya"
+            },
+            "a4": {
+                "note": null,
+                "aspect": "Ya"
+            },
+            "a5": {
+                "note": null,
+                "aspect": "Ya"
+            },
+            "a6": {
+                "note": null,
+                "aspect": "Ya"
+            }
+        },
+        "klasifikasi": null,
+        "penyimpanan": {
+            "gudang": {
+                "aspect": "Ya"
+            },
+            "display": {
+                "aspect": "Ya"
+            }
+        }
+    },
+    "tx_file_laporan": null
+}

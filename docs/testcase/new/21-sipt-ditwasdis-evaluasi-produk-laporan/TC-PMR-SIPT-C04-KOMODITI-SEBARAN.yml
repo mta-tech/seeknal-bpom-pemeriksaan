@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_C04_KOMODITI_SEBARAN
+scenario_id: TC-PMR-SIPT-C04-KOMODITI-SEBARAN
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-C04-KOMODITI-SEBARAN — evaluasi. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Bagaimana sebaran pemeriksaan per jenis komoditi (pangan, obat, kosmetik, obat tradisional, suplemen)?
+  assert_contains:
+  - komoditi|pangan|obat|kosmetik
+  assert_any_of:
+  - - '107.780'
+  - - '83.444'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). klasifikasi_id -> dim_master_data type JENIS_KLASIFIKASI (WAJIB sebut type - 72 tipe kamus dalam satu tabel).
+    Produk Pangan 107.780, Obat 83.444, Kosmetik 39.609, OT 20.282, Suplemen 7.220. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep
+    2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

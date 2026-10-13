@@ -1,0 +1,45 @@
+﻿No,Status,Alasan Teknis,Halaman Context,Kelas Uji
+1,Siap,"Hitung kasus unik fact_pemeriksaan, tanggal kanonik tgl_start, eksklusi is_data_uji","00, 10",ready
+2,Siap,Join fact_pemeriksaan ke dim_sarana; lokasi pakai provinsi/kabupaten sarana,"10, 05",ready
+3,Siap,"Kelompok status draft: DRAFT, DRAFT_REVISE, DRAFT_PUSAT, DRAFT_PUSAT_REVISE",31,ready
+4,Sebagian,bridge_pemeriksaan_petugas ke dim_user; sebagian user tidak terdaftar (tampil ID) - disebut dalam jawaban,70,ready
+5,Siap,Bukan kelompok FINISHED dan bukan kelompok DRAFT,31,ready
+6,Siap,Agregasi tgl_start per bulan/tahun; tahun berjalan dibatasi sampai data terakhir,80,ready
+7,Siap,Pelayanan: skor area_key tx_pengadaan_*; Produksi: klausul checklist; dua panel terpisah,"35, 37",rule
+8,Sebagian,opsi bercampur jabatan+jawaban dengan ejaan ganda - dinormalkan lalu asumsi disebut dalam jawaban,35,rule
+9,Sebagian,opsi kosong pada penyimpanan pelayanan - kepatuhan dari kolom score item; dua panel terpisah,35,rule
+10,Sebagian,14 section penyerahan; item antibiotik hanya sebagian sarana - cakupan disebut,"35, 45",rule
+11,Sebagian,"opsi berupa JSON {""mutasi"": yes/mostly/rarely} - disajikan sebagai sebaran frekuensi",35,rule
+12,Sebagian,termasuk tx_pencatatan_mutasi_antibiotika; hanya sebagian jenis sarana,"35, 45",rule
+13,Sebagian,"isian N/A + yes dominan tanpa pilihan 'no' - disajikan sebagai penerapan prosedur, bukan cacah temuan",35,rule
+14,Siap,COUNT(*) bridge_pemeriksaan_petugas; golongan via parent kamus JENIS_SARANA; nama dari dim_user,70,ready
+15,Siap,kategori_kode jsonb array (wajib expand); kode bermakna sama digabung; kelompok belum terpetakan ditampilkan,40,rule
+16,Sebagian,kritis/major/minor_count hanya pada subset form - dasar hitung selalu disebut,37,rule
+17,Siap,dim_balai.regional_name (jangan kolom regional); lokasi sarana sebagai pemilahan terpisah,"10, 05",rule
+18,Siap,kejadian per sarana; ambang 'berulang' pakai default (min 2 periode) dan disebut dalam jawaban,"37, 40",rule
+19,Sebagian,"bandingkan level_kesimpulan vs kesimpulan; output asosiasi, tanpa klaim kausal","30, 37",rule
+20,Siap,"peringkat jenis sarana; default proporsi TMK, ukuran disebut dalam jawaban",97,rule
+21,Siap,"peringkat aspek dari skor area_key; label aspek wajib COALESCE(aspek_ktl_nama, aspek_label)",35,rule
+22,Siap,bridge_pemeriksaan_checklist path + nilai_aspek; kekritisan level kasus sebagai pelengkap,37,rule
+23,Siap,balai pelaksana (balai_id); jumlah + proporsi disajikan bersama,"35, 10",rule
+24,Siap,tindakan_kode jsonb array (wajib expand); total tindakan bisa melebihi temuan - dijelaskan,"60, 40",rule
+25,Siap,filter kesimpulan TMK + tindakan + tl_saran multi-kamus,"60, 30",rule
+26,Siap,tl_capa terekam; yang disajikan keberadaan CAPA + keterisian rencana,60,rule
+27,Sebagian,tabulasi silang tingkat x tindakan; penilaian proporsional bergantung kriteria pengguna,60,rule
+28,Siap,kesimpulan_balai_id vs kesimpulan_pusat_id; dasar review pusat selalu disebut,30,rule
+29,Siap,"koreksi = beda kesimpulan/rekomendasi pusat, agregat per balai + proporsi","30, 60",rule
+30,Sebagian,durasi dari fact_pemeriksaan_approval; kasus tanpa jejak tahap lengkap dikeluarkan dan disebut,"80, 31",rule
+31,Siap,corong status + approval; selesai = FINISHED + FINISHED_PUSAT,31,ready
+32,Siap,"tp_product_id; grain kasus sebagai default, grain lain bisa diminta - selalu disebut","40, 41",rule
+33,Sebagian,kolom grade hanya subset kasus produksi - dasar hitung disebut,60,rule
+34,Siap,klasifikasi_id ke kamus JENIS_KLASIFIKASI - wajib sebut type saat join,20,ready
+35,Sebagian,section antibiotik pada penyerahan; hanya sarana yang mengisi item - cakupan disebut,45,rule
+36,Sebagian,proporsi + jumlah dasar selalu bersama agar tidak menyesatkan,"45, 35",rule
+37,Sebagian,tx_pencatatan_mutasi_antibiotika; cakupan sebagian kasus disebut,"35, 45",rule
+38,Sebagian,narasi teks bebas (bridge narasi) - ringkasan + kelompok topik + kutipan bukti,"45, 90",rule
+39,Siap,metrik tren default jumlah kasus dan disebut; metrik lain bisa diminta,"97, 80",rule
+40,Siap,narasi + tabel/chart + daftar kasus rujukan; fokus dikonfirmasi di awal,97,rule
+41,Sebagian,status dokumen TL terekam (approval status/notes_tl); tanggal TTE tidak terekam - jawaban memakai status tersedia,"60, 95",rule
+42,Siap,jumlah per jenis sarana via jenis_id + golongan parent; klasifikasi pengecer tidak terekam - dipetakan ke jenis sarana,"10, 05",ready
+43,Sebagian,status_code tersedia; status_label kosong 0/35 - jawaban pakai kode + penjelasan,"31, 05",rule
+44,Sebagian,klausul dari checklist; kekritisan hanya level kasus - disajikan dua level dengan keterangan,37,rule

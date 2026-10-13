@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_E04_KRITIS_DENGAN_REKOMENDASI
+scenario_id: TC-PMR-SIPT-E04-KRITIS-DENGAN-REKOMENDASI
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E04-KRITIS-DENGAN-REKOMENDASI — dari kebutuhan user (evaluator|tindak lanjut). Sumber: blueprint 07 Case 4 (Evaluator Pusat: severity vs rekomendasi); 06 kontrak TL. Angka kanonis
+  DB staging 25 Sep 2026 (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus dengan temuan Kritis yang sudah memiliki rekomendasi saran?
+  assert_contains:
+  - Kritis|rekomendasi
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan f WHERE f.kritis_count>0 AND f.tl_saran IS NOT NULL AND jsonb_typeof(f.tl_saran)=''array'' AND jsonb_array_length(f.tl_saran)>0; DB staging 25 Sep 2026:
+    384 dari 1.219 kasus kritis. Kritikalitas per kasus hanya subset form - sebut cakupan. Kebutuhan user: blueprint 07 Case 4 (Evaluator Pusat: severity vs rekomendasi); 06 kontrak TL. Narasi jawaban (patokan,
+    penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '384'

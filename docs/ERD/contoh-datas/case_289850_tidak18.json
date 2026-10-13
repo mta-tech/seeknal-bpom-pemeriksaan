@@ -1,0 +1,102 @@
+{
+    "tx_pemeriksaan": {
+        "dip": {
+            "a1": "<p>Tidak terdapat DIP produk</p>",
+            "a2": "<p>Tidak terdapat DIP produk</p>",
+            "a3": "<p>Tidak terdapat DIP produk</p>",
+            "a4": "<p>Tidak terdapat DIP produk</p>"
+        },
+        "other": null,
+        "penyusunan": {
+            "a1": {
+                "note": null,
+                "aspect": "Tidak"
+            },
+            "a2": {
+                "note": null,
+                "aspect": "Tidak"
+            },
+            "a3": {
+                "note": null,
+                "aspect": "Tidak"
+            },
+            "a4": {
+                "note": null,
+                "aspect": "Tidak"
+            },
+            "a5": {
+                "note": null,
+                "aspect": "Tidak"
+            },
+            "a6": {
+                "note": null,
+                "aspect": "Tidak"
+            }
+        },
+        "klasifikasi": "1",
+        "penyimpanan": {
+            "gudang": {
+                "a1": {
+                    "note": null,
+                    "aspect": "Ya"
+                },
+                "a2": {
+                    "note": null,
+                    "aspect": "Tidak"
+                },
+                "a3": {
+                    "note": "Gudang belum digunakan sebagai penyimpanan produk kosmetik, karena produk belum pernah dilakukan impor",
+                    "aspect": "Tidak"
+                },
+                "aspect": "Ya"
+            },
+            "display": {
+                "aspect": "Tidak"
+            }
+        },
+        "administrasi": {
+            "importir": {
+                "a1": {
+                    "note": "memiliki LOA",
+                    "aspect": "Ya"
+                },
+                "a2": {
+                    "note": "Tidak dilakukan pemeriksaan dokumen",
+                    "aspect": "Tidak"
+                },
+                "a3": {
+                    "note": "Tidak dilakukan pemeriksaan dokumen",
+                    "aspect": "Tidak"
+                },
+                "a4": {
+                    "note": "Tidak dilakukan pemeriksaan dokumen",
+                    "aspect": "Tidak"
+                },
+                "a5": {
+                    "note": "Tidak memiliki akun SKI",
+                    "aspect": "Tidak"
+                },
+                "a6": {
+                    "note": "Belum pernah melakukan pembelian/pemesanan",
+                    "aspect": "Tidak"
+                },
+                "a7": {
+                    "note": "Belum pernah melakukan pembelian/pemesanan",
+                    "aspect": "Tidak"
+                },
+                "a8": {
+                    "note": "Belum pernah melakukan pembelian/pemesanan",
+                    "aspect": "Tidak"
+                },
+                "a9": {
+                    "note": "Tidak dilakukan pemeriksaan dokumen",
+                    "aspect": "Tidak"
+                },
+                "a10": {
+                    "note": "Tidak dilakukan pemeriksaan dokumen",
+                    "aspect": "Tidak"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_G04_NARASI_FASKES_SECTION
+scenario_id: TC-PMR-SIPT-G04-NARASI-FASKES-SECTION
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-G04-NARASI-FASKES-SECTION — dari kebutuhan user (analis|laporan). Sumber: blueprint 07 Case 8 (AI: free text menjadi insight dengan bukti). Angka kanonis DB staging 25 Sep 2026
+  (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa section berbeda pada catatan narasi fasilitas pelayanan kesehatan?
+  assert_contains:
+  - narasi|section|faskes
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(DISTINCT section) FROM bridge_pemeriksaan_narasi_faskes; DB staging 25 Sep 2026: 8 section unik (6.930 baris). Narasi teks bebas - ringkasan harus sertakan kutipan bukti, bukan
+    cacahan. Kebutuhan user: blueprint 07 Case 8 (AI: free text menjadi insight dengan bukti). Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama
+    -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '8'

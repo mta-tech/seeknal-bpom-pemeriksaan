@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_G07_SECTION_VAKSIN
+scenario_id: TC-PMR-SIPT-G07-SECTION-VAKSIN
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-G07-SECTION-VAKSIN — dari kebutuhan user (analis|monitoring). Sumber: blueprint 02 varian khusus vaksin; 45-observasi-dan-vaksin. Angka kanonis DB staging 25 Sep 2026.'
+turns:
+- prompt: Berapa section berbeda pada isian pemeriksaan vaksin?
+  assert_contains:
+  - vaksin|section
+  assert_any_of:
+  - - '19'
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(DISTINCT section_key) FROM bridge_pemeriksaan_vaksin; DB staging 25 Sep 2026: 19 section_key (145.540 baris pada 7.697 kasus). Belum ada kamus label aspek vaksin - sebut batas.
+    Kebutuhan user: blueprint 02 varian khusus vaksin; 45-observasi-dan-vaksin. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian ->
+    sebutkan pengganti bila ada bagian yang tidak terekam.'

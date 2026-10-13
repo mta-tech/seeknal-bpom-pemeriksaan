@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_F06_TEMUAN_BERHARGA
+scenario_id: TC-PMR-SIPT-F06-TEMUAN-BERHARGA
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-F06-TEMUAN-BERHARGA — dari kebutuhan user (pusat|laporan). Sumber: blueprint 03 Kelas 6; 41-nilai-dan-negara (guard kualitas angka). Angka kanonis DB staging 25 Sep 2026 (bukan
+  dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus temuan produk yang mencatat nilai (harga)?
+  assert_contains:
+  - nilai|harga|kerugian
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(DISTINCT pemeriksaan_id) FROM bridge_pemeriksaan_temuan WHERE harga_total IS NOT NULL; DB staging 25 Sep 2026: 32.691 kasus punya harga_total. Bedakan grain: kasus vs baris temuan
+    vs kuantitas (jumlah_temuan) vs nilai (harga_total). Kebutuhan user: blueprint 03 Kelas 6; 41-nilai-dan-negara (guard kualitas angka). Narasi jawaban (patokan, penegakan penuh menunggu update context/skill):
+    interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '32.691'

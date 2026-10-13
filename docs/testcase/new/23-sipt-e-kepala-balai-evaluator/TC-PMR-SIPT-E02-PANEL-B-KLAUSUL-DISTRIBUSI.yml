@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_E02_PANEL_B_KLAUSUL_DISTRIBUSI
+scenario_id: TC-PMR-SIPT-E02-PANEL-B-KLAUSUL-DISTRIBUSI
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E02-PANEL-B-KLAUSUL-DISTRIBUSI — dari kebutuhan user (kepala balai|kepatuhan). Sumber: blueprint 07 Case 1 Panel B; temuan run 25 Sep (koreksi asumsi produksi). Angka kanonis DB
+  staging 25 Sep 2026 (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa klausul penyimpanan yang tidak sesuai pada jalur checklist golongan distribusi?
+  assert_contains:
+  - klausul|penyimpanan|tidak sesuai
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM bridge_pemeriksaan_checklist c JOIN fact_pemeriksaan f ON f.id=c.pemeriksaan_id JOIN dim_master_data j ON j.master_data_id=f.jenis_id JOIN dim_master_data g ON g.master_data_id=j.parent_id
+    WHERE c.nilai_aspek=''Tidak'' AND c.path ILIKE ''%penyimpanan%'' AND g.name=''Distribusi''; DB staging 25 Sep 2026: 120.325 baris klausul ''Tidak'' pada golongan DISTRIBUSI (bukan produksi!). Sarana
+    produksi hanya merekam 2 klausul penyimpanan berkode severity (Minor/Major/...), bukan Ya/Tidak. Kebutuhan user: blueprint 07 Case 1 Panel B; temuan run 25 Sep (koreksi asumsi produksi). Narasi jawaban
+    (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '120.325'

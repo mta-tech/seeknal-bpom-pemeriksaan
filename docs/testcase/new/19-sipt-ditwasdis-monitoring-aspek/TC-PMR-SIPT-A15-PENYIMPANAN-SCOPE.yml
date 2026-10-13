@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_A15_PENYIMPANAN_SCOPE
+scenario_id: TC-PMR-SIPT-A15-PENYIMPANAN-SCOPE
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A15-PENYIMPANAN-SCOPE — kepatuhan. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Bagaimana kepatuhan aspek penyimpanan pada sarana pelayanan?
+  assert_contains:
+  - penyimpanan|skor|kepatuhan
+  assert_any_of:
+  - - '63.756'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). tx_penyimpanan_* : opsi KOSONG 100% (63.756 baris) - sinyal ketidaksesuaian di kolom score + item, bukan di
+    opsi. Dua satuan terpisah: pelayanan (skor) vs produksi (klausul path/nilai_aspek) - dilarang dijumlahkan. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka
+    verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

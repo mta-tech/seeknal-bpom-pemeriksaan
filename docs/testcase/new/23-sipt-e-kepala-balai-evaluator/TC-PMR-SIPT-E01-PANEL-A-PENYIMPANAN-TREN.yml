@@ -1,0 +1,19 @@
+name: TC_PMR_SIPT_E01_PANEL_A_PENYIMPANAN_TREN
+scenario_id: TC-PMR-SIPT-E01-PANEL-A-PENYIMPANAN-TREN
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E01-PANEL-A-PENYIMPANAN-TREN — dari kebutuhan user (kepala balai|kepatuhan). Sumber: blueprint 07 Case 1 Panel A (Kepala Balai: tren Penyimpanan); 06 kontrak tren. Angka kanonis
+  DB staging 25 Sep 2026 (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus yang menilai aspek Penyimpanan pada sarana pelayanan tahun 2024 dan 2025?
+  assert_contains:
+  - penyimpanan|kepatuhan|pelayanan
+  tolerance_pct: 5
+  note: 'SQL: SELECT EXTRACT(YEAR FROM f.tgl_start) thn, count(DISTINCT b.pemeriksaan_id) FROM bridge_pemeriksaan_skor_operasional b JOIN fact_pemeriksaan f ON f.id=b.pemeriksaan_id WHERE b.area_key LIKE
+    ''tx_penyimpanan%'' AND EXTRACT(YEAR FROM f.tgl_start) IN (2024,2025) GROUP BY 1; DB staging 25 Sep 2026: kasus yang menilai penyimpanan pelayanan 2024=12.111, 2025=8.344. Skor item sumber kepatuhan
+    (opsi kosong). PANEL A pelayanan - jangan digabung dengan panel produksi. Kebutuhan user: blueprint 07 Case 1 Panel A (Kepala Balai: tren Penyimpanan); 06 kontrak tren. Narasi jawaban (patokan, penegakan
+    penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam. Angka = jumlah kasus yang menilai (2024=12.110, 2025=8.344,
+    DB staging 25 Sep 2026); bila ditanya skor kepatuhan, jawab skor rata-rata secara terpisah. Narasi jawaban (patokan): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian
+    yang tidak terekam.'
+  assert_any_of:
+  - - '12.110'
+  - - '8.344'

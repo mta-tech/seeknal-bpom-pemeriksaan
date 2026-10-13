@@ -1,0 +1,12 @@
+name: TC_PMR_SIPT_G13_KLARIFIKASI_JUMLAH
+scenario_id: TC-PMR-SIPT-G13-KLARIFIKASI-JUMLAH
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-G13-KLARIFIKASI-JUMLAH — dari kebutuhan user (semua|klarifikasi). Sumber: blueprint 05 par.2 ''Jumlah''; 06 kontrak metrik inti. Angka kanonis DB staging 25 Sep 2026 (bukan dari
+  context; context diupdate menyusul).'
+turns:
+- prompt: Berapa jumlah temuan obat tahun 2025?
+  assert_asked: true
+  tolerance_pct: 5
+  note: 'SQL: Setelah klarifikasi objek ''temuan'': entitas hitungan juga ambigu (kasus/sarana/item/produk/kuantitas). AGENT WAJIB sebut grain pada jawaban; default kasus dgn sebutan asumsi bila user tidak
+    memilih. Kebutuhan user: blueprint 05 par.2 ''Jumlah''; 06 kontrak metrik inti. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian
+    -> sebutkan pengganti bila ada bagian yang tidak terekam.'

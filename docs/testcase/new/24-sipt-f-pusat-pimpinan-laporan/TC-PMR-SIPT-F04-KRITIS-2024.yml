@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_F04_KRITIS_2024
+scenario_id: TC-PMR-SIPT-F04-KRITIS-2024
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-F04-KRITIS-2024 — dari kebutuhan user (pusat|risiko). Sumber: blueprint 03 Kelas 3 risiko; Q9 kekritisan. Angka kanonis DB staging 25 Sep 2026 (bukan dari context; context diupdate
+  menyusul).'
+turns:
+- prompt: Berapa kasus dengan temuan Kritis pada tahun 2024?
+  assert_contains:
+  - Kritis|2024
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan WHERE kritis_count>0 AND EXTRACT(YEAR FROM tgl_start)=2024; DB staging 25 Sep 2026: 191 kasus (seluruh periode 1.219). Kritikalitas subset form - sebut
+    cakupan. Kebutuhan user: blueprint 03 Kelas 3 risiko; Q9 kekritisan. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan
+    pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '191'

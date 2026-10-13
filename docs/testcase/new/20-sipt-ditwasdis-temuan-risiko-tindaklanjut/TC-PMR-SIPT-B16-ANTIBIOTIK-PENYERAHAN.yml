@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_B16_ANTIBIOTIK_PENYERAHAN
+scenario_id: TC-PMR-SIPT-B16-ANTIBIOTIK-PENYERAHAN
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-B16-ANTIBIOTIK-PENYERAHAN — kepatuhan. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi
+  is_data_uji).'
+turns:
+- prompt: Berapa banyak isian penyerahan antibiotik yang terekam pada pemeriksaan?
+  assert_contains:
+  - antibiotik|penyerahan
+  assert_any_of:
+  - - '25.780'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). area_key LIKE ''tx_penyerahan_antibiotika%'' pada bridge_pemeriksaan_skor_operasional = 25.780 baris. Item antibiotik
+    hanya pada sebagian jenis sarana (terutama Apotek) - sebut cakupan. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi
+    is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

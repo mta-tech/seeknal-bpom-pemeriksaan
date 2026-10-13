@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_A16_PEMUSNAHAN_PROPORSI
+scenario_id: TC-PMR-SIPT-A16-PEMUSNAHAN-PROPORSI
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A16-PEMUSNAHAN-PROPORSI — kepatuhan. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi
+  is_data_uji).'
+turns:
+- prompt: Berapa proporsi sarana yang melaksanakan pemusnahan obat menurut isian pemeriksaan?
+  assert_contains:
+  - pemusnahan
+  assert_any_of:
+  - - '47.026'
+  - - '15.521'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). tx_pemusnahan_obat: ''N/A'' 47.026, ''yes'' 15.521, null 1.304 - TIDAK ADA nilai ''no''. Baca sebagai penerapan
+    prosedur (proporsi), bukan indikator temuan; sebutkan batas isian ini dalam jawaban. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging
+    24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

@@ -1,0 +1,12 @@
+name: TC_PMR_SIPT_G14_KLARIFIKASI_TREN
+scenario_id: TC-PMR-SIPT-G14-KLARIFIKASI-TREN
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-G14-KLARIFIKASI-TREN — dari kebutuhan user (semua|klarifikasi). Sumber: blueprint 05 par.2 ''Tren''; D2. Angka kanonis DB staging 25 Sep 2026 (bukan dari context; context diupdate
+  menyusul).'
+turns:
+- prompt: Bagaimana tren pemeriksaan?
+  assert_asked: true
+  tolerance_pct: 5
+  note: 'SQL: ''Tren'' ambigu: kasus / item tidak sesuai / persentase kepatuhan / proporsi TMK. AGENT WAJIB sebut metrik tren yang dipakai; default jumlah kasus per tahun + sebut asumsi. Kebutuhan user:
+    blueprint 05 par.2 ''Tren''; D2. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak
+    terekam.'

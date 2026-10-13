@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_C10_KESIMPULAN_MK
+scenario_id: TC-PMR-SIPT-C10-KESIMPULAN-MK
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-C10-KESIMPULAN-MK — evaluasi. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa kasus dengan kesimpulan memenuhi ketentuan (MK)?
+  assert_contains:
+  - MK|memenuhi
+  assert_any_of:
+  - - '177.944'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). kesimpulan_balai_id -> dim_pemeriksaan_kesimpulan kode ''MK'' = 177.944. ''MK/memenuhi ketentuan'' -> kode MK;
+    jangan pakai kesimpulan_pusat sebagai default (review pusat parsial). Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi
+    is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

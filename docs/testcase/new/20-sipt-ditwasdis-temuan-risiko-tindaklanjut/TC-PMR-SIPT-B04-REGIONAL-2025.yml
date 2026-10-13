@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_B04_REGIONAL_2025
+scenario_id: TC-PMR-SIPT-B04-REGIONAL-2025
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-B04-REGIONAL-2025 — risiko. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Regional mana yang paling banyak menemukan kasus pada tahun 2025?
+  assert_contains:
+  - regional|Semarang
+  assert_any_of:
+  - - '8.328'
+  - - '4.911'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Regional = dim_balai.regional_name (JANGAN kolom ''regional'' yang berkode). 2025: Semarang 8.328, Medan 4.911,
+    Pekanbaru 4.509, Surabaya 4.264, Makassar 3.820. Regional balai pelaksana BEDA dari lokasi sarana (provinsi/kabupaten di dim_sarana). Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu
+    chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

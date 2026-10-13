@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_F05_BALAI_BER_TARGET
+scenario_id: TC-PMR-SIPT-F05-BALAI-BER-TARGET
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-F05-BALAI-BER-TARGET — dari kebutuhan user (pusat|evaluasi). Sumber: blueprint 03 Kelas 5 evaluasi; 85-target-capaian. Angka kanonis DB staging 25 Sep 2026 (bukan dari context;
+  context diupdate menyusul).'
+turns:
+- prompt: Berapa balai yang memiliki target sampling tercatat?
+  assert_contains:
+  - target|balai
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM dim_balai WHERE target_sampling IS NOT NULL; DB staging 25 Sep 2026: 108 dari 108 balai (100% terisi). Capaian = kasus per balai dibanding target ini. Kebutuhan user:
+    blueprint 03 Kelas 5 evaluasi; 85-target-capaian. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada
+    bagian yang tidak terekam.'
+  assert_any_of:
+  - - '108'

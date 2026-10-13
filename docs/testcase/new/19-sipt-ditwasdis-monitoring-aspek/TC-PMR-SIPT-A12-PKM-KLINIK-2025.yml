@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_A12_PKM_KLINIK_2025
+scenario_id: TC-PMR-SIPT-A12-PKM-KLINIK-2025
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A12-PKM-KLINIK-2025 — monitoring. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa pemeriksaan pusat kesehatan masyarakat dan klinik pada tahun 2025?
+  assert_contains:
+  - PKM|klinik|pusat kesehatan
+  assert_any_of:
+  - - '1.589'
+  - - '1.374'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). PKM = ''Pusat Kesehatan Masyarakat (PKM)'' 1.589; Klinik = ''Balai Pengobatan / Klinik'' 1.374 (2025). Dua jenis
+    berbeda - jangan dijumlahkan tanpa disebut. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka
+    hasil query TIDAK boleh dihafal dari context - wajib query ulang.'
