@@ -75,7 +75,8 @@ def lint(target: Path) -> int:
     # GLOBAL — daftar 21 halaman wajib
     expected = {
         "00-menghitung", "01-peta-data-dan-routing", "05-filter-katalog", "10-sarana-dan-fasilitas",
-        "15-tujuan-pemeriksaan", "20-komoditi", "30-kesimpulan", "31-status-dan-alur",
+        "15-tujuan-pemeriksaan", "20-komoditi", "22-komoditi-pbf-dan-fokus", "25-profil-sarana-faskes",
+        "30-kesimpulan", "31-status-dan-alur",
         "35-kepatuhan-aspek", "37-klausul-dan-severity", "40-temuan-produk", "41-nilai-dan-negara",
         "45-observasi-dan-vaksin", "50-jenis-pangan", "60-mutu-dan-tindak-lanjut", "70-petugas",
         "80-waktu-dan-durasi", "85-target-capaian", "90-kualitas-data", "95-batas-domain",
@@ -114,6 +115,8 @@ def lint(target: Path) -> int:
 
         scan = body_without_manifest(strip_fences(raw))
         for ln, line in enumerate(scan.splitlines(), 1):
+            # inline-code (`…`) memuat kode kamus/ID yang sah — bukan angka hasil hitung
+            line = re.sub(r"`[^`]*`", " ", line)
             for tok in re.findall(r"\b\d{3,}\b", line):
                 if not is_result_number(tok):
                     continue
