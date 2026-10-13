@@ -67,12 +67,16 @@ FROM public.bridge_pemeriksaan_temuan WHERE is_kasus_draft = false;
 | angka kategori lebih kecil dari kenyataan | kode tidak ada di kamus → dibuang oleh INNER JOIN | pakai `LEFT JOIN` + bucket "(tidak di kamus)" |
 | satu makna terpecah | ada beberapa kode untuk makna serupa di kamus | periksa daftar kamus & kode yang dipakai |
 | angka draft ikut terhitung | `is_kasus_draft` tidak disaring | saring bila angka diklaim final |
+| kategori berlabel aneh / ganda-makna | ada **alias/varian ketik** dari kode kamus, dan **kode yang tertukar tempat** (kode tindakan muncul di `kategori_kode`, sebaliknya di `tindakan_kode`) | jalankan query "nilai kategori" di atas; kanonikkan alias ke kode kamus sebelum agregasi; yang tak berkamus masuk bucket eksplisit dan **sebut jumlahnya** — jangan dibuang diam-diam |
 | "jumlah temuan" raksasa | itu **kuantitas**, bukan jumlah kasus | tegaskan grain |
 
 ## Batas
 
 - Kode kategori di data **lebih banyak** daripada di kamus, dan sebagian kamus tidak dipakai → jangan
   mengklaim seluruh kategori terpetakan.
+- Istilah **"keamanan mutu"** pada produk = kelompok kode TMS Keamanan-Mutu-Gizi Pangan + bahan
+  berbahaya (`220001`, `220131`–`220133`) — ketersediaannya baru pada periode terbaru; cek sebaran
+  tahunnya dulu sebelum menarik tren (naik/turun bisa efek ketersediaan kode, bukan kejadian).
 - `tp_asset` adalah id eksternal; tidak ada tabel targetnya → jangan dibangunkan lookup.
 - Angka kuantitas/nilai punya nilai besar yang sah → `41`.
 

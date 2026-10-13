@@ -14,6 +14,7 @@ Komoditi dipilih user sebagai **Jenis Komoditi**, dan disimpan di `klasifikasi_i
 | "obat" | nilai obat pada kamus komoditi |
 | "kosmetik" · "pangan" · "obat tradisional" · "suplemen" | nilai masing-masing |
 | "narkotika" · "psikotropika" · "prekursor" · "bahan berbahaya" | nilai masing-masing |
+| "narkotika/psikotropika/prekursor **di PBF/distribusi**" · "fokus NPP dan OOT" | grain lain: bridge pengelolaan → **lihat** `22-komoditi-pbf-dan-fokus.md` |
 | "pangan MD" · "pangan IRT" | **bukan** komoditi — itu jenis sarana → `50` |
 
 ## Matriks operasi
@@ -52,6 +53,7 @@ GROUP BY 1, 2 ORDER BY 3 DESC;
 
 ## Rute
 
+- Pengelolaan komoditi di sarana distribusi (PBF/IFK/IFP) & fokus pemeriksaan → **lihat** `22-komoditi-pbf-dan-fokus.md`
 - Jenis sarana & golongan → **lihat** `10-sarana-dan-fasilitas.md`
 - Jenis pangan → **lihat** `50-jenis-pangan.md`
 - Label panel komoditi → **lihat** `05-filter-katalog.md`

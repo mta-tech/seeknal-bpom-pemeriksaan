@@ -39,9 +39,19 @@ SELECT min(tgl_start), max(tgl_start), count(*) FILTER (WHERE tgl_start IS NULL)
 SELECT date_trunc('year', tgl_start) AS thn, count(*)
 FROM public.fact_pemeriksaan WHERE tgl_start IS NOT NULL GROUP BY 1 ORDER BY 1;
 
--- durasi perpindahan tahap
-SELECT act_steps, to_steps, percentile_cont(0.5) WITHIN GROUP (ORDER BY created_at) 
-FROM public.fact_pemeriksaan_approval GROUP BY 1,2 LIMIT 10;
+-- durasi perpindahan tahap (median hari sejak event sebelumnya pada kasus yang sama;
+-- `percentile_cont` wajib argumen double precision — tanpa cast, query error)
+SELECT act_steps, to_steps,
+       round(percentile_cont(0.5::double precision) WITHIN GROUP (ORDER BY dx)::numeric, 1) AS median_hari,
+       count(*) AS pasangan
+FROM (
+  SELECT pemeriksaan_id, act_steps, to_steps,
+         EXTRACT(epoch FROM (created_at - lag(created_at) OVER (PARTITION BY pemeriksaan_id ORDER BY id))) / 86400.0 AS dx
+  FROM public.fact_pemeriksaan_approval
+  WHERE created_at IS NOT NULL
+) x
+WHERE dx IS NOT NULL
+GROUP BY 1, 2 ORDER BY 3 DESC LIMIT 10;
 ```
 
 ## Jebakan
@@ -58,6 +68,9 @@ FROM public.fact_pemeriksaan_approval GROUP BY 1,2 LIMIT 10;
 - Periode berjalan selalu parsial → wajib disebut.
 - Sebagian kasus tanpa tanggal kegiatan tidak masuk hitungan periode.
 - Tanggal jadwal ke depan itu **valid** (bukan data kotor).
+- Nilai `tgl_start` **di luar rentang operasional** (sebelum 2020, dan jauh di masa depan) ada di data →
+  setiap hitung periode wajib memakai rentang eksplisit (`>= DATE '2020-01-01' AND < batas atas`);
+  jangan mengandalkan `min`/`max` kolom untuk menentukan filter.
 
 ## Rute
 

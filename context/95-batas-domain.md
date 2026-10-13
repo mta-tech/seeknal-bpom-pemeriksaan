@@ -1,4 +1,4 @@
-TTE · tanda tangan elektronik · lampiran · berkas · dokumen · kompetensi · sertifikasi petugas · riwayat perubahan · antibiotik · domain lain · iklan · hasil uji · label
+TTE · tanda tangan elektronik · lampiran · berkas · dokumen · kompetensi · sertifikasi petugas · riwayat perubahan · antibiotik · domain lain · iklan · hasil uji · label · zat adiktif · permit impor · re-ekspor
 
 # Batas domain — apa yang tidak ada di sini
 
@@ -28,6 +28,10 @@ terdekat yang namanya mirip.
 | **detail checklist Kosmetik CPKB** | tidak ada bridge | header + narasi kasus |
 | **volume/zat aktif antibiotik** | ada di isian form, belum jadi tabel terstruktur | kepatuhan aspek penyerahan/pencatatan |
 | **klasifikasi distribusi** | tidak ada kolomnya | nyatakan batas |
+| **zat adiktif** (kategori terstruktur) | tidak ada kolom/kamusnya | terdekat: teks narasi dengan pencarian prefiks (`60`) atau kategori temuan Diversi/Penyalahgunaan (`40`) — sebut bedanya |
+| **permit/awal impor obat** | tidak ada sumbernya di database ini (ada di sistem registrasi terpisah; yang tersambung hanya cakupan pangan) | nyatakan NOT COVERED — jangan diproxykan |
+| **re-ekspor sebagai metrik tindak lanjut** | label ada di kamus CAPA/TL tapi praktis tidak dipakai | nyatakan; tawarkan tindak lanjut yang benar-benar terisi (`40`) |
+| **atribut importir/eksportir sarana** | tidak ada kolom klasifikasinya | terdekat: teks nama sarana (proxy, `10`) — wajib disclaimer |
 
 ## Protokol menjawab NOT COVERED — tepat tiga kalimat
 

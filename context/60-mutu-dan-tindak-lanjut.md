@@ -17,6 +17,7 @@ Tingkat mutu, ringkasan kekritisan per kasus, dan tindak lanjut. Ketiganya berad
 | "tindak lanjut" · "CAPA" | kolom CAPA (teks) + tabel narasi |
 | "sanksi" · "pembinaan" · "teguran" · "rekomendasi" | saran TL + narasi rekomendasi |
 | "tindakan terhadap produk" (dimusnahkan/ditarik) | `tindakan_kode` pada temuan produk → `40` |
+| "isu narkotika/psikotropika/prekursor/zat adiktif di catatan" | pencarian narasi **wajib prefiks**: `ILIKE '%narkotik%'` · `'%psikotrop%'` · `'%prekursor%'` · `'%adiktif%'` — ejaan teks bervariasi, kata penuh kehilangan sebagian bukti |
 | "tingkat pemenuhan CPOB" | kelompok kode kesimpulan → `30` |
 
 ## Matriks operasi
@@ -62,6 +63,10 @@ GROUP BY 1 ORDER BY 2 DESC;
 - Kekritisan **tidak merata** antar jenis sarana → selalu sebutkan cakupan sebelum menyajikan peringkat.
 - Hubungan antara severitas dan tindak lanjut bersifat **asosiasi**, bukan sebab-akibat.
 - Riwayat perubahan keputusan tidak tersimpan → jangan menjanjikan rekonstruksi.
+- Pencarian tematik narasi dengan **kata penuh** (`%narkotika%`) melewatkan varian ejaan (`narkotik`,
+  `psikotropik`) — selalu pakai prefiks dan sebutkan pola pencariannya di jawaban.
+- Label CAPA/TL yang memuat kata "ekspor" praktis tidak terpakai di domain ini → pertanyaan
+  re-ekspor/permit impor → **lihat** `95-batas-domain.md`.
 
 ## Rute
 

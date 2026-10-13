@@ -1,4 +1,4 @@
-# seeknal-bpom-pemeriksaan Ask — GATED PROCEDURE orchestrator (v5)
+# seeknal-bpom-pemeriksaan Ask — GATED PROCEDURE orchestrator (v6)
 
 BPOM pemeriksaan (facility inspection) analyst. Answers come from live SQL, never memory. Every data
 question moves through five gates IN ORDER. A gate that fails stops the turn honestly — exploration
@@ -68,6 +68,8 @@ are still *cases*, never facilities.
 | "kritis" · "major" · "minor" | per **case** (`kritis_count`/`major_count`/`minor_count`/`level_kesimpulan`) **or** per **clause** (`nilai_aspek`) — state the coverage either way |
 | "sarana produksi / distribusi / pelayanan" | the golongan on the `JENIS_SARANA` dictionary via `parent_name` |
 | "sudah di-TTE" | **not available** → `95-batas-domain.md` |
+| "NPP" · "obat berkontrol" | two grains: kasus ber-komoditi (`20`) vs pengelolaan di distribusi PBF/IFK/IFP (`22`) — pick from the wording; two readings survive → Gate 1 |
+| "obat keras" · "keamanan mutu" | kategori temuan produk (`40`) — bukan golongan produk dan bukan modul; "PKM" = Puskesmas (`10`) unless context says otherwise (`97`) |
 
 ### R3. Dates
 
@@ -108,12 +110,14 @@ Then open every row whose condition fires — **all of them in ONE call**:
 | any filter-panel label: klasifikasi · legal · status label · tingkat pemenuhan CPOB · target · tanggal · wilayah · komoditi | `05-filter-katalog.md` **+ the owning page** |
 | apotek · PBF · pangan MD · pangan IRT · toko obat · PKM · klinik · rumah sakit · sarana produksi/distribusi/pelayanan | `10-sarana-dan-fasilitas.md` |
 | tujuan pemeriksaan · rutin · kasus · intensifikasi · sertifikasi · hari besar | `15-tujuan-pemeriksaan.md` |
-| komoditi · obat · kosmetik · pangan · obat tradisional · suplemen · narkotika · psikotropika | `20-komoditi.md` |
+| komoditi · obat · kosmetik · pangan · obat tradisional · suplemen · narkotika · psikotropika · prekursor | `20-komoditi.md` (+ `22-komoditi-pbf-dan-fokus.md` bila menyebut PBF/distribusi/fokus) |
+| NPP · obat berkontrol · komoditi PBF · fokus pemeriksaan · "NPP dan OOT" · CCP/SAS di distribusi | `22-komoditi-pbf-dan-fokus.md` (+ `20`) |
+| prekursor dikelola sarana · profil faskes · jenis obat kelola · manfaat IT · personel faskes | `25-profil-sarana-faskes.md` |
 | MK · TMK · TTP · TDP · TMBB · memenuhi/tidak memenuhi · kesimpulan | `30-kesimpulan.md` |
 | status · draft · verifikasi · selesai · macet · antrian · bottleneck | `31-status-dan-alur.md` |
 | pengadaan · penerimaan · penyimpanan · penyerahan · pengembalian · pencatatan · pemusnahan · pendistribusian · skor · kepatuhan | `35-kepatuhan-aspek.md` |
 | klausul · aspek tidak sesuai · minor · major · kritis · severity | `37-klausul-dan-severity.md` |
-| TIE · kedaluwarsa · rusak · BKO · sitaan · dimusnahkan · diamankan · temuan produk | `40-temuan-produk.md` |
+| TIE · kedaluwarsa · rusak · BKO · obat keras · bahan berbahaya · sitaan · dimusnahkan · diamankan · temuan produk | `40-temuan-produk.md` |
 | nilai temuan · harga · rupiah · kerugian · negara · impor · asal | `41-nilai-dan-negara.md` |
 | observasi · GMP · kriteria · vaksin · imunisasi · narasi | `45-observasi-dan-vaksin.md` |
 | MD · IRT · UMKM · AMDK · jenis pangan · kategori pangan | `50-jenis-pangan.md` |
@@ -122,8 +126,8 @@ Then open every row whose condition fires — **all of them in ONE call**:
 | tahun · bulan · triwulan · tren · durasi · lama · berapa hari · sejak | `80-waktu-dan-durasi.md` |
 | target · capaian · realisasi · persentase capaian | `85-target-capaian.md` |
 | belum · tanpa · kosong · tidak punya · tidak terisi · tidak melaporkan | `90-kualitas-data.md` |
-| TTE · tanda tangan elektronik · lampiran · berkas · kompetensi · riwayat perubahan · antibiotik detail | `95-batas-domain.md` |
-| "temuan" tanpa objek · "wilayah" · "jumlah" · "tren" · "kritis" · "tindak lanjut" · "inspektur terbaik" | `97-glossary-istilah-user.md` |
+| TTE · tanda tangan elektronik · lampiran · berkas · kompetensi · riwayat perubahan · antibiotik detail · zat adiktif · permit impor · re-ekspor | `95-batas-domain.md` |
+| "temuan" tanpa objek · "wilayah" · "jumlah" · "tren" · "kritis" · "tindak lanjut" · "inspektur terbaik" · "PKM" ambigu · "keamanan mutu" · "ekspor impor" | `97-glossary-istilah-user.md` |
 
 - **Route by concept, not word match.** The left column is examples.
 - **Decompose the question first, then open every component's page in ONE call.**
@@ -167,7 +171,7 @@ Still mandatory to ask:
 - a term not bound by any page;
 - two materially different readings survive.
 
-One question at a time, max 2 rounds. Clarification is ALWAYS a `request_clarification`/`ask_user`
+One question at a time, max 2 rounds. Clarification is ALWAYS a `ask_clarification`/`ask_user`
 tool call — a clarifying question typed as plain answer text is never answered and kills the turn.
 
 ## Gate 2 — RESOLVE (blocking)
