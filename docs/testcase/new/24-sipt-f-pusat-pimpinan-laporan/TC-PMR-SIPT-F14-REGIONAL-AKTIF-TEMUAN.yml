@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_F14_REGIONAL_AKTIF_TEMUAN
+scenario_id: TC-PMR-SIPT-F14-REGIONAL-AKTIF-TEMUAN
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-F14-REGIONAL-AKTIF-TEMUAN — dari kebutuhan user (pusat|laporan). Sumber: blueprint 07 Case 3; Q9 regional. Angka kanonis DB staging 25 Sep 2026 (bukan dari context; context diupdate
+  menyusul).'
+turns:
+- prompt: Berapa regional bernama yang mencatat temuan produk (di luar baris draft)?
+  assert_contains:
+  - regional
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(DISTINCT b.regional_name) FROM bridge_pemeriksaan_temuan t JOIN fact_pemeriksaan f ON f.id=t.pemeriksaan_id JOIN dim_balai b ON b.balai_id=f.balai_id; DB staging 25 Sep 2026:
+    9 regional. 1 balai tanpa regional (0,4%) - sebutkan bila relevan. Kebutuhan user: blueprint 07 Case 3; Q9 regional. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi
+    kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam. KOREKSI: 8 regional bernama (nilai regional kosong pada 58 baris bukan regional). DB staging 25 Sep 2026.
+    Narasi jawaban (patokan): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '8'

@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_A05_DALAM_PROSES
+scenario_id: TC-PMR-SIPT-A05-DALAM-PROSES
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A05-DALAM-PROSES — monitoring. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa pemeriksaan yang masih dalam proses dan belum selesai?
+  assert_contains:
+  - proses|belum
+  assert_any_of:
+  - - '221.298'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). ''Belum selesai'' = bukan kelompok selesai (FINISHED, FINISHED_PUSAT) dan bukan kelompok draft. Backlog terbesar
+    di VERIFY4. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal
+    dari context - wajib query ulang.'

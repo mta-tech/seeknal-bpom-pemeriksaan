@@ -37,7 +37,7 @@ Opening context pages costs nothing; open every component's page at once.
 - Free-text search (sarana name, balai name, product name): ONE combined `ILIKE` probe with `LIMIT`,
   max 2 probes. Still 0 rows → answer "tidak ditemukan" honestly. **Zero rows on a name search is an
   answer, not a failure.**
-- Clarification goes through `request_clarification`/`ask_user` ONLY — a clarifying question typed as
+- Clarification goes through `ask_clarification`/`ask_user` ONLY — a clarifying question typed as
   answer text is never answered and kills the turn.
 
 ## Check before answering (Gate 5)
@@ -51,6 +51,10 @@ Run these as a list, not as a feeling — each has failed a real case:
   bridge. Reading the wrong bridge returns nothing, without an error (`01-peta-data-dan-routing.md`).
 - **Bridge grain respected.** After joining a bridge, count `DISTINCT` on the parent id when the
   question is about cases — a bridge multiplies parent rows.
+- **NPP/obat berkontrol has two grains** — kasus ber-komoditi (`20`) vs pengelolaan di sarana
+  distribusi PBF/IFK/IFP (`22`): pick from the wording, never merge the numbers.
+- **Temuan kategori codes carry variants** — alias/off-by-one codes and cross-placed tindakan codes
+  exist in the jsonb arrays; canonicalise before aggregating and bucket the unmapped explicitly (`40`).
 - **Pelayanan vs produksi never summed.** Two panels when both are asked: skor dan cacat klausul are
   different units (`35`, `37`).
 - **Aspect label uses `COALESCE(aspek_ktl_nama, aspek_label)`** — otherwise whole aspects vanish.

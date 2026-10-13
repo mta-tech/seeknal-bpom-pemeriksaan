@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_F10_KLASIFIKASI_SARANA_PANGAN
+scenario_id: TC-PMR-SIPT-F10-KLASIFIKASI-SARANA-PANGAN
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-F10-KLASIFIKASI-SARANA-PANGAN — dari kebutuhan user (pusat|monitoring). Sumber: blueprint 03 Kelas 1; 05-filter-katalog (klasifikasi sarana: subset Pangan). Angka kanonis DB staging
+  25 Sep 2026 (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus yang merekam klasifikasi sarana (khusus pangan)?
+  assert_contains:
+  - klasifikasi sarana|pangan
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan WHERE klasifikasi_sarana_kode IS NOT NULL AND klasifikasi_sarana_kode<>''''; DB staging 25 Sep 2026: 61.669 kasus. klasifikasi_sarana_kode hanya berlaku
+    jenis sarana Pangan - sebut cakupan; kamus CLASS_SARANA. Kebutuhan user: blueprint 03 Kelas 1; 05-filter-katalog (klasifikasi sarana: subset Pangan). Narasi jawaban (patokan, penegakan penuh menunggu
+    update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '61.669'

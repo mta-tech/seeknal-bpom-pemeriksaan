@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_E09_REVIEW_PUSAT_2025
+scenario_id: TC-PMR-SIPT-E09-REVIEW-PUSAT-2025
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E09-REVIEW-PUSAT-2025 — dari kebutuhan user (evaluator|evaluasi). Sumber: blueprint 01 par.4 Evaluator Pusat; 06 kontrak Balai vs Pusat. Angka kanonis DB staging 25 Sep 2026 (bukan
+  dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus tahun 2025 yang direview oleh Pusat?
+  assert_contains:
+  - review|Pusat|2025
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan WHERE kesimpulan_balai_id IS NOT NULL AND kesimpulan_pusat_id IS NOT NULL AND EXTRACT(YEAR FROM tgl_start)=2025; DB staging 25 Sep 2026: 15.703 kasus
+    direview pusat pada 2025 (seluruh periode 63.692). Review pusat parsial - selalu sebut dasar review. Kebutuhan user: blueprint 01 par.4 Evaluator Pusat; 06 kontrak Balai vs Pusat. Narasi jawaban (patokan,
+    penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '15.703'

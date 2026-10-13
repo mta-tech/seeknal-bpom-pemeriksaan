@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_B12_CAPA
+scenario_id: TC-PMR-SIPT-B12-CAPA
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-B12-CAPA — tindak lanjut. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa kasus yang memiliki CAPA?
+  assert_contains:
+  - CAPA|CAPA
+  assert_any_of:
+  - - '19.298'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). tl_capa terisi (non-null, non-empty) = 19.298 kasus. Yang terekam baru keberadaan CAPA + teks; penyelesaian
+    per tahap CAPA tidak terekam - sebutkan. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil
+    query TIDAK boleh dihafal dari context - wajib query ulang.'

@@ -1,0 +1,12 @@
+name: TC_PMR_SIPT_G09_KLARIFIKASI_WILAYAH
+scenario_id: TC-PMR-SIPT-G09-KLARIFIKASI-WILAYAH
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-G09-KLARIFIKASI-WILAYAH — dari kebutuhan user (semua|klarifikasi). Sumber: blueprint 05 par.2 ''Wilayah''; D5. Angka kanonis DB staging 25 Sep 2026 (bukan dari context; context
+  diupdate menyusul).'
+turns:
+- prompt: Bagaimana tren untuk wilayah kami?
+  assert_asked: true
+  tolerance_pct: 5
+  note: 'SQL: TIDAK ADA SQL LANGSUNG: ''wilayah'' ambigu (balai pelaksana/regional/lokasi sarana/wilayah kerja UPT). AGENT WAJIB klarifikasi makna wilayah dulu; wilayah kerja UPT tidak punya definisi terekam
+    (D5) - tawarkan balai/regional sebagai pengganti. Kebutuhan user: blueprint 05 par.2 ''Wilayah''; D5. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik ->
+    angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'

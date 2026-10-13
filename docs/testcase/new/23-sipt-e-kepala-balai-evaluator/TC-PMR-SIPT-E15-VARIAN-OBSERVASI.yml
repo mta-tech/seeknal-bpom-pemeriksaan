@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_E15_VARIAN_OBSERVASI
+scenario_id: TC-PMR-SIPT-E15-VARIAN-OBSERVASI
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E15-VARIAN-OBSERVASI — dari kebutuhan user (kepala balai|monitoring). Sumber: blueprint 02 FLOW 3 (observasi); 45-observasi. Angka kanonis DB staging 25 Sep 2026 (bukan dari context;
+  context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus dengan varian isian observasi (flag_varian_datas='pola1_observation')?
+  assert_contains:
+  - observasi
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan WHERE flag_varian_datas=''pola1_observation''; DB staging 25 Sep 2026: 10.421 kasus pola1_observation (baca checklist). Kebutuhan user: blueprint 02 FLOW
+    3 (observasi); 45-observasi. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak
+    terekam. Pin definisi: varian pola1_observation (10.421 kasus, routing ke checklist). Bridge_pemeriksaan_temuan_observasi adalah jalur pola2_klasifikasi (4.137 kasus) - jangan dicampur. Narasi jawaban
+    (patokan): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '10.421'

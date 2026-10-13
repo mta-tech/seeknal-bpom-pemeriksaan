@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_E13_VARIAN_NESTED
+scenario_id: TC-PMR-SIPT-E13-VARIAN-NESTED
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E13-VARIAN-NESTED — dari kebutuhan user (kepala balai|monitoring). Sumber: blueprint 02 FLOW 3B (varian isian); 01-peta-data routing. Angka kanonis DB staging 25 Sep 2026 (bukan
+  dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus yang menggunakan isian klausul bertingkat (nested checklist)?
+  assert_contains:
+  - nested|klausul|checklist
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan WHERE flag_varian_datas=''pola1_nested''; DB staging 25 Sep 2026: 61.266 kasus pola1_nested (baca bridge_pemeriksaan_checklist). Salah bridge = kosong
+    tanpa error - cek flag dulu. Kebutuhan user: blueprint 02 FLOW 3B (varian isian); 01-peta-data routing. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik
+    -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '61.266'

@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_A01_TOTAL_2025
+scenario_id: TC-PMR-SIPT-A01-TOTAL-2025
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A01-TOTAL-2025 — monitoring. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa jumlah pemeriksaan yang dilakukan pada tahun 2025?
+  assert_contains:
+  - kasus|pemeriksaan
+  assert_any_of:
+  - - '33.345'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). ENTITY pemeriksaan -> COUNT(DISTINCT fact_pemeriksaan.id) (bukan COUNT baris bridge). Tanggal kanonik tgl_start.
+    Eksklusi wajib is_data_uji IS NOT TRUE. Tanpa angka hasil query di context. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026
+    (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

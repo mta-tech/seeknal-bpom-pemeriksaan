@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_E08_KRITIS_VONIS
+scenario_id: TC-PMR-SIPT-E08-KRITIS-VONIS
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E08-KRITIS-VONIS — dari kebutuhan user (evaluasi|risiko). Sumber: blueprint 01 par.3 Kepala Balai (severity konsisten dengan kondisi); Case 4. Angka kanonis DB staging 25 Sep 2026
+  (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Bagaimana kesimpulan akhir kasus-kasus dengan temuan Kritis?
+  assert_contains:
+  - Kritis|MK|TMK|kesimpulan
+  tolerance_pct: 5
+  note: 'SQL: SELECT k.kode, count(*) FROM fact_pemeriksaan f JOIN dim_pemeriksaan_kesimpulan k ON k.id=f.kesimpulan_balai_id WHERE f.kritis_count>0 GROUP BY k.kode ORDER BY 2 DESC; DB staging 25 Sep 2026:
+    kritis_count>0 -> TMK 911, MK 210, kode 794 85. Korelasi bukan kausal - sebut ''berasosiasi''. Kebutuhan user: blueprint 01 par.3 Kepala Balai (severity konsisten dengan kondisi); Case 4. Narasi jawaban
+    (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '911'
+  - - '210'

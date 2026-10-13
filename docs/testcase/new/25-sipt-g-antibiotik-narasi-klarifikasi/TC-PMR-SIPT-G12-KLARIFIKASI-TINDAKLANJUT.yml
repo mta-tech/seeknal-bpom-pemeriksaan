@@ -1,0 +1,12 @@
+name: TC_PMR_SIPT_G12_KLARIFIKASI_TINDAKLANJUT
+scenario_id: TC-PMR-SIPT-G12-KLARIFIKASI-TINDAKLANJUT
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-G12-KLARIFIKASI-TINDAKLANJUT — dari kebutuhan user (semua|klarifikasi). Sumber: blueprint 05 par.2 ''Tindak lanjut''; D6. Angka kanonis DB staging 25 Sep 2026 (bukan dari context;
+  context diupdate menyusul).'
+turns:
+- prompt: Tampilkan tindak lanjut untuk kasus TMK.
+  assert_asked: true
+  tolerance_pct: 5
+  note: 'SQL: TIDAK ADA SQL LANGSUNG: ''tindak lanjut'' ambigu (saran tl_saran/CAPA/tindakan produk/approval). AGENT WAJIB klarifikasi jenis TL; keempat jalur ada di DB dan terjawab setelah dipilih. Kebutuhan
+    user: blueprint 05 par.2 ''Tindak lanjut''; D6. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada
+    bagian yang tidak terekam.'

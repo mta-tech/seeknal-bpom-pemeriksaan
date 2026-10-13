@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_A08_TREN_3TAHUN
+scenario_id: TC-PMR-SIPT-A08-TREN-3TAHUN
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A08-TREN-3TAHUN — monitoring. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Bagaimana tren jumlah pemeriksaan tahun 2023, 2024, dan 2025?
+  assert_contains:
+  - tren|tahun
+  assert_any_of:
+  - - '45.824'
+  - - '47.996'
+  - - '33.345'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Agregasi tahun dari tgl_start (selalu rentang >= awal AND < akhir, bukan EXTRACT pada filter). 2023=45.824,
+    2024=47.996, 2025=33.345. Tahun berjalan 2026 belum penuh - jangan dibandingkan persentase. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB
+    staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

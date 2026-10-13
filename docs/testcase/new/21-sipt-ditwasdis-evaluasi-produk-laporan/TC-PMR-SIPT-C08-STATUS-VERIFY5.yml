@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_C08_STATUS_VERIFY5
+scenario_id: TC-PMR-SIPT-C08-STATUS-VERIFY5
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-C08-STATUS-VERIFY5 — evaluasi. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa kasus yang berada di tahap VERIFY5?
+  assert_contains:
+  - VERIFY5|verifikasi
+  assert_any_of:
+  - - '46.619'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). status_id -> dim_status_code; VERIFY5 = 46.619 kasus. Sebut kode status + penjelasan (label tampilan tidak tersedia).
+    Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context
+    - wajib query ulang.'

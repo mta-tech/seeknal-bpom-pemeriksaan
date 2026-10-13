@@ -1,0 +1,18 @@
+name: TC_PMR_SIPT_G01_ANTIBIOTIK_TAHUN
+scenario_id: TC-PMR-SIPT-G01-ANTIBIOTIK-TAHUN
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-G01-ANTIBIOTIK-TAHUN — dari kebutuhan user (tim antibiotik|kepatuhan). Sumber: blueprint 07 Case 6 (Tim antibiotik); 09 P1 bridge antibiotik. Angka kanonis DB staging 25 Sep 2026
+  (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus yang menilai penyerahan antibiotik pada 2024 dan 2025?
+  assert_contains:
+  - antibiotik|penyerahan
+  tolerance_pct: 5
+  note: 'SQL: SELECT EXTRACT(YEAR FROM f.tgl_start) thn, count(DISTINCT b.pemeriksaan_id) FROM bridge_pemeriksaan_skor_operasional b JOIN fact_pemeriksaan f ON f.id=b.pemeriksaan_id WHERE b.area_key=''tx_penyerahan_antibiotika_oleh''
+    AND EXTRACT(YEAR FROM f.tgl_start) IN (2024,2025) GROUP BY 1; DB staging 25 Sep 2026: 2024=8.450, 2025=7.109 kasus. ADA 3 area_key antibiotik di bridge: tx_penyerahan_obat_antibiotika (25.780 baris,
+    skor 25.774), tx_penyerahan_antibiotika_oleh (25.780, skor 22.984), tx_pencatatan_mutasi_antibiotika (25.780, skor 25.774) - sebut area_key yang dipakai. Sub-section tanpa resep/kepada tidak terekam
+    (gap P1). Kebutuhan user: blueprint 07 Case 6 (Tim antibiotik); 09 P1 bridge antibiotik. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama
+    -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '8.450'
+  - - '7.109'

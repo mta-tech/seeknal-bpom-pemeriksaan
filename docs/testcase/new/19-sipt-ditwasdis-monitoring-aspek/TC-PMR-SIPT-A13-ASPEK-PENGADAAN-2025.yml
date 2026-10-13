@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_A13_ASPEK_PENGADAAN_2025
+scenario_id: TC-PMR-SIPT-A13-ASPEK-PENGADAAN-2025
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A13-ASPEK-PENGADAAN-2025 — kepatuhan. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi
+  is_data_uji).'
+turns:
+- prompt: Berapa kasus yang mengisi aspek pengadaan pada tahun 2025, dan bagaimana kepatuhannya?
+  assert_contains:
+  - pengadaan
+  assert_any_of:
+  - - '8.344'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Aspek pelayanan hidup di bridge_pemeriksaan_skor_operasional (area_key LIKE ''tx_pengadaan%'', kolom score/fp/n/opsi);
+    hanya varian clusterC_skor. Label aspek selalu COALESCE(aspek_ktl_nama, aspek_label) via dim_pemeriksaan_aspek(area_key). 2025: 8.344 kasus. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian;
+    satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

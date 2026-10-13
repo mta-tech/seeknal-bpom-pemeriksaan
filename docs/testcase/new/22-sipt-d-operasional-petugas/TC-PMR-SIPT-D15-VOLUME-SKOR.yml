@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_D15_VOLUME_SKOR
+scenario_id: TC-PMR-SIPT-D15-VOLUME-SKOR
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-D15-VOLUME-SKOR — dari kebutuhan user (petugas|monitoring). Sumber: blueprint 02 FLOW 3 varian pelayanan; 35-kepatuhan (kontrak area_key). Angka kanonis DB staging 25 Sep 2026
+  (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa total baris skor operasional yang terekam?
+  assert_contains:
+  - skor|operasional
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM bridge_pemeriksaan_skor_operasional; DB staging 25 Sep 2026: 1.521.315 baris (varian clusterC_skor). Kontrak per area_key lihat jawaban terkait aspek. Kebutuhan user:
+    blueprint 02 FLOW 3 varian pelayanan; 35-kepatuhan (kontrak area_key). Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan
+    pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - 1.521.315

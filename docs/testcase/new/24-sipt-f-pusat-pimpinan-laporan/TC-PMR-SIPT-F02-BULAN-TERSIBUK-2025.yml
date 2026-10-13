@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_F02_BULAN_TERSIBUK_2025
+scenario_id: TC-PMR-SIPT-F02-BULAN-TERSIBUK-2025
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-F02-BULAN-TERSIBUK-2025 — dari kebutuhan user (pimpinan|laporan). Sumber: blueprint 07 Case 5 (Pimpinan: laporan bulanan nasional). Angka kanonis DB staging 25 Sep 2026 (bukan
+  dari context; context diupdate menyusul).'
+turns:
+- prompt: Bulan apa yang paling banyak pemeriksaan pada tahun 2025?
+  assert_contains:
+  - bulan|2025
+  tolerance_pct: 5
+  note: 'SQL: SELECT EXTRACT(MONTH FROM tgl_start), count(*) FROM fact_pemeriksaan WHERE EXTRACT(YEAR FROM tgl_start)=2025 GROUP BY 1 ORDER BY 2 DESC LIMIT 1; DB staging 25 Sep 2026: bulan ke-5 = 3.800
+    kasus (2025). Periode dari tgl_start; tahun berjalan parsial. Kebutuhan user: blueprint 07 Case 5 (Pimpinan: laporan bulanan nasional). Narasi jawaban (patokan, penegakan penuh menunggu update context/skill):
+    interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '3.800'

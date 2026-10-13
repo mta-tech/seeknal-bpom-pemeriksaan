@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_A14_PENERIMAAN_OPSI
+scenario_id: TC-PMR-SIPT-A14-PENERIMAAN-OPSI
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A14-PENERIMAAN-OPSI — kepatuhan. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Siapa saja yang menangani penerimaan obat menurut isian pemeriksaan?
+  assert_contains:
+  - Apoteker|penerimaan|TTK
+  assert_any_of:
+  - - '31.203'
+  - - '12.813'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Kontrak opsi per area_key (tx_penerimaan_obat): ''Apoteker atau TTK'' 31.203, ''Ya'' 12.813, ''Tenaga Kesehatan
+    Non-farmasi'' 4.500, ''Lainnya'' 4.121 + ''lainnya'' 3.868 (ejaan ganda), ''Asisten Apoteker'' 3.300 + ''asisten'' 161, ''ttk'' 1.605, ''tenagakesehatan'' 941, ''Tidak'' 154, null 1.185. WAJIB normalisasi
+    sebelum mengelompokkan; opsi bukan penanda temuan global. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji).
+    Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

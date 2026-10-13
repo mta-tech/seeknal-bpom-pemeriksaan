@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_A02_GOLONGAN_2025
+scenario_id: TC-PMR-SIPT-A02-GOLONGAN-2025
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A02-GOLONGAN-2025 — monitoring. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: 'Bagaimana sebaran pemeriksaan tahun 2025 per golongan sarana: distribusi, pelayanan, produksi?'
+  assert_contains:
+  - golongan|distribusi
+  assert_any_of:
+  - - '18.847'
+  - - '8.499'
+  - - '5.999'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Golongan via jenis_id -> dim_master_data(JENIS_SARANA) parent_name: 1=Produksi, 2=Distribusi, 3=Pelayanan. Setiap
+    join ke kamus wajib menyebut type. 2025: Distribusi 18.847, Pelayanan 8.499, Produksi 5.999. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB
+    staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

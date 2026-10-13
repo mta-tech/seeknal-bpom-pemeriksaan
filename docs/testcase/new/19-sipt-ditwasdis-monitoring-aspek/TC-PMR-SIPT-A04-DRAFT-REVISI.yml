@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_A04_DRAFT_REVISI
+scenario_id: TC-PMR-SIPT-A04-DRAFT-REVISI
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A04-DRAFT-REVISI — monitoring. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Kasus apa saja yang masih draft atau sedang direvisi, dan berapa jumlahnya?
+  assert_contains:
+  - draft|revisi
+  assert_any_of:
+  - - '8.823'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Kelompok draft = status_code DRAFT, DRAFT_REVISE, DRAFT_PUSAT, DRAFT_PUSAT_REVISE via status_id -> dim_status_code
+    (domain status). Label tampilan (status_label) kosong 0/35 - pakai status_code + penjelasan. Kasus draft TIDAK ikut angka resmi. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart
+    + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

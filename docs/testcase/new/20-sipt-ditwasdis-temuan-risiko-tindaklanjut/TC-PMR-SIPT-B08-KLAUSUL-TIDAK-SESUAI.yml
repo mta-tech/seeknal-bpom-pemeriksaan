@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_B08_KLAUSUL_TIDAK_SESUAI
+scenario_id: TC-PMR-SIPT-B08-KLAUSUL-TIDAK-SESUAI
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-B08-KLAUSUL-TIDAK-SESUAI — kepatuhan. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi
+  is_data_uji).'
+turns:
+- prompt: Berapa banyak klausul produksi yang tidak sesuai menurut isian pemeriksaan?
+  assert_contains:
+  - klausul|tidak sesuai
+  assert_any_of:
+  - - '279.310'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Sumber bridge_pemeriksaan_checklist (varian pola1_nested), kolom nilai_aspek=''Tidak'' = 279.310 baris. nilai_aspek
+    campur 4 makna (konformitas/grade/severity/status) - sebut makna yang dipakai. Severity per klausul tidak terekam. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV.
+    Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_B03_KEKRITISAN_SUBSET
+scenario_id: TC-PMR-SIPT-B03-KEKRITISAN-SUBSET
+verification_date: '2026-09-25'
+description: TC-PMR-SIPT-B03-KEKRITISAN-SUBSET — REVISI hasil run 25 Sep 2026. Angka kanonis DB staging 25 Sep 2026.
+turns:
+- prompt: Sepanjang seluruh periode data yang terekam, berapa kasus dengan temuan Kritis dan Major?
+  assert_contains:
+  - Kritis|Major|kritis
+  assert_any_of:
+  - - '1.219'
+  - - '8.831'
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FILTER (WHERE kritis_count>0) kritis, count(*) FILTER (WHERE major_count>0) major FROM fact_pemeriksaan WHERE is_data_uji IS NOT TRUE; DB staging 25 Sep 2026: kritis=1.219,
+    major=8.831 (seluruh periode). Tingkat hanya subset form - sebut cakupan; severity per klausul tidak terekam. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik
+    -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'

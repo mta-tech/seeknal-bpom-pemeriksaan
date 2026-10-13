@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_D12_NARASI_PETUGAS
+scenario_id: TC-PMR-SIPT-D12-NARASI-PETUGAS
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-D12-NARASI-PETUGAS — dari kebutuhan user (petugas|laporan). Sumber: blueprint 01 par.2 Petugas UPT (catatan observasi); Case 8 free text. Angka kanonis DB staging 25 Sep 2026 (bukan
+  dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa banyak catatan narasi pemeriksaan yang terekam?
+  assert_contains:
+  - narasi|catatan
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan_narasi; DB staging 25 Sep 2026: 525.894 baris narasi (fact_pemeriksaan_narasi). Bedakan dari bridge_pemeriksaan_narasi_faskes (6.930, varian faskes).
+    Narasi = teks bebas, bukan cacahan. Kebutuhan user: blueprint 01 par.2 Petugas UPT (catatan observasi); Case 8 free text. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi
+    kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '525.894'

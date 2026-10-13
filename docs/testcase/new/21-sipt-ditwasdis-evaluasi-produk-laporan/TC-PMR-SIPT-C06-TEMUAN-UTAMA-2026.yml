@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_C06_TEMUAN_UTAMA_2026
+scenario_id: TC-PMR-SIPT-C06-TEMUAN-UTAMA-2026
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-C06-TEMUAN-UTAMA-2026 — laporan. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Apa temuan utama dan berapa kasus tahun berjalan 2026?
+  assert_contains:
+  - 2026|kasus
+  assert_any_of:
+  - - '14.753'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). 2026 ytd = 14.753 kasus (data sampai sinkronisasi terakhir). Tahun berjalan: jangan hitung persentase perubahan
+    vs tahun penuh. Metrik ''tren'' default jumlah kasus - sebutkan metrik yang dipakai. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging
+    24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

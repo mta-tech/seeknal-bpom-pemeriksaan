@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_B02_TIE_BUCKET
+scenario_id: TC-PMR-SIPT-B02-TIE-BUCKET
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-B02-TIE-BUCKET — risiko. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa temuan TIE (tanpa izin edar) tahun ini?
+  assert_contains:
+  - TIE|Tanpa Izin Edar
+  - terpetakan|kamus|kode
+  assert_any_of: []
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). JANGAN hitung hanya kode kamus ''1'' (hanya 2 kemunculan) - kode TIE nyata di data adalah kode tak-terdaftar
+    (506, 840, dst.). Jawaban benar: sebut kategori TIE dengan prosedur bucket tak-terpetakan + gabungan kode bermakna sama, dan nyatakan cakupan. Total baris temuan 303.521. Jawaban wajib: interpretasi
+    kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

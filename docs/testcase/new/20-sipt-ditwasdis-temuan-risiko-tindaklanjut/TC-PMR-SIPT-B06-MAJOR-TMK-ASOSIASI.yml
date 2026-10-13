@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_B06_MAJOR_TMK_ASOSIASI
+scenario_id: TC-PMR-SIPT-B06-MAJOR-TMK-ASOSIASI
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-B06-MAJOR-TMK-ASOSIASI — risiko. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Apakah kasus dengan temuan Major lebih sering berakhir TMK?
+  assert_contains:
+  - asosiasi|TMK|berkorelasi
+  assert_any_of:
+  - - '8.831'
+  - - '3.190'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Dari 8.831 kasus major_count>0, 3.190 berakhir TMK (kesimpulan_balai_id -> dim_pemeriksaan_kesimpulan kode ''TMK'').
+    WAJIB menulis ''berasosiasi'' - DILARANG ''menyebabkan/kausal''. Sebut dasar hitung. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging
+    24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

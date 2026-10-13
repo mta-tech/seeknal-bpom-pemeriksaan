@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_A09_APOTEK_2025
+scenario_id: TC-PMR-SIPT-A09-APOTEK-2025
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A09-APOTEK-2025 — monitoring. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa pemeriksaan apotek pada tahun 2025?
+  assert_contains:
+  - Apotek|apotek
+  assert_any_of:
+  - - '3.687'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). jenis_id -> dim_master_data type JENIS_SARANA (nama ''Apotek''); Apotek termasuk golongan Pelayanan via parent_name.
+    Join kamus wajib sebut type. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK
+    boleh dihafal dari context - wajib query ulang.'

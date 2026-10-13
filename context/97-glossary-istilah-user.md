@@ -1,4 +1,4 @@
-temuan · wilayah · jumlah · tren · kritis · tindak lanjut · selesai · inspektur terbaik · kapasitas · beban kerja
+temuan · wilayah · jumlah · tren · kritis · tindak lanjut · selesai · inspektur terbaik · kapasitas · beban kerja · PKM · NPP · keamanan mutu · obat keras · ekspor impor
 
 # Kamus istilah user — dan kapan harus bertanya
 
@@ -21,6 +21,11 @@ mana yang dipakai — atau menyatakan bahwa pertanyaannya harus diklarifikasi.
 | **inspektur terbaik** | volume penugasan · eksposur jenis sarana · kompetensi | **tanya**, dan sebutkan kompetensi tidak tersedia |
 | **bermasalah / tidak sesuai** | nilai jawaban · skor rendah · klausul Tidak · severitas | **tanya** |
 | **kapasitas / beban kerja** | jumlah kasus · jumlah jenis sarana ditangani | pilih, dan sebutkan dasarnya |
+| **PKM** | Puskesmas (`JENIS_SARANA`) vs "Pengawasan Keamanan Mutu" (bukan modul di domain ini) | default: Puskesmas (`10`); bila konteks keamanan mutu → `95` |
+| **NPP / NPPZA / obat berkontrol** | tiga komoditi (narkotika+psikotropika+prekursor) vs termasuk Obat-Obat Tertentu; kasus (`20`) vs pengelolaan di distribusi (`22`) | pilih dari kalimat; dua bacaan bertahan → **tanya** |
+| **keamanan mutu** | kategori temuan TMS Keamanan-Mutu-Gizi Pangan (`40`) · profil manajemen mutu pabrik pangan (`50`) · bukan modul | pilih dari kalimat; bila maksudnya modul → `95` |
+| **obat keras** | kategori temuan produk vs golongan produk | kategori temuan → `40`; golongan/registrasi → `20` |
+| **ekspor impor** | bukan modul; jalur nyata: negara asal temuan, proxy nama sarana | `41` / `10`; konsep permit/awal impor → `95` |
 
 ## Pemetaan istilah user → konsep data
 
@@ -60,7 +65,7 @@ WHERE name ILIKE '%<kata>%' GROUP BY 1 ORDER BY 2 DESC;
 
 - Klarifikasi **hanya** untuk yang tidak punya bacaan default aman (lihat daftar di atas).
 - Satu pertanyaan pada satu waktu, maksimal dua putaran.
-- Klarifikasi **selalu** melalui tool `request_clarification`/`ask_user` — pertanyaan klarifikasi yang
+- Klarifikasi **selalu** melalui tool `ask_clarification`/`ask_user` — pertanyaan klarifikasi yang
   ditulis sebagai teks jawaban tidak akan pernah dijawab dan mematikan giliran.
 - Bila memakai default, **sebutkan asumsinya** dalam satu baris di jawaban.
 

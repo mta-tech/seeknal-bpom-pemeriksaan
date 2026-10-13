@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_B07_ASPEK_TERBURUK_APOTEK
+scenario_id: TC-PMR-SIPT-B07-ASPEK-TERBURUK-APOTEK
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-B07-ASPEK-TERBURUK-APOTEK — kepatuhan. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi
+  is_data_uji).'
+turns:
+- prompt: Aspek apa yang paling bermasalah pada apotek?
+  assert_contains:
+  - aspek|kepatuhan|Apotek
+  assert_any_of: []
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Sumber: bridge_pemeriksaan_skor_operasional JOIN fact_pemeriksaan.jenis_id=''Apotek''; label aspek COALESCE(aspek_ktl_nama,
+    aspek_label). Urutkan skor/item tidak sesuai per area_key. Coverage severitas tidak merata - sebut cakupan. Dua panel (pelayanan vs produksi) tidak dijumlahkan. Jawaban wajib: interpretasi kanonik ->
+    angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

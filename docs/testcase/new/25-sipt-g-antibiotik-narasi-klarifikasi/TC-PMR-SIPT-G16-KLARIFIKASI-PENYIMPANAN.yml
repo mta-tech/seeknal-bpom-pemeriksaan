@@ -1,0 +1,12 @@
+name: TC_PMR_SIPT_G16_KLARIFIKASI_PENYIMPANAN
+scenario_id: TC-PMR-SIPT-G16-KLARIFIKASI-PENYIMPANAN
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-G16-KLARIFIKASI-PENYIMPANAN — dari kebutuhan user (semua|klarifikasi). Sumber: blueprint 05 par.4 ''Penyimpanan''; D3; Case 1. Angka kanonis DB staging 25 Sep 2026 (bukan dari
+  context; context diupdate menyusul).'
+turns:
+- prompt: Bagaimana kepatuhan penyimpanan?
+  assert_asked: true
+  tolerance_pct: 5
+  note: 'SQL: ''Penyimpanan'' terlihat sama tapi beda data: pelayanan (skor area_key) vs produksi/distribusi (klausul checklist). AGENT WAJIB tanya populasi; jangan gabungkan satuan. Kedua panel terjawab
+    di DB. Kebutuhan user: blueprint 05 par.4 ''Penyimpanan''; D3; Case 1. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan
+    pengganti bila ada bagian yang tidak terekam.'

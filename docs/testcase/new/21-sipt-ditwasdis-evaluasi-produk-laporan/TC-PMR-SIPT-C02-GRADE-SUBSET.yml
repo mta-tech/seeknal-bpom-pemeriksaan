@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_C02_GRADE_SUBSET
+scenario_id: TC-PMR-SIPT-C02-GRADE-SUBSET
+verification_date: '2026-09-25'
+description: TC-PMR-SIPT-C02-GRADE-SUBSET — REVISI hasil run 25 Sep 2026. Angka kanonis DB staging 25 Sep 2026.
+turns:
+- prompt: Golongan sarana mana yang merekam grade, berapa kasusnya, dan berapa yang grade A?
+  assert_contains:
+  - grade|A|Distribusi
+  assert_any_of:
+  - - '44.400'
+  - - '24.776'
+  tolerance_pct: 5
+  note: 'SQL: SELECT g.name, count(f.grade), count(*) FILTER (WHERE f.grade=''A'') FROM fact_pemeriksaan f JOIN dim_master_data j ON j.master_data_id=f.jenis_id JOIN dim_master_data g ON g.master_data_id=j.parent_id
+    WHERE f.grade IS NOT NULL GROUP BY g.name; DB staging 25 Sep 2026: SELURUH grade (44.400 kasus; grade A 24.776) milik golongan DISTRIBUSI - produksi tidak merekam grade. Koreksi atas asumsi ''grade
+    subset produksi''. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'

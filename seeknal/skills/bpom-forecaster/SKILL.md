@@ -26,7 +26,7 @@ Lock `{sql, periods}`.
   **Always pass `periods` explicitly.**
 - **"bulan depan"** = the next **COMPLETE** month (the month after the running one), not the first
   forecast step.
-- If the **series** is ambiguous → `request_clarification` first.
+- If the **series** is ambiguous → `ask_clarification` first.
 
 ## SQL Template
 

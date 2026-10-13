@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_A10_PBF_2025
+scenario_id: TC-PMR-SIPT-A10-PBF-2025
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A10-PBF-2025 — monitoring. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa pemeriksaan PBF (pedagang besar farmasi) pada tahun 2025?
+  assert_contains:
+  - PBF|pedagang
+  assert_any_of:
+  - - '1.008'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). jenis_id -> dim_master_data JENIS_SARANA nama ''PBF''; golongan Distribusi via parent_name. Fokus Ditwasdis
+    (pengawasan distribusi). Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK
+    boleh dihafal dari context - wajib query ulang.'

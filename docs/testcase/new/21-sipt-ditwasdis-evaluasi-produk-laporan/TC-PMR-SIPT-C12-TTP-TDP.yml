@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_C12_TTP_TDP
+scenario_id: TC-PMR-SIPT-C12-TTP-TDP
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-C12-TTP-TDP — evaluasi. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa kasus dengan kesimpulan TTP dan TDP?
+  assert_contains:
+  - TTP|TDP
+  assert_any_of:
+  - - '1.557'
+  - - '794'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). kode ''TTP'' = 1.557, ''TDP'' = 794. Kode 791-794 juga ada di kamus (792=345, 793=118, 794=107 sebagai kesimpulan
+    lain) - sebut makna dari kamus, jangan mengarang. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji).
+    Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

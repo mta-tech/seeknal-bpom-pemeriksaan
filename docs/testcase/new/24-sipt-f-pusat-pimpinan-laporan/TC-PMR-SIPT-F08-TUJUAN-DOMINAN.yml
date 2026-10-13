@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_F08_TUJUAN_DOMINAN
+scenario_id: TC-PMR-SIPT-F08-TUJUAN-DOMINAN
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-F08-TUJUAN-DOMINAN — dari kebutuhan user (pusat|monitoring). Sumber: blueprint 03 Kelas 1 monitoring; 15-tujuan-pemeriksaan. Angka kanonis DB staging 25 Sep 2026 (bukan dari context;
+  context diupdate menyusul).'
+turns:
+- prompt: Tujuan pemeriksaan apa yang paling dominan?
+  assert_contains:
+  - tujuan|rutin
+  tolerance_pct: 5
+  note: 'SQL: SELECT m.name, count(*) FROM fact_pemeriksaan f JOIN dim_master_data m ON m.master_data_id=f.tujuan_id WHERE f.tujuan_id IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT 1; DB staging 25 Sep 2026:
+    ''Pemeriksaan Rutin'' = 202.164 kasus (36 jenis tujuan; 258.401 kasus terisi). Join kamus wajib sebut type. Kebutuhan user: blueprint 03 Kelas 1 monitoring; 15-tujuan-pemeriksaan. Narasi jawaban (patokan,
+    penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '202.164'

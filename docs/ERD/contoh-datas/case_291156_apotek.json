@@ -1,0 +1,251 @@
+{
+    "tx_total_n": 3356.62,
+    "tx_total_fp": 41,
+    "tx_pengadaan_apj": {
+        "n": "300",
+        "fp": "3",
+        "opsi": "yes",
+        "score": "100"
+    },
+    "tx_pengadaan_obat": {
+        "n": "300",
+        "fp": "3",
+        "opsi": "yes",
+        "score": "100"
+    },
+    "tx_pemusnahan_obat": {
+        "n": null,
+        "fp": null,
+        "score": null,
+        "metode": {
+            "note": null
+        }
+    },
+    "tx_penerimaan_obat": {
+        "n": null,
+        "fp": null,
+        "score": null
+    },
+    "tx_pengadaan_arsip": {
+        "n": "50",
+        "fp": "1",
+        "urut": "on",
+        "score": "50",
+        "tahun": "on"
+    },
+    "tx_pengadaan_drugs": {
+        "n": null,
+        "fp": null,
+        "score": null
+    },
+    "tx_penyerahan_dowa": {
+        "n": "0",
+        "fp": "2",
+        "no": {
+            "lain": "on",
+            "prekursor": "on",
+            "antibiotika": "on"
+        },
+        "opsi": "no",
+        "score": "0"
+    },
+    "tx_penyerahan_info": {
+        "n": "200",
+        "fp": "2",
+        "detil": "on",
+        "paraf": "on",
+        "score": "200",
+        "aturan": "on",
+        "pasien": "on",
+        "biodata": "on",
+        "tanggal": "on"
+    },
+    "tx_penyerahan_izin": {
+        "n": "300",
+        "fp": "3",
+        "opsi": "no",
+        "score": "100"
+    },
+    "tx_penyerahan_obat": {
+        "n": "300",
+        "fp": "3",
+        "opsi": "apoteker",
+        "score": "100"
+    },
+    "tx_penyimpanan_ccp": {
+        "n": null,
+        "fp": null,
+        "score": null
+    },
+    "tx_pemusnahan_drugs": {
+        "n": null,
+        "fp": null,
+        "score": null,
+        "metode": {
+            "note": null
+        }
+    },
+    "tx_penerimaan_param": {
+        "n": "155.56",
+        "fp": "2",
+        "obat": "on",
+        "batch": "on",
+        "score": "155.55555555555557",
+        "bentuk": "on",
+        "jumlah": "on",
+        "expired": "on",
+        "kondisi": "on",
+        "produsen": "on"
+    },
+    "tx_penyerahan_arsip": {
+        "n": "66.67",
+        "fp": "1",
+        "urut": "on",
+        "score": "66.66666666666666",
+        "tahun": "on"
+    },
+    "tx_penyerahan_drugs": {
+        "n": null,
+        "fp": null,
+        "score": null
+    },
+    "tx_penyimpanan_obat": {
+        "n": "262.50",
+        "fp": "3",
+        "score": "262.5",
+        "wadah": "on",
+        "bentuk": "on",
+        "sentuh": "on",
+        "sistem": "on",
+        "jaminan": "on",
+        "kondisi": "on",
+        "kontaminasi": "on"
+    },
+    "tx_penyerahan_sarana": {
+        "n": "300",
+        "fp": "3",
+        "opsi": "no",
+        "score": "100"
+    },
+    "tx_penyimpanan_drugs": {
+        "n": null,
+        "fp": null,
+        "score": null
+    },
+    "tx_penyimpanan_psiko": {
+        "n": null,
+        "fp": null,
+        "score": null
+    },
+    "tx_penyimpanan_rusak": {
+        "n": "N/A",
+        "fp": "N/A",
+        "opsi": "N/A",
+        "score": "N/A"
+    },
+    "tx_pengembalian_retur": {
+        "n": null,
+        "fp": null,
+        "score": null
+    },
+    "tx_penyerahan_jaminan": {
+        "n": "300",
+        "fp": "3",
+        "opsi": "no",
+        "score": "100"
+    },
+    "tx_pengembalian_mutasi": {
+        "n": "196.89",
+        "x": "0.75",
+        "fp": "3",
+        "bets": "on",
+        "opsi": {
+            "mutasi": "mostly"
+        },
+        "stok": "on",
+        "score": "65.63",
+        "bentuk": "on",
+        "tujuan": "on",
+        "dokumen": "on",
+        "diterima": "on",
+        "diserahkan": "on"
+    },
+    "tx_pengembalian_sipnap": {
+        "n": null,
+        "fp": null,
+        "score": null
+    },
+    "tx_fast_moving_antibiotika": {
+        "1": {
+            "nama_zat_aktif": null,
+            "jumlah_penjualan": "570",
+            "satuan_penjualan": "Kaplet",
+            "jumlah_penjualan_tanpa_resep": "570",
+            "satuan_penjualan_tanpa_resep": "Kaplet"
+        },
+        "2": {
+            "nama_zat_aktif": "Amoxicillin",
+            "jumlah_penjualan": "360",
+            "satuan_penjualan": "Kaplet",
+            "jumlah_penjualan_tanpa_resep": "360",
+            "satuan_penjualan_tanpa_resep": "Kaplet"
+        },
+        "3": {
+            "nama_zat_aktif": null,
+            "jumlah_penjualan": "80",
+            "satuan_penjualan": "Kapsul",
+            "jumlah_penjualan_tanpa_resep": "80",
+            "satuan_penjualan_tanpa_resep": "Kapsul"
+        }
+    },
+    "tx_penyimpanan_investigasi": {
+        "n": "150",
+        "fp": "3",
+        "opsi": "undocumented",
+        "score": "50"
+    },
+    "tx_penyimpanan_opname_obat": {
+        "n": null,
+        "x": null,
+        "fp": null,
+        "opsi": "yes",
+        "score": null
+    },
+    "tx_penyimpanan_opname_drugs": {
+        "n": null,
+        "x": null,
+        "fp": null,
+        "score": null
+    },
+    "tx_penyerahan_antibiotika_oleh": {
+        "n": "200",
+        "fp": "2",
+        "opsi": "apoteker",
+        "score": "100"
+    },
+    "tx_penyerahan_obat_antibiotika": {
+        "n": "75",
+        "fp": "3",
+        "opsi": "rarely",
+        "score": "25"
+    },
+    "tx_pencatatan_mutasi_antibiotika": {
+        "n": "200",
+        "fp": "1",
+        "opsi": "yes",
+        "other": "yes",
+        "score": "200"
+    },
+    "tx_penyerahan_antibiotika_tanpa_resep_kie": {
+        "opsi": "yes"
+    },
+    "tx_penyerahan_antibiotika_tanpa_resep_oleh": {
+        "opsi": "apoteker"
+    },
+    "tx_penyerahan_antibiotika_tanpa_resep_kepada": {
+        "masyarakat": "on"
+    },
+    "tx_penyerahan_antibiotika_tanpa_resep_kepada_terbanyak": {
+        "opsi": "masyarakat"
+    }
+}

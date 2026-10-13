@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_G03_ANTIBIOTIK_JENIS_SARANA
+scenario_id: TC-PMR-SIPT-G03-ANTIBIOTIK-JENIS-SARANA
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-G03-ANTIBIOTIK-JENIS-SARANA — dari kebutuhan user (tim antibiotik|kepatuhan). Sumber: blueprint 07 Case 6. Angka kanonis DB staging 25 Sep 2026 (bukan dari context; context diupdate
+  menyusul).'
+turns:
+- prompt: Jenis sarana apa yang paling banyak menilai penyerahan antibiotik?
+  assert_contains:
+  - antibiotik|Apotek|jenis sarana
+  tolerance_pct: 5
+  note: 'SQL: SELECT j.name, count(DISTINCT b.pemeriksaan_id) FROM bridge_pemeriksaan_skor_operasional b JOIN fact_pemeriksaan f ON f.id=b.pemeriksaan_id JOIN dim_master_data j ON j.master_data_id=f.jenis_id
+    WHERE b.area_key=''tx_penyerahan_antibiotika_oleh'' GROUP BY j.name ORDER BY 2 DESC LIMIT 1; DB staging 25 Sep 2026: Apotek = 11.067 kasus. Item antibiotik hanya pada sebagian jenis sarana pelayanan.
+    Kebutuhan user: blueprint 07 Case 6. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang
+    tidak terekam.'
+  assert_any_of:
+  - - '11.067'

@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_B13_PROPORTIONALITAS
+scenario_id: TC-PMR-SIPT-B13-PROPORTIONALITAS
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-B13-PROPORTIONALITAS — tindak lanjut. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi
+  is_data_uji).'
+turns:
+- prompt: Apakah kasus dengan tingkat temuan serupa mendapat tindakan yang serupa?
+  assert_contains:
+  - tabulasi|tingkat|tindakan
+  assert_any_of: []
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Sajikan tabulasi silang tingkat (kritis/major/minor_count) x tindakan (bridge temuan). Jangan menyimpulkan ''proporsional/tidak''
+    tanpa kriteria - tampilkan sebaran, dan nyatakan bahwa penilaian proporsionalitas butuh kriteria yang disepakati. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV.
+    Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

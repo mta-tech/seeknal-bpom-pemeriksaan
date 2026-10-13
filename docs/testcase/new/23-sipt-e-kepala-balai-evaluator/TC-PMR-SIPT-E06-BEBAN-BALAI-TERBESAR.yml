@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_E06_BEBAN_BALAI_TERBESAR
+scenario_id: TC-PMR-SIPT-E06-BEBAN-BALAI-TERBESAR
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E06-BEBAN-BALAI-TERBESAR — dari kebutuhan user (kepala balai|monitoring). Sumber: blueprint 01 par.3 Kepala Balai (memantau beban kasus UPT); 06 kontrak wilayah. Angka kanonis
+  DB staging 25 Sep 2026 (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Balai mana dengan beban pemeriksaan terbanyak sepanjang data?
+  assert_contains:
+  - balai|beban|UPT
+  tolerance_pct: 5
+  note: 'SQL: SELECT b.nama_balai, count(*) FROM fact_pemeriksaan f JOIN dim_balai b ON b.balai_id=f.balai_id GROUP BY 1,2 ORDER BY 2 DESC LIMIT 1; DB staging 25 Sep 2026: BALAI BESAR POM DI JAKARTA = 12.832
+    kasus. Makna wilayah = balai pelaksana; beda dari regional dan lokasi sarana. Kebutuhan user: blueprint 01 par.3 Kepala Balai (memantau beban kasus UPT); 06 kontrak wilayah. Narasi jawaban (patokan,
+    penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '12.832'

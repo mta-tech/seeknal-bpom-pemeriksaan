@@ -1,0 +1,12 @@
+name: TC_PMR_SIPT_G15_KLARIFIKASI_SELESAI
+scenario_id: TC-PMR-SIPT-G15-KLARIFIKASI-SELESAI
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-G15-KLARIFIKASI-SELESAI — dari kebutuhan user (semua|klarifikasi). Sumber: blueprint 05 par.2 ''Selesai''; 31-status. Angka kanonis DB staging 25 Sep 2026 (bukan dari context;
+  context diupdate menyusul).'
+turns:
+- prompt: Berapa pemeriksaan yang sudah selesai?
+  assert_asked: true
+  tolerance_pct: 5
+  note: 'SQL: ''Selesai'' ambigu: FINISHED saja atau FINISHED_PUSAT juga. AGENT WAJIB sebut jalur; default gabungan FINISHED+FINISHED_PUSAT dengan disebutkan (29.155; jika hanya balai 29.042). Kebutuhan
+    user: blueprint 05 par.2 ''Selesai''; 31-status. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada
+    bagian yang tidak terekam.'

@@ -1,0 +1,13 @@
+name: TC_PMR_SIPT_C09_DURASI_TAHAP
+scenario_id: TC-PMR-SIPT-C09-DURASI-TAHAP
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-C09-DURASI-TAHAP — evaluasi. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa lama kasus bergerak dari Balai ke Pusat pada tiap tahap?
+  assert_contains:
+  - durasi|lama|hari|tahap
+  assert_any_of: []
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Durasi dari jejak fact_pemeriksaan_approval (from_steps/to_steps/created_at). Kasus yang tidak merekam seluruh
+    tahap dikeluarkan dan jumlahnya disebut. Sajikan median + rata-rata per tahap. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep
+    2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

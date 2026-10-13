@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_A03_BBPOM_BANDUNG
+scenario_id: TC-PMR-SIPT-A03-BBPOM-BANDUNG
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-A03-BBPOM-BANDUNG — monitoring. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: Berapa pemeriksaan yang dilakukan BBPOM Bandung pada tahun 2024 dan 2025?
+  assert_contains:
+  - 4.186|Bandung
+  assert_any_of:
+  - - '4.186'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Balai via balai_id -> dim_balai (nama_balai ''BALAI BESAR POM DI BANDUNG''); filter dua tahun 2024-2025. Wilayah
+    ''oleh BBPOM Bandung'' = balai pelaksana, BEDA dari lokasi sarana (provinsi/kabupaten) dan dari regional. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka
+    verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

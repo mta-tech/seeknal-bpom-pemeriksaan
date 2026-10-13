@@ -1,0 +1,16 @@
+name: TC_PMR_SIPT_E05_TMK_DENGAN_BUKTI_TEMUAN
+scenario_id: TC-PMR-SIPT-E05-TMK-DENGAN-BUKTI-TEMUAN
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E05-TMK-DENGAN-BUKTI-TEMUAN — dari kebutuhan user (kepala balai|evaluasi). Sumber: blueprint 01 par.3 Kepala Balai (apakah TMK didukung temuan cukup); Case 4. Angka kanonis DB
+  staging 25 Sep 2026 (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus TMK yang didukung baris temuan produk?
+  assert_contains:
+  - TMK|temuan
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan f JOIN dim_pemeriksaan_kesimpulan k ON k.id=f.kesimpulan_balai_id WHERE k.kode=''TMK'' AND EXISTS (SELECT 1 FROM bridge_pemeriksaan_temuan t WHERE t.pemeriksaan_id=f.id);
+    DB staging 25 Sep 2026: 28.587 dari 76.090 kasus TMK punya temuan produk tercatat. TMK juga bisa didukung temuan aspek/klausul - sebut cakupan bukti. Kebutuhan user: blueprint 01 par.3 Kepala Balai
+    (apakah TMK didukung temuan cukup); Case 4. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian
+    yang tidak terekam.'
+  assert_any_of:
+  - - '28.587'

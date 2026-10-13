@@ -1,0 +1,17 @@
+name: TC_PMR_SIPT_E03_PANEL_C_NARASI
+scenario_id: TC-PMR-SIPT-E03-PANEL-C-NARASI
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-E03-PANEL-C-NARASI — dari kebutuhan user (kepala balai|kepatuhan). Sumber: blueprint 07 Case 1 Panel C; Case 8 (evidence). Angka kanonis DB staging 25 Sep 2026.'
+turns:
+- prompt: Berapa catatan narasi fasilitas pelayanan kesehatan (narasi faskes) pada 2024 dan 2025?
+  assert_contains:
+  - narasi|catatan
+  assert_any_of:
+  - - '945'
+  - - '780'
+  tolerance_pct: 5
+  note: 'SQL: SELECT EXTRACT(YEAR FROM f.tgl_start) thn, count(*) FROM bridge_pemeriksaan_narasi_faskes b JOIN fact_pemeriksaan f ON f.id=b.pemeriksaan_id WHERE EXTRACT(YEAR FROM f.tgl_start) IN (2024,2025)
+    GROUP BY 1; DB staging 25 Sep 2026: 2024=945, 2025=780 baris narasi faskes. Panel C Case 1: narasi = tema + kutipan bukti, BUKAN cacahan klausul. Kebutuhan user: blueprint 07 Case 1 Panel C; Case 8
+    (evidence). Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama -> rincian -> sebutkan pengganti bila ada bagian yang tidak terekam. Pin jalur:
+    bridge_pemeriksaan_narasi_faskes (2024=945, 2025=780); fact_pemeriksaan_narasi adalah tabel narasi berbeda (525.894). Narasi jawaban (patokan): interpretasi kanonik -> angka utama -> rincian -> sebutkan
+    pengganti bila ada bagian yang tidak terekam.'

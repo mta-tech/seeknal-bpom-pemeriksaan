@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_G06_KRITERIA_OBSERVASI
+scenario_id: TC-PMR-SIPT-G06-KRITERIA-OBSERVASI
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-G06-KRITERIA-OBSERVASI — dari kebutuhan user (analis|risiko). Sumber: blueprint 45-observasi; 09 D10. Angka kanonis DB staging 25 Sep 2026.'
+turns:
+- prompt: Berapa baris observasi yang mencatat kolom kriteria?
+  assert_contains:
+  - kriteria|observasi
+  assert_any_of:
+  - - '21.305'
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM bridge_pemeriksaan_temuan_observasi WHERE kriteria IS NOT NULL; DB staging 25 Sep 2026: 21.305 dari 27.418 baris. Arti bisnis kode kriteria belum terkonfirmasi (D10) -
+    sebut batas, jangan menafsirkan makna. Kebutuhan user: blueprint 45-observasi; 09 D10. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama ->
+    rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'

@@ -1,0 +1,13 @@
+name: TC_PMR_SIPT_B15_UPT_KOREKSI
+scenario_id: TC-PMR-SIPT-B15-UPT-KOREKSI
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-B15-UPT-KOREKSI — evaluasi. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi is_data_uji).'
+turns:
+- prompt: UPT mana yang paling sering mendapat koreksi kesimpulan dari Pusat?
+  assert_contains:
+  - UPT|balai|koreksi
+  assert_any_of: []
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). Agregat beda kesimpulan (kasus 4.221) per balai_id -> dim_balai.nama_balai; sertakan proporsi terhadap kasus
+    yang direview (63.692) karena volume antar UPT berbeda. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian; satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji).
+    Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'

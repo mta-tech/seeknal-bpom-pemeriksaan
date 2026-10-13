@@ -1,0 +1,14 @@
+name: TC_PMR_SIPT_F15_MK_2025
+scenario_id: TC-PMR-SIPT-F15-MK-2025
+verification_date: '2026-09-25'
+description: 'TC-PMR-SIPT-F15-MK-2025 — dari kebutuhan user (pusat|evaluasi). Sumber: blueprint 03 Kelas 5; Q9 kesimpulan. Angka kanonis DB staging 25 Sep 2026 (bukan dari context; context diupdate menyusul).'
+turns:
+- prompt: Berapa kasus dengan kesimpulan MK pada tahun 2025?
+  assert_contains:
+  - MK|memenuhi|2025
+  tolerance_pct: 5
+  note: 'SQL: SELECT count(*) FROM fact_pemeriksaan f JOIN dim_pemeriksaan_kesimpulan k ON k.id=f.kesimpulan_balai_id WHERE k.kode=''MK'' AND EXTRACT(YEAR FROM tgl_start)=2025; DB staging 25 Sep 2026: 21.916
+    kasus MK 2025 (all-time 177.944). Kebutuhan user: blueprint 03 Kelas 5; Q9 kesimpulan. Narasi jawaban (patokan, penegakan penuh menunggu update context/skill): interpretasi kanonik -> angka utama ->
+    rincian -> sebutkan pengganti bila ada bagian yang tidak terekam.'
+  assert_any_of:
+  - - '21.916'

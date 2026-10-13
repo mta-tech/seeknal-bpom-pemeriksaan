@@ -1,0 +1,15 @@
+name: TC_PMR_SIPT_B10_TINDAKAN_TERBANYAK
+scenario_id: TC-PMR-SIPT-B10-TINDAKAN-TERBANYAK
+verification_date: '2026-09-24'
+description: 'TC-PMR-SIPT-B10-TINDAKAN-TERBANYAK — tindak lanjut. persona=ditwasdis | context_page=lihat note | answerability=dari context v5-staging-based | sumber angka: DB staging 24 Sep 2026 (eksklusi
+  is_data_uji).'
+turns:
+- prompt: Apa tindakan yang paling sering diambil atas temuan produk?
+  assert_contains:
+  - tindakan
+  assert_any_of:
+  - - '208.339'
+  tolerance_pct: 5
+  note: 'CONTEXT: docs/context_recap/24-09-2026 v5-staging-based (SEEKNAL_ASK.md + context/). tindakan_kode jsonb array -> expand dulu. Kode terbanyak 669 (208.339), lalu 672 (45.654), 665 (35.915), 671
+    (16.880). Label tindakan dari kamus; satu temuan bisa multi-tindakan sehingga total tindakan > total temuan (303.521 baris) - jelaskan. Jawaban wajib: interpretasi kanonik -> angka utama -> rincian;
+    satu chart + satu CSV. Angka verifikasi DB staging 24 Sep 2026 (eksklusi is_data_uji). Angka hasil query TIDAK boleh dihafal dari context - wajib query ulang.'
