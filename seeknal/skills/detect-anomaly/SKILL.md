@@ -20,7 +20,7 @@ Lock `{sql}`.
 - Build the SQL from the template with the series filter resolved from
   `context/` (dictionary `type`, status `domain`, kesimpulan FK).
 - Use the same exclusions as forecast: `tgl_start >= '2020-01-01'` and `is_data_uji IS NOT TRUE`.
-- If the **series** is ambiguous → `request_clarification` first.
+- If the **series** is ambiguous → `ask_clarification` first.
 
 ## SQL Template
 
